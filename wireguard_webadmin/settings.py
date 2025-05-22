@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'user_manager',
     'wireguard_tools',
     'firewall',
+    'orders',
     'dns',
     'vpn_invite'
 ]
