@@ -3,7 +3,8 @@ services:
   wireguard-webadmin:
     container_name: wireguard-webadmin
     restart: unless-stopped
-    build: .
+    image: tehdeeg87/wireguard_webadmin:latest
+    #build: .
     environment:
       - SERVER_ADDRESS=${SERVER_ADDRESS}
       - DEBUG_MODE=${DEBUG_MODE}
