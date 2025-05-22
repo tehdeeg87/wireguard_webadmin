@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-rj$$(1+#ca#xkpf8ieclzfa-igi9bhnw!vc46dm0&eov3#m91o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
 # Application definition
 
@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'wireguard_tools',
     'firewall',
     'dns',
-    'vpn_invite'
+    'vpn_invite',
+    'orders'
 ]
 
 MIDDLEWARE = [
@@ -89,10 +90,17 @@ WSGI_APPLICATION = 'wireguard_webadmin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/etc/wireguard/wireguard-webadmin-db.sqlite3',
+        'NAME': BASE_DIR / 'db_data' / 'db.sqlite3',  # Changed to use volume path
     }
 }
 
+# Development settings
+if DEBUG:
+    # Disable certain checks that require Linux commands
+    SILENCED_SYSTEM_CHECKS = [
+        'firewall.E001',  # Network interface check
+        'firewall.E002',  # IP command check
+    ]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

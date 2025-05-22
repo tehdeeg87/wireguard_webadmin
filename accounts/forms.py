@@ -2,6 +2,7 @@ from typing import Any
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 
 class CreateUserForm(forms.Form):
@@ -33,7 +34,15 @@ class LoginForm(forms.Form):
         username = cleaned_data.get("username")
         password = cleaned_data.get("password")
         if username and password:
-            user = authenticate(username=username, password=password)
+            # Try to find user by email first
+            try:
+                user = User.objects.get(email=username)
+                # If found by email, authenticate with the user's username
+                user = authenticate(username=user.username, password=password)
+            except User.DoesNotExist:
+                # If not found by email, try username directly
+                user = authenticate(username=username, password=password)
+            
             if not user:
                 self.add_error(None, ValidationError("Invalid username or password."))
         else:

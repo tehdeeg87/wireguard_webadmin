@@ -22,6 +22,7 @@ from vpn_invite.models import InviteSettings, PeerInvite
 from wgwadmlibrary.tools import create_peer_invite, get_peer_invite_data, send_email, user_allowed_peers, \
     user_has_access_to_peer
 from wireguard.models import Peer, PeerStatus, WebadminSettings, WireGuardInstance
+from django.db import models
 
 
 def get_api_key(api_name):
@@ -421,3 +422,85 @@ def api_peer_invite(request):
             data['message'] = 'Invite not found'
             return JsonResponse(data)
     return JsonResponse(data, status=200)
+
+
+@require_http_methods(["GET"])
+def webhook_create_instance(request):
+    """
+    Webhook endpoint to automatically create a new WireGuard instance.
+    Triggered by Stripe webhook (currently accepts any GET request for testing).
+    """
+    try:
+        # Get user count and email from request
+        user_count = int(request.GET.get('user_count', 1))
+        customer_email = request.GET.get('email', 'customer@email.com')
+
+        # Calculate netmask based on user count
+        # We need to ensure we have enough IPs for the requested users
+        # Adding some buffer for future growth
+        # Minimum of 6 usable IPs (netmask 29 = 8 IPs total, 6 usable)
+        if user_count <= 6:
+            netmask = 29  # 8 IPs total, 6 usable
+        elif user_count <= 14:
+            netmask = 28  # 16 IPs
+        elif user_count <= 30:
+            netmask = 27  # 32 IPs
+        elif user_count <= 62:
+            netmask = 26  # 64 IPs
+        elif user_count <= 126:
+            netmask = 25  # 128 IPs
+        elif user_count <= 254:
+            netmask = 24  # 256 IPs
+        else:
+            netmask = 23  # 512 IPs
+
+        # Get the next available instance ID and port
+        max_instance_id = WireGuardInstance.objects.all().aggregate(models.Max('instance_id'))['instance_id__max']
+        new_instance_id = (max_instance_id + 1) if max_instance_id is not None else 0
+
+        max_listen_port = WireGuardInstance.objects.all().aggregate(models.Max('listen_port'))['listen_port__max']
+        new_listen_port = (max_listen_port + 1) if max_listen_port is not None else 51820
+
+        # Generate WireGuard keys
+        new_private_key = subprocess.check_output('wg genkey', shell=True).decode('utf-8').strip()
+        new_public_key = subprocess.check_output(f'echo {new_private_key} | wg pubkey', shell=True).decode('utf-8').strip()
+
+        # Generate default address
+        new_address = f'10.188.{new_instance_id}.1'
+
+        # Create the instance
+        instance = WireGuardInstance.objects.create(
+            name=customer_email,  # Use provided email as display name
+            instance_id=new_instance_id,
+            private_key=new_private_key,
+            public_key=new_public_key,
+            hostname='vpn.portbro.com',  # Set fixed hostname
+            listen_port=new_listen_port,
+            address=new_address,
+            netmask=netmask,  # Use calculated netmask
+            dns_primary=request.GET.get('dns_primary', '1.1.1.1'),
+            dns_secondary=request.GET.get('dns_secondary', '1.0.0.1'),
+            pending_changes=True
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'WireGuard instance created successfully',
+            'instance': {
+                'uuid': str(instance.uuid),
+                'name': instance.name,
+                'instance_id': instance.instance_id,
+                'public_key': instance.public_key,
+                'listen_port': instance.listen_port,
+                'hostname': instance.hostname,
+                'address': instance.address,
+                'netmask': instance.netmask,
+                'max_users': 2 ** (32 - instance.netmask) - 2  # Calculate max users based on netmask
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

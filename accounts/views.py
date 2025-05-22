@@ -2,6 +2,8 @@ from django.shortcuts import render, Http404, redirect
 from django.contrib.auth.models import User
 from django.contrib import auth
 from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.utils.translation import gettext_lazy as _
 
 from api.views import get_api_key
 from .forms import CreateUserForm, LoginForm
@@ -37,9 +39,13 @@ def view_login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            user = User.objects.get(username=username)
-            auth.login(request, user)
-            return redirect('/')
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                auth.login(request, user)
+                return redirect('/')
+            else:
+                messages.error(request, _('Invalid username or password.'))
     else:
         form = LoginForm()
     return render(request, 'accounts/login.html', {'form': form})

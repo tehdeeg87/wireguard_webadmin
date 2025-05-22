@@ -15,12 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from accounts.views import view_create_first_user, view_login, view_logout
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
     cron_update_peer_latest_handshake, peer_info, routerfleet_authenticate_session, routerfleet_get_user_token, \
-    wireguard_status
+    wireguard_status, webhook_create_instance
 from console.views import view_console
 from dns.views import view_apply_dns_config, view_manage_dns_settings, view_manage_filter_list, view_manage_static_host, \
     view_static_host_list, view_toggle_dns_list, view_update_dns_list
@@ -39,6 +39,7 @@ from wireguard_tools.views import download_config_or_qrcode, export_wireguard_co
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('orders/', include('orders.urls')),
     path('', view_apply_db_patches, name='apply_db_patches'),
     path('status/', view_wireguard_status, name='wireguard_status'),
     path('dns/', view_static_host_list, name='static_host_list'),
@@ -65,6 +66,7 @@ urlpatterns = [
     path('accounts/create_first_user/', view_create_first_user, name='create_first_user'),
     path('accounts/login/', view_login, name='login'),
     path('accounts/logout/', view_logout, name='logout'),
+    path('api/webhook/create-instance/', webhook_create_instance, name='webhook_create_instance'),
     path('accounts/routerfleet_authenticate_session/', routerfleet_authenticate_session, name='routerfleet_authenticate_session'),
     path('api/routerfleet_get_user_token/', routerfleet_get_user_token, name='routerfleet_get_user_token'),
     path('api/wireguard_status/', wireguard_status, name='api_wireguard_status'),
@@ -88,4 +90,5 @@ urlpatterns = [
     path('invite/', view_public_vpn_invite, name='public_vpn_invite'),
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
+    
 ]

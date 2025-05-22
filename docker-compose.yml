@@ -3,7 +3,7 @@ services:
   wireguard-webadmin:
     container_name: wireguard-webadmin
     restart: unless-stopped
-    image: eduardosilva/wireguard_webadmin:latest
+    build: .
     environment:
       - SERVER_ADDRESS=${SERVER_ADDRESS}
       - DEBUG_MODE=${DEBUG_MODE}
@@ -16,9 +16,10 @@ services:
       - dnsmasq_conf:/etc/dnsmasq
       - app_secrets:/app_secrets/
       - rrd_data:/rrd_data/
+      - db_data:/app/db_data/
     ports:
       # Do not directly expose the Django port to the internet, use the reverse proxy below instead
-      # - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8000:8000"
       # Warning: Docker will have a hard time handling large amount of ports. Expose only the ports that you need.
       # Ports for multiple WireGuard instances. (Probably, you just need one)
       - "51820-51839:51820-51839/udp"
@@ -82,3 +83,4 @@ volumes:
   dnsmasq_conf:
   app_secrets:
   rrd_data:
+  db_data:
