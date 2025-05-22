@@ -478,8 +478,8 @@ def webhook_create_instance(request):
             listen_port=new_listen_port,
             address=new_address,
             netmask=netmask,  # Use calculated netmask
-            dns_primary=request.GET.get('dns_primary', '1.1.1.1'),
-            dns_secondary=request.GET.get('dns_secondary', '1.0.0.1'),
+            dns_primary=request.GET.get('dns_primary', '8.8.8.8'),
+            dns_secondary=request.GET.get('dns_secondary', '8.8.4.4'),
             pending_changes=True
         )
 
