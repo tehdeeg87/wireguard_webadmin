@@ -729,7 +729,7 @@
         });
 
         // Handler for sending invite via Email
-        $("#sendInviteEmailButton").on("click", function(e, textStatus, xhr) {
+        $("#sendInviteEmailButton").on("click", function(e) {
             e.preventDefault();
             var contact = $("#inviteContactInput").val().trim();
             if(!isValidEmail(contact)) {
@@ -737,36 +737,24 @@
                 return;
             }
             if(inviteData && inviteData.uuid) {
-                // Send invite email via API call
+                // Send data to n8n webhook
                 $.ajax({
-                    url: '/api/peer_invite/',
-                    data: { invite: inviteData.uuid, action: 'email', address: contact },
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(response, textStatus, xhr) {
-                        var message = response.message;
-                        if (!message) {
-                            message = xhr.statusText;
-                        }
-                        if(response.status === "success") {
-                            $("#inviteMessage").html("<div class='alert alert-success'>" + message + "</div>");
-                        } else {
-                            $("#inviteMessage").html("<div class='alert alert-danger'>" + message + "</div>");
-                        }
+                    url: 'https://n8n.portbro.com/webhook/2a3b3bbe-e4f5-41fe-961d-63b863290d26',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        email: contact,
+                        invite_url: inviteData.invite_url || inviteData.url,
+                        password: inviteData.password,
+                        expiration: inviteData.expiration,
+                        peer_name: inviteData.peer_name,
+                        email_body: `Hello,\n\nYou're invited to join our secure WireGuard VPN network. Please click the link below to access your personalized VPN configuration:\n\n${(inviteData.invite_url || inviteData.url).replace('token', 'token=')}\n\nNote: This invitation link will expire in 30 minutes. If you need a new link after expiration, please request another invite.\n\nAccess Password: ${inviteData.password}`
+                    }),
+                    success: function(response) {
+                        $("#inviteMessage").html("<div class='alert alert-success'>{% trans 'Invite details sent successfully.' %}</div>");
                     },
                     error: function(xhr, status, error) {
-                        var message = "{% trans 'Error sending email.' %}";
-                        try {
-                            var resp = xhr.responseJSON;
-                            if (resp && resp.message) {
-                                message = resp.message;
-                            } else {
-                                message = xhr.statusText;
-                            }
-                        } catch(err) {
-                            message = xhr.statusText;
-                        }
-                        $("#inviteMessage").html("<div class='alert alert-danger'>" + message + "</div>");
+                        $("#inviteMessage").html("<div class='alert alert-danger'>{% trans 'Error sending invite details.' %}</div>");
                     }
                 });
             } else {
