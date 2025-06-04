@@ -44,12 +44,14 @@
                     </div>
                 </div>
 
+                {% if show_config_buttons %}
                 <div class="row">
                     <div class="col-lg-12">
                         <a href="/vpn_invite/smtp_settings/" class="btn btn-primary">{% trans 'Email Settings' %}</a>
                         <a href="/vpn_invite/settings/" class="btn btn-primary">{% trans 'Invite Settings' %}</a>
                     </div>
                 </div>
+                {% endif %}
                 </div>
             </div>
         </div>

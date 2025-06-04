@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center mb-0">{% trans "Configure Your VPN Instance" %}</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'configure_instance' token=token %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="country">{% trans "Select Your Country" %}</label>
+                            <select class="form-control" id="country" name="country" required>
+                                <option value="">{% trans "Select a country" %}</option>
+                                <option value="US">{% trans "United States" %}</option>
+                                <option value="CA">{% trans "Canada" %}</option>
+                                <option value="GB">{% trans "United Kingdom" %}</option>
+                                <option value="DE">{% trans "Germany" %}</option>
+                                <option value="FR">{% trans "France" %}</option>
+                                <option value="NL">{% trans "Netherlands" %}</option>
+                                <option value="JP">{% trans "Japan" %}</option>
+                                <option value="AU">{% trans "Australia" %}</option>
+                                <option value="SG">{% trans "Singapore" %}</option>
+                                <!-- Add more countries as needed -->
+                            </select>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label for="user_count">{% trans "Number of Users" %}</label>
+                            <select class="form-control" id="user_count" name="user_count" required>
+                                <option value="1">1 {% trans "user" %}</option>
+                                <option value="5">5 {% trans "users" %}</option>
+                                <option value="10">10 {% trans "users" %}</option>
+                                <option value="20">20 {% trans "users" %}</option>
+                                <option value="50">50 {% trans "users" %}</option>
+                                <option value="100">100 {% trans "users" %}</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                {% trans "Select the number of users that will need access to your VPN instance" %}
+                            </small>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {% trans "Create VPN Instance" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

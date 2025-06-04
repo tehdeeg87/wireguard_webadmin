@@ -14,6 +14,7 @@ if [ ${#config_files[@]} -gt 0 ]; then
 fi
 
 # Django startup
+python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 exec python manage.py runserver 0.0.0.0:8000

@@ -379,7 +379,8 @@ def api_peer_invite(request):
         'email_enabled': invite_settings.invite_email_enabled,
     }
 
-    if user_acl.user_level < invite_settings.required_user_level:
+    # Allow both Peer Managers (30) and above to send invites
+    if user_acl.user_level < 30:
         data['status'] = 'error'
         data['message'] = 'Permission denied'
         return JsonResponse(data, status=403)
@@ -426,10 +427,7 @@ def api_peer_invite(request):
 
 @require_http_methods(["GET"])
 def webhook_create_instance(request):
-    """
-    Webhook endpoint to automatically create a new WireGuard instance.
-    Triggered by Stripe webhook (currently accepts any GET request for testing).
-    """
+
     try:
         # Get user count and email from request
         user_count = int(request.GET.get('user_count', 1))

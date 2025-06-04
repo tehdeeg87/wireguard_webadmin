@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-rj$$(1+#ca#xkpf8ieclzfa-igi9bhnw!vc46dm0&eov3#m91o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -150,4 +150,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 WIREGUARD_WEBADMIN_VERSION = 9966
 
-from wireguard_webadmin.production_settings import *
+# n8n API Key for webhook authentication
+N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production

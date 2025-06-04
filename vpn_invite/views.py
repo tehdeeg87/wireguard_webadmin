@@ -13,7 +13,8 @@ from .models import InviteSettings, PeerInvite
 
 @login_required
 def view_vpn_invite_list(request):
-    if not UserAcl.objects.filter(user=request.user).filter(user_level__gte=50).exists():
+    # Allow Peer Managers (30) and above to view invite list
+    if not UserAcl.objects.filter(user=request.user).filter(user_level__gte=30).exists():
         return render(request, 'access_denied.html', {'page_title': 'Access Denied'})
     if request.GET.get('invite') and request.GET.get('action') == 'delete':
         PeerInvite.objects.filter(uuid=request.GET.get('invite')).delete()
@@ -33,9 +34,14 @@ def view_vpn_invite_list(request):
         invite_settings.save()
     peer_invite_list = PeerInvite.objects.all().order_by('invite_expiration')
     peer_invite_list.filter(invite_expiration__lt=timezone.now()).delete()
+    
+    # Only show configuration buttons to administrators
+    show_config_buttons = UserAcl.objects.filter(user=request.user).filter(user_level__gte=50).exists()
+    
     data = {
         'page_title': _('VPN Invite'),
         'peer_invite_list': peer_invite_list,
+        'show_config_buttons': show_config_buttons,
     }
 
     return render(request, 'vpn_invite/invite_settings.html', context=data)

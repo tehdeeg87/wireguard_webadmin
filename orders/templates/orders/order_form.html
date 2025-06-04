@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/static/AdminLTE-3.2.0/dist/css/adminlte.min.css">
+    <!-- Stripe Buy Button -->
+    <script async src="https://js.stripe.com/v3/buy-button.js"></script>
     <style>
         body {
             background: #f4f6f9;
@@ -61,6 +63,11 @@
             border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
         }
+        .stripe-button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -73,10 +80,10 @@
             <div class="instructions">
                 <h2>{% trans "How to Order Your VPN Instance" %}</h2>
                 <ol>
-                    <li>{% trans "Enter your email address - this will be used as your login username" %}</li>
-                    <li>{% trans "Specify the number of users you need (minimum 5, maximum 254)" %}</li>
-                    <li>{% trans "Click 'Create Instance' to submit your order" %}</li>
-                    <li>{% trans "You will be automatically logged in with the password 'password'" %}</li>
+                    <li>{% trans "Click the 'Buy' button below to purchase your VPN instance" %}</li>
+                    <li>{% trans "Complete the payment process with Stripe" %}</li>
+                    <li>{% trans "Your VPN instance will be automatically created after successful payment" %}</li>
+                    <li>{% trans "You will receive login credentials via email" %}</li>
                     <li>{% trans "For security, please change your password after first login" %}</li>
                 </ol>
             </div>
@@ -96,28 +103,29 @@
                                 {% endfor %}
                             {% endif %}
                             
-                            <form method="post">
-                                {% csrf_token %}
-                                {% for field in form %}
-                                    <div class="mb-3">
-                                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                        {{ field.errors }}
-                                        {{ field }}
-                                        {% if field.help_text %}
-                                            <div class="form-text">{{ field.help_text }}</div>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">{% trans "Create Instance" %}</button>
+                            <div class="stripe-button-container">
+                                <div class="d-flex justify-content-center gap-3">
+                                    <stripe-buy-button
+                                        buy-button-id="buy_btn_1RVyM1H47SHzWcBm2OGvfGLb"
+                                        publishable-key="pk_test_51NqKRMH47SHzWcBmlpUvS5C95AXEcrbyjWSxnlBkkEoutotxBBSCUS93dIFyhcC6BmF7SZucSZ3q4G27NF8227ap00eZ5huioH"
+                                    >
+                                    </stripe-buy-button>
+                                    <stripe-buy-button
+                                        buy-button-id="buy_btn_1RW179H47SHzWcBmGriI0DDr"
+                                        publishable-key="pk_test_51NqKRMH47SHzWcBmlpUvS5C95AXEcrbyjWSxnlBkkEoutotxBBSCUS93dIFyhcC6BmF7SZucSZ3q4G27NF8227ap00eZ5huioH"
+                                    >
+                                    </stripe-buy-button>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+
 
     <!-- jQuery -->
     <script src="/static/AdminLTE-3.2.0/plugins/jquery/jquery.min.js"></script>

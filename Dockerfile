@@ -43,6 +43,6 @@ RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh
 
 ARG SERVER_ADDRESS
 ARG DEBUG_MODE
-
+RUN ls -l /app
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/init.sh"]

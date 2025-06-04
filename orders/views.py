@@ -1,109 +1,202 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from datetime import timedelta
 from api.views import webhook_create_instance
-from django.http import JsonResponse
-from django.http import HttpRequest
+from django.http import JsonResponse, HttpRequest
 from django.contrib.auth.models import User
 from user_manager.models import UserAcl
 from wireguard.models import WireGuardInstance, PeerGroup
+from .models import PaymentToken
 import json
 import logging
 import traceback
 from django.contrib.auth import authenticate
+import uuid
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
 from .forms import OrderForm
 
 def order_form(request):
-    if request.method == 'POST':
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            user_count = form.cleaned_data['user_count']
+    return render(request, 'orders/order_form.html')
+
+@csrf_exempt
+def process_payment_success(request):
+    """
+    Handle the payment success webhook from n8n
+    Creates a unique token and returns the configuration URL
+    """
+    try:
+        # Verify API key
+        api_key = request.headers.get('X-API-Key')
+        expected_api_key = getattr(settings, 'N8N_API_KEY', 'test-api-key-123')  # Use default if setting not found
+        
+        if not api_key or api_key != expected_api_key:
+            logger.warning(f"Invalid or missing API key from IP: {request.META.get('REMOTE_ADDR')}")
+            raise PermissionDenied("Invalid API key")
+
+        # Get the JSON payload from n8n
+        payload = json.loads(request.body)
+        
+        # Extract required information
+        customer_email = payload.get('account')  # Changed from 'email' to 'account'
+        user_count = payload.get('user_count', '1')  # Get user_count from payload
+        
+        if not customer_email:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No customer email provided'
+            }, status=400)
             
-            logger.info(f"Processing order for email: {email} with user_count: {user_count}")
+        # Create a payment token
+        token = PaymentToken.objects.create(
+            email=customer_email,
+            expires_at=timezone.now() + timedelta(days=7)  # Token expires in 7 days
+        )
+        
+        # Generate configuration URL
+        configuration_url = f"https://{request.get_host()}/orders/configure/{token.token}/"
             
-            # Check if user already exists
-            username = email  # Use full email as username
-            if User.objects.filter(username=username).exists():
-                logger.error(f"User with username {username} already exists")
-                messages.error(request, _('A user with this email already exists. Please use a different email address.'))
-                return render(request, 'orders/order_form.html', {'form': form})
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Token created successfully',
+            'token': str(token.token),
+            'configuration_url': configuration_url,
+            'user_count': user_count
+        })
+            
+    except PermissionDenied as e:
+        logger.error(f"Permission denied: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Permission denied'
+        }, status=403)
+    except Exception as e:
+        logger.error(f"Error processing payment success: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+def configure_instance(request, token):
+    """
+    Handle the configuration form for a new VPN instance
+    """
+    try:
+        # Get the payment token
+        payment_token = PaymentToken.objects.get(token=token)
+        
+        # Check if token is valid
+        if payment_token.is_used:
+            messages.error(request, _('This configuration link has already been used.'))
+            return redirect('order_form')
+            
+        if timezone.now() > payment_token.expires_at:
+            messages.error(request, _('This configuration link has expired.'))
+            return redirect('order_form')
+            
+        if request.method == 'POST':
+            # Get form data
+            country = request.POST.get('country')
+            user_count = int(request.POST.get('user_count', 1))
             
             # Create a new request with the required parameters
             webhook_request = HttpRequest()
             webhook_request.method = 'GET'
             webhook_request.GET = {
-                'email': email,
+                'email': payment_token.email,
                 'user_count': str(user_count)
             }
             
-            # Call the webhook function directly
-            try:
-                response = webhook_create_instance(webhook_request)
-                logger.info(f"Webhook response: {response.content}")
-                
-                if isinstance(response, JsonResponse):
-                    try:
-                        data = json.loads(response.content)
-                        if data.get('status') == 'success':
+            # Call the instance creation function
+            response = webhook_create_instance(webhook_request)
+            
+            if isinstance(response, JsonResponse):
+                try:
+                    data = json.loads(response.content)
+                    if data.get('status') == 'success':
+                        # Create user account
+                        username = payment_token.email
+                        if not User.objects.filter(username=username).exists():
+                            user = User.objects.create_user(
+                                username=username,
+                                email=payment_token.email,
+                                password=str(uuid.uuid4())
+                            )
+                            
+                            # Get the WireGuard instance that was just created
+                            instance = WireGuardInstance.objects.latest('created')
+                            
+                            # Create a peer group for this instance
+                            peer_group_name = f"{username}_group"
+                            peer_group = PeerGroup.objects.create(name=peer_group_name)
+                            peer_group.server_instance.add(instance)
+                            
+                            # Create UserAcl with peer manager level
+                            user_acl = UserAcl.objects.create(
+                                user=user,
+                                user_level=30,
+                                enable_reload=False,
+                                enable_restart=False,
+                                enable_console=True
+                            )
+                            user_acl.peer_groups.add(peer_group)
+                            
+                            # Mark token as used
+                            payment_token.is_used = True
+                            payment_token.country = country
+                            payment_token.user_count = user_count
+                            payment_token.save()
+                            
+                            # Send welcome email
                             try:
-                                # Create user with the email
-                                logger.info(f"Attempting to create user with username: {username} and email: {email}")
-                                user = User.objects.create_user(
-                                    username=username,  # Use full email as username
-                                    email=email,
-                                    password='password'  # Set password directly in create_user
+                                from wgwadmlibrary.tools import send_email
+                                send_email(
+                                    payment_token.email,
+                                    'Your WireGuard VPN Instance is Ready',
+                                    f'''Your WireGuard VPN instance has been created successfully!
+
+Login Information:
+Username: {username}
+Password: {user.password}
+
+Please change your password after first login.
+
+Your VPN instance details:
+Instance ID: {instance.instance_id}
+Hostname: {instance.hostname}
+Port: {instance.listen_port}
+
+Thank you for choosing our service!'''
                                 )
-                                logger.info(f"User created successfully: {user.username}")
-                                
-                                # Get the WireGuard instance that was just created
-                                instance = WireGuardInstance.objects.latest('created')
-                                logger.info(f"Found WireGuard instance: {instance}")
-                                
-                                # Create a peer group for this instance
-                                peer_group_name = f"{username}_group"
-                                peer_group = PeerGroup.objects.create(name=peer_group_name)
-                                peer_group.server_instance.add(instance)
-                                logger.info(f"Created peer group: {peer_group}")
-                                
-                                # Create UserAcl with peer manager level and link to peer group
-                                logger.info(f"Attempting to create UserAcl for user: {user.username}")
-                                user_acl = UserAcl.objects.create(
-                                    user=user,
-                                    user_level=30,  # Peer manager level
-                                    enable_reload=False,
-                                    enable_restart=False,
-                                    enable_console=True  # Enable console access
-                                )
-                                user_acl.peer_groups.add(peer_group)
-                                logger.info(f"UserAcl created successfully for user: {user.username}")
-                                
-                                messages.success(request, _('WireGuard instance created successfully! Please login with your email username and password "password".'))
-                                return redirect('login')
                             except Exception as e:
-                                error_details = traceback.format_exc()
-                                logger.error(f"Error creating user or UserAcl: {str(e)}\nTraceback:\n{error_details}")
-                                messages.error(request, _('Error creating user account. Please contact support.'))
+                                logger.error(f"Error sending welcome email: {str(e)}")
+                            
+                            messages.success(request, _('VPN instance created successfully! Please check your email for login details.'))
+                            return redirect('login')
                         else:
-                            error_msg = data.get('message', _('An error occurred while creating the instance.'))
-                            logger.error(f"Webhook returned error: {error_msg}")
-                            messages.error(request, error_msg)
-                    except json.JSONDecodeError as e:
-                        logger.error(f"JSON decode error: {str(e)}")
-                        messages.error(request, _('Invalid response from server.'))
-                else:
-                    logger.error(f"Unexpected response type: {type(response)}")
-                    messages.error(request, _('An unexpected error occurred.'))
-            except Exception as e:
-                logger.error(f"Error calling webhook: {str(e)}")
-                messages.error(request, _('Error processing your request. Please try again.'))
-    else:
-        form = OrderForm()
-    
-    return render(request, 'orders/order_form.html', {'form': form})
+                            messages.error(request, _('A user with this email already exists.'))
+                    else:
+                        messages.error(request, data.get('message', _('Error creating instance')))
+                except json.JSONDecodeError:
+                    messages.error(request, _('Invalid response from server'))
+            else:
+                messages.error(request, _('Unexpected error occurred'))
+                
+        return render(request, 'orders/configure_instance.html', {'token': token})
+        
+    except PaymentToken.DoesNotExist:
+        messages.error(request, _('Invalid configuration link.'))
+        return redirect('order_form')
+    except Exception as e:
+        logger.error(f"Error configuring instance: {str(e)}")
+        messages.error(request, _('An error occurred while processing your request.'))
+        return redirect('order_form')
 
 def order_success(request):
     return render(request, 'orders/order_success.html')
