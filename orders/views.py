@@ -56,7 +56,8 @@ def process_payment_success(request):
         # Create a payment token
         token = PaymentToken.objects.create(
             email=customer_email,
-            expires_at=timezone.now() + timedelta(days=7)  # Token expires in 7 days
+            expires_at=timezone.now() + timedelta(days=7),  # Token expires in 7 days
+            user_count=user_count  # Store the user_count in the token
         )
         
         # Generate configuration URL
@@ -94,23 +95,22 @@ def configure_instance(request, token):
         # Check if token is valid
         if payment_token.is_used:
             messages.error(request, _('This configuration link has already been used.'))
-            return redirect('order_form')
+            return redirect('orders:order_form')
             
         if timezone.now() > payment_token.expires_at:
             messages.error(request, _('This configuration link has expired.'))
-            return redirect('order_form')
+            return redirect('orders:order_form')
             
         if request.method == 'POST':
             # Get form data
             country = request.POST.get('country')
-            user_count = int(request.POST.get('user_count', 1))
             
             # Create a new request with the required parameters
             webhook_request = HttpRequest()
             webhook_request.method = 'GET'
             webhook_request.GET = {
                 'email': payment_token.email,
-                'user_count': str(user_count)
+                'user_count': str(payment_token.user_count)  # Use the stored user_count
             }
             
             # Call the instance creation function
@@ -150,7 +150,6 @@ def configure_instance(request, token):
                             # Mark token as used
                             payment_token.is_used = True
                             payment_token.country = country
-                            payment_token.user_count = user_count
                             payment_token.save()
                             
                             # Send welcome email
@@ -188,15 +187,19 @@ Thank you for choosing our service!'''
             else:
                 messages.error(request, _('Unexpected error occurred'))
                 
-        return render(request, 'orders/configure_instance.html', {'token': token})
+        # Pass the user_count to the template
+        return render(request, 'orders/configure_instance.html', {
+            'token': token,
+            'user_count': payment_token.user_count
+        })
         
     except PaymentToken.DoesNotExist:
         messages.error(request, _('Invalid configuration link.'))
-        return redirect('order_form')
+        return redirect('orders:order_form')
     except Exception as e:
         logger.error(f"Error configuring instance: {str(e)}")
         messages.error(request, _('An error occurred while processing your request.'))
-        return redirect('order_form')
+        return redirect('orders:order_form')
 
 def order_success(request):
     return render(request, 'orders/order_success.html')

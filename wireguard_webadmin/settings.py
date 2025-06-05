@@ -152,3 +152,7 @@ WIREGUARD_WEBADMIN_VERSION = 9966
 
 # n8n API Key for webhook authentication
 N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
+CSRF_TRUSTED_ORIGINS = [
+       'https://vpn.portbro.com',
+       'http://vpn.portbro.com',  # Include HTTP if you're using it
+   ]
