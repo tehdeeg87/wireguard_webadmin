@@ -53,11 +53,15 @@ def process_payment_success(request):
                 'message': 'No customer email provided'
             }, status=400)
             
+        # Generate a password that will be used when creating the user
+        generated_password = str(uuid.uuid4())
+            
         # Create a payment token
         token = PaymentToken.objects.create(
             email=customer_email,
             expires_at=timezone.now() + timedelta(days=7),  # Token expires in 7 days
-            user_count=user_count  # Store the user_count in the token
+            user_count=user_count,  # Store the user_count in the token
+            password=generated_password  # Store the password in the token
         )
         
         # Generate configuration URL
@@ -68,7 +72,8 @@ def process_payment_success(request):
             'message': 'Token created successfully',
             'token': str(token.token),
             'configuration_url': configuration_url,
-            'user_count': user_count
+            'user_count': user_count,
+            'password': generated_password  # Include the password in the response
         })
             
     except PermissionDenied as e:
@@ -126,7 +131,7 @@ def configure_instance(request, token):
                             user = User.objects.create_user(
                                 username=username,
                                 email=payment_token.email,
-                                password=str(uuid.uuid4())
+                                password=payment_token.password  # Use the stored password
                             )
                             
                             # Get the WireGuard instance that was just created
@@ -151,30 +156,6 @@ def configure_instance(request, token):
                             payment_token.is_used = True
                             payment_token.country = country
                             payment_token.save()
-                            
-                            # Send welcome email
-                            try:
-                                from wgwadmlibrary.tools import send_email
-                                send_email(
-                                    payment_token.email,
-                                    'Your WireGuard VPN Instance is Ready',
-                                    f'''Your WireGuard VPN instance has been created successfully!
-
-Login Information:
-Username: {username}
-Password: {user.password}
-
-Please change your password after first login.
-
-Your VPN instance details:
-Instance ID: {instance.instance_id}
-Hostname: {instance.hostname}
-Port: {instance.listen_port}
-
-Thank you for choosing our service!'''
-                                )
-                            except Exception as e:
-                                logger.error(f"Error sending welcome email: {str(e)}")
                             
                             messages.success(request, _('VPN instance created successfully! Please check your email for login details.'))
                             return redirect('login')
