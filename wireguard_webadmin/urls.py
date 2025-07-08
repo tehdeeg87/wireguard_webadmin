@@ -38,11 +38,11 @@ from wireguard_peer.views import view_manage_ip_address, view_wireguard_peer_lis
 from wireguard_tools.views import download_config_or_qrcode, export_wireguard_configs, restart_wireguard_interfaces
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    
     path('orders/', include('orders.urls')),
     path('', view_apply_db_patches, name='apply_db_patches'),
     path('status/', view_wireguard_status, name='wireguard_status'),
-    path('dns/', view_static_host_list, name='static_host_list'),
+    path('dns/', view_static_host_list, name='static_host_list'),    
     path('dns/apply_config/', view_apply_dns_config, name='apply_dns_config'),
     path('dns/manage_static_host/', view_manage_static_host, name='manage_static_host'),
     path('dns/manage_settings/', view_manage_dns_settings, name='manage_dns_settings'),
@@ -90,5 +90,6 @@ urlpatterns = [
     path('invite/', view_public_vpn_invite, name='public_vpn_invite'),
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
+    path('admin/', admin.site.urls),
     
 ]
