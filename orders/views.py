@@ -146,8 +146,8 @@ def configure_instance(request, token):
                             user_acl = UserAcl.objects.create(
                                 user=user,
                                 user_level=30,
-                                enable_reload=False,
-                                enable_restart=False,
+                                enable_reload=True,
+                                enable_restart=True,
                                 enable_console=True
                             )
                             user_acl.peer_groups.add(peer_group)
