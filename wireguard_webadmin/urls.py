@@ -90,6 +90,6 @@ urlpatterns = [
     path('invite/', view_public_vpn_invite, name='public_vpn_invite'),
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
-    path('admin/', admin.site.urls),
+    path('admin_panel/', admin.site.urls),
     
 ]
