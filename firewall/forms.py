@@ -175,9 +175,9 @@ class FirewallRuleForm(forms.ModelForm):
 
 class FirewallSettingsForm(forms.ModelForm):
     interface_choices = []
-     for interface in list_network_interfaces():
-         if not interface.startswith('wg') and interface != 'lo':
-             interface_choices.append((interface, interface))
+    for interface in list_network_interfaces():
+        if not interface.startswith('wg') and interface != 'lo':
+            interface_choices.append((interface, interface))
 
     default_forward_policy = forms.ChoiceField(label=_('Default Forward Policy'), choices=[('accept', _('ACCEPT')), ('reject', _('REJECT')), ('drop', _('DROP'))], initial='accept')
     allow_peer_to_peer = forms.BooleanField(label=_('Allow Peer to Peer'), required=False)
