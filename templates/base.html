@@ -260,14 +260,6 @@
                         </p>
                         <p>
                             <a
-                                    {% if user_acl.enable_restart %}
-                                    href="/tools/export_wireguard_config/?action=update_and_restart" class="btn btn-secondary"
-                                    {% else %}
-                                    href="#" class="btn btn-secondary disabled"
-                                    {% endif %}
-                            >{% trans 'Update and restart service' %}</a>
-
-                            <a
                                     {% if user_acl.enable_reload %}
                                     href="/tools/export_wireguard_config/?action=update_and_reload" class="btn btn-secondary"
                                     {% else %}

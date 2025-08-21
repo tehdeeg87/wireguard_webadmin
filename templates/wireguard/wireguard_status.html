@@ -7,6 +7,7 @@
 <div class="card card-primary card-outline">
     <div class="card-header">
         <a href='/tools/export_wireguard_config/' class='btn btn-outline-primary'>{% trans 'Update Configuration' %}</a>
+        {% if user_acl.user_level == 50 %}
         <a
                 {% if user_acl.enable_restart %}
                 href='/tools/restart_wireguard/' class='btn btn-outline-primary'
@@ -14,7 +15,7 @@
                 href='#' class='btn btn-outline-primary disabled'
                 {% endif %}
         >{% trans 'Restart Wireguard service' %}</a>
-
+        {% endif %}
         <a
                 {% if user_acl.enable_reload %}
                 href='/tools/restart_wireguard/?mode=reload' class='btn btn-outline-primary'

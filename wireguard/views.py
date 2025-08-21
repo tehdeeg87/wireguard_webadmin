@@ -108,7 +108,7 @@ def view_wireguard_status(request):
     if user_acl.enable_enhanced_filter:
         pass
 
-    context = {'page_title': page_title, 'wireguard_instances': wireguard_instances}
+    context = {'page_title': page_title, 'wireguard_instances': wireguard_instances, 'user_acl': user_acl}
     return render(request, 'wireguard/wireguard_status.html', context)
 
 
