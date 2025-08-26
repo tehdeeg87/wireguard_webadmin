@@ -193,6 +193,9 @@ def view_wireguard_peer_manage(request):
         }
     return render(request, 'wireguard/wireguard_manage_peer.html', context)
 
+@login_required
+def view_mg_acct(request):
+    return redirect('/user/manage/?user=' + str(request.user.id))
 
 def view_manage_ip_address(request):
     if not UserAcl.objects.filter(user=request.user).filter(user_level__gte=30).exists():

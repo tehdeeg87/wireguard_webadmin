@@ -1,5 +1,5 @@
 from django.contrib import admin
-from user_manager.models import UserAcl
+from user_manager.models import UserAcl, cancelURL
 
 
 class UserAclAdmin(admin.ModelAdmin):
@@ -7,3 +7,4 @@ class UserAclAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'user__email')
 
 admin.site.register(UserAcl, UserAclAdmin)
+admin.site.register(cancelURL)

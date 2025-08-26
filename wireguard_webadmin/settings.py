@@ -44,7 +44,9 @@ INSTALLED_APPS = [
     'wireguard',
     'user_manager',
     'wireguard_tools',
+    'accounts',
     'firewall',
+    'wireguard_peer',
     'orders',
     'dns',
     'vpn_invite'
@@ -138,10 +140,12 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-STATIC_URL = 'static/'
-STATIC_ROOT = '/app_static_files/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# This is where you keep your source static files (images, CSS, JS, etc.)
 STATICFILES_DIRS = [
-    BASE_DIR / "static_files",
+    BASE_DIR / "static",
 ]
 
 # Default primary key field type

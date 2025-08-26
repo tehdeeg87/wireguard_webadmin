@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 {% load i18n %}
+{%load static%}
 {% get_current_language as CURRENT_LANGUAGE %}
 <html lang="{{ CURRENT_LANGUAGE }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if page_title %}{{page_title}} | {% endif %}wireguard-webadmin</title>
+    <title>{% if page_title %}{{page_title}} | {% endif %}PortBro VPN</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -95,9 +96,7 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
         <a href="/" class="brand-link">
-
-            <span class="brand-text font-weight-light">PortBro VPN</span>
-
+            <span class="brand-text font-weight-light"> PortBro VPN Manager</span>
         </a>
 
         <!-- Sidebar -->
@@ -180,8 +179,20 @@
                             </p>
                         </a>
                     </li>
-                    {% endif %}
 
+                    
+
+                    {% endif %}
+                        
+                    <li class="nav-item">
+                        <a href="/accounts/mgacct/?uuid={{ user_acl.uuid }}" class="nav-link {% if '/status/' in request.path %}active{% endif %}">
+                            <i class="fas fa-user nav-icon"></i>
+                            <p>
+                                {% trans 'Account' %}
+                            </p>
+                        </a>
+                    </li>
+                    
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->
@@ -278,7 +289,7 @@
     </div>
     <!-- /.content-wrapper -->
     <footer class="main-footer">
-        {% if webadmin_version.update_available %}<a class='btn btn-sm btn-danger' id="btn_update_changelog">{% trans 'Update Available' %}</a>{% else %}wireguard-webadmin {% endif %}
+        {% if webadmin_version.update_available %}<a class='btn btn-sm btn-danger' id="btn_update_changelog">{% trans 'Update Available' %}</a>{% else %}PortBro VPN {% endif %}
         <div class="float-right d-none d-sm-inline-block">
             <b>{% trans 'Version' %}</b> {{ webadmin_version.current_version }}
         </div>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="card card-primary card-outline mb-4">
+    <label class="label">Change Account Password</label>
+    <div class="card-body">
+       
+        <form method="post" action="{% url 'reset_user_password' %}?uuid={{ uuid }}">
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div class="form-group">
+            
+                <p class="form-control-plaintext text-center">{{ username }}</p>
+            </div>
+
+            <!-- Password 1 -->
+            <div class="form-group">
+                {{ form.password1.label }} <!-- Display label from the form -->
+                {{ form.password1 }} <!-- Display field -->
+                {% for error in form.password1.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Password 2 -->
+            <div class="form-group">
+                {{ form.password2.label }} <!-- Display label from the form -->
+                {{ form.password2 }} <!-- Display field -->
+                {% for error in form.password2.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-block">{% trans "Submit" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Spacer -->
+<div style="height: 32px;"></div>
+
+<!-- Stripe billing portal in an iframe -->
+<div class="card card-primary card-outline mb-4">
+<label class="label">Cancel Your Subscription</label>
+    <div class="card-body text-center">
+    <a href="{{cancel}}" target="_blank" rel="noopener noreferrer">
+      <button type="button" class="btn btn-danger">{% trans "Cancel Subscription" %}</button>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

@@ -193,7 +193,7 @@
                         <a href="#" class="btn btn-info" id="qrcodeButton"><i class="fas fa-qrcode"></i> {% trans 'QR Code' %}</a>
                         <a href="#" class="btn btn-info" id="inviteButton"><i class="fas fa-share"></i> {% trans 'VPN Invite' %}</a>
                          <a href="#" class="btn btn-outline-primary" id="generatenxs"
-   onclick="showNxsAlertAndDownload();"><i class="far fa-file"></i> {% trans '.NXS File' %}</a>
+   onclick="showNxsAlertAndDownload();"><i class="fas fa-tv"></i> {% trans 'NoMachine File' %}</a>
                         <a href="#" class="btn btn-outline-primary" id="editPeerButton"><i class="far fa-edit"></i> {% trans 'Edit' %}</a>
                                                
                     </div>
@@ -842,7 +842,7 @@ function showNxsAlertAndDownload() {
     alert(
         'NoMachine .NXS file will be generated!\n\n' +
         'Peer Name: ' + peerName + '\n' +
-        'Allowed IPs: ' + peerAllowedIps
+        'Wireguard IP Address: ' + peerAllowedIps
     );
 
     var nxsContent = `<!DOCTYPE NXClientSettings>
@@ -893,7 +893,7 @@ function showNxsAlertAndDownload() {
   <option key="Disable SHM" value="false" />
   <option key="Disable emulate shared pixmaps" value="false" />
   <option key="Use render" value="true" />
-  <option key="Try to wake up server when it is powered off" value="false" />
+  <option key="Try to wake up server when it is powered off" value="true />
   <option key="Last connection time" value="1755813302" />
   <option key="Link quality" value="5" />
   <option key="Platform of the last connection" value="" />

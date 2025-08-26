@@ -3,7 +3,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-
+from django import forms
+from django.contrib.auth.password_validation import validate_password
 
 class CreateUserForm(forms.Form):
     username = forms.CharField(label='Username')
@@ -47,4 +48,23 @@ class LoginForm(forms.Form):
                 self.add_error(None, ValidationError("Invalid username or password."))
         else:
             self.add_error(None, ValidationError("Both fields are required."))
+        return cleaned_data
+
+class CustomPasswordResetForm(forms.Form):
+    password1 = forms.CharField(widget=forms.PasswordInput, label="New Password")
+    password2 = forms.CharField(widget=forms.PasswordInput, label="Confirm Password")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError("Passwords do not match.")
+            try:
+                validate_password(password1)
+            except forms.ValidationError as e:
+                self.add_error("password1", e)
+
         return cleaned_data

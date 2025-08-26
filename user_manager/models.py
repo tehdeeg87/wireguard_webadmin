@@ -35,3 +35,8 @@ class AuthenticationToken(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     uuid = models.UUIDField(editable=False, default=uuid.uuid4)
+
+class cancelURL(models.Model):
+    url = models.CharField(max_length=255, default="", blank=True)
+    def __str__(self):
+        return self.url
