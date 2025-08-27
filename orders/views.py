@@ -108,7 +108,7 @@ def configure_instance(request, token):
             
         if request.method == 'POST':
             # Get form data
-            country = request.POST.get('country')
+            #country = request.POST.get('country')
             
             # Create a new request with the required parameters
             webhook_request = HttpRequest()

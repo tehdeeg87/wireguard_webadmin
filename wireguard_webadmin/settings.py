@@ -53,12 +53,13 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.google"
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.microsoft"
 ]
 
 SITE_ID= 1
 LOGIN_REDIRECT_URL = "/"
-SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.MySocialAccountAdapter"
 MIDDLEWARE = [
     
@@ -80,7 +81,10 @@ ROOT_URLCONF = 'wireguard_webadmin.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',  # existing
+            BASE_DIR / 'accounts' / 'templates',  # add this line
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
