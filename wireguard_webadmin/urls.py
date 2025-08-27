@@ -40,7 +40,7 @@ from wireguard_tools.views import download_config_or_qrcode, export_wireguard_co
 urlpatterns = [
     
     path('orders/', include('orders.urls')),
-    
+    path('sso_account/', include('allauth.urls')),
     path('', view_apply_db_patches, name='apply_db_patches'),
     path('status/', view_wireguard_status, name='wireguard_status'),
     path('dns/', view_static_host_list, name='static_host_list'),    

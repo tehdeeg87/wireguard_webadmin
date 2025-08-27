@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
-
+{% load socialaccount %}
 {% block content %}
 <div class="card card-primary card-outline mb-4">
     <label class="label">Change Account Password</label>
@@ -41,9 +41,23 @@
     </div>
 </div>
 
+
 <!-- Spacer -->
 <div style="height: 32px;"></div>
-
+{% if user.is_authenticated %}
+  <p>Connect your Google account to enable SSO (Single Sign On):</p>
+  <a href="{% provider_login_url 'google' %}" class="btn btn-danger">
+    Connect a Google Account
+  </a>
+{% endif %}
+<div style="height: 32px;"></div>
+<form method="post" action="{% url 'socialaccount_connections' %}">
+    {% csrf_token %}
+    <button type="submit" name="disconnect" value="{{ socialaccount.id }}">
+        Disconnect Google Account
+    </button>
+</form>
+<div style="height: 32px;"></div>
 <!-- Stripe billing portal in an iframe -->
 <div class="card card-primary card-outline mb-4">
 <label class="label">Cancel Your Subscription</label>

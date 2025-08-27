@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'vpn.portbro.com']
 # Application definition
 
 INSTALLED_APPS = [
-    
+     'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -49,10 +49,19 @@ INSTALLED_APPS = [
     'wireguard_peer',
     'orders',
     'dns',
-    'vpn_invite'
+    'vpn_invite',
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google"
 ]
 
+SITE_ID= 1
+LOGIN_REDIRECT_URL = "/"
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.MySocialAccountAdapter"
 MIDDLEWARE = [
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -60,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
@@ -161,3 +171,8 @@ CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
        'http://vpn.portbro.com',  # Include HTTP if you're using it
    ]
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # username/password
+    "allauth.account.auth_backends.AuthenticationBackend",  # allauth
+]
