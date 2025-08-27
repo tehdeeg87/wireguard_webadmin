@@ -1,5 +1,5 @@
 # Build stage: install build dependencies and Python packages
-FROM python:3.12-slim AS builder
+FROM python:3.12-bookworm AS builder
 WORKDIR /app
 
 # Install build dependencies required for compiling C extensions
@@ -43,6 +43,6 @@ RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh
 
 ARG SERVER_ADDRESS
 ARG DEBUG_MODE
-RUN ls -l /app
+
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/init.sh"]
