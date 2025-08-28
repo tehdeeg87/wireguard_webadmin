@@ -154,13 +154,13 @@ def configure_instance(request, token):
                             
                             # Mark token as used
                             payment_token.is_used = True
-                            payment_token.country = country
+                            #payment_token.country = country
                             payment_token.save()
                             
                             messages.success(request, _('VPN instance created successfully! Please check your email for login details.'))
                             return redirect('login')
                         else:
-                            messages.error(request, _('A user with this email already exists.'))
+                            messages.error(request, _('A user with this email already exists or this link has already been used'))
                     else:
                         messages.error(request, data.get('message', _('Error creating instance')))
                 except json.JSONDecodeError:
