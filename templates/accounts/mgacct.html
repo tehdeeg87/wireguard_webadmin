@@ -3,22 +3,23 @@
 {% load socialaccount %}
 {% block content %}
 <div class="card card-primary card-outline mb-4">
-    <label class="label">Change Account Password</label>
+    <div class="card-header text-center">
+        <label class="label" style="font-size: 1.3rem; font-weight: bold;">{% trans "Change Account Password" %}</label>
+    </div>
     <div class="card-body">
-       
         <form method="post" action="{% url 'reset_user_password' %}?uuid={{ uuid }}">
             {% csrf_token %}
 
             <!-- Username -->
-            <div class="form-group">
-            
-                <p class="form-control-plaintext text-center">{{ username }}</p>
+            <div class="form-group text-center">
+                <label for="username" style="font-size: 1.1rem; font-weight: 500;">{% trans "Username" %}</label>
+                <p class="form-control-plaintext text-center" style="font-size: 1.7rem; font-weight: bold;">{{ username }}</p>
             </div>
 
             <!-- Password 1 -->
             <div class="form-group">
-                {{ form.password1.label }} <!-- Display label from the form -->
-                {{ form.password1 }} <!-- Display field -->
+                <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                <input type="password" name="{{ form.password1.html_name }}" class="form-control w-100" id="{{ form.password1.id_for_label }}" placeholder="{{ form.password1.label }}">
                 {% for error in form.password1.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -26,8 +27,8 @@
 
             <!-- Password 2 -->
             <div class="form-group">
-                {{ form.password2.label }} <!-- Display label from the form -->
-                {{ form.password2 }} <!-- Display field -->
+                <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                <input type="password" name="{{ form.password2.html_name }}" class="form-control w-100" id="{{ form.password2.id_for_label }}" placeholder="{{ form.password2.label }}">
                 {% for error in form.password2.errors %}
                     <div class="text-danger">{{ error }}</div>
                 {% endfor %}
@@ -40,7 +41,6 @@
         </form>
     </div>
 </div>
-
 
 <!-- Spacer -->
 <div style="height: 32px;"></div>
@@ -58,17 +58,16 @@
     </button>
 </form>
 
-
-
 <div style="height: 32px;"></div>
 <!-- Stripe billing portal in an iframe -->
 <div class="card card-primary card-outline mb-4">
-<label class="label">Cancel Your Subscription</label>
+    <div class="card-header text-center">
+        <label class="label" style="font-size: 1.3rem; font-weight: bold;">{% trans "Cancel Your Subscription" %}</label>
+    </div>
     <div class="card-body text-center">
-    <a href="{{cancel}}" target="_blank" rel="noopener noreferrer">
-      <button type="button" class="btn btn-danger">{% trans "Cancel Subscription" %}</button>
-    </a>
-  </div>
+        <a href="{{cancel}}" target="_blank" rel="noopener noreferrer">
+            <button type="button" class="btn btn-danger">{% trans "Cancel Subscription" %}</button>
+        </a>
+    </div>
 </div>
-
 {% endblock %}

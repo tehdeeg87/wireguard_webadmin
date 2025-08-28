@@ -157,7 +157,7 @@ def configure_instance(request, token):
                             #payment_token.country = country
                             payment_token.save()
                             
-                            messages.success(request, _('VPN instance created successfully! Please check your email for login details.'))
+                            messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
                             return redirect('login')
                         else:
                             messages.error(request, _('A user with this email already exists or this link has already been used'))

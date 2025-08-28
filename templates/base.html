@@ -185,7 +185,7 @@
                     {% endif %}
                         
                     <li class="nav-item">
-                        <a href="/accounts/mgacct/?uuid={{ user_acl.uuid }}" class="nav-link {% if '/status/' in request.path %}active{% endif %}">
+                        <a href="/accounts/mgacct/?uuid={{ user_acl.uuid }}" class="nav-link {% if '/accounts/mgacct/' in request.path %}active{% endif %}">
                             <i class="fas fa-user nav-icon"></i>
                             <p>
                                 {% trans 'Account' %}

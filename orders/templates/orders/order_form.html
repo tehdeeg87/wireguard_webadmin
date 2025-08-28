@@ -25,55 +25,7 @@
 <body>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="text-center mb-0">{% trans "Order Your VPN Instance" %}</h3>
-                    </div>
-                    <div class="card-body">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }}">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <form method="post" action="{% url 'orders:order_form' %}">
-                            {% csrf_token %}
-                            
-                            <div class="form-group">
-                                <label for="email">{% trans "Email Address" %}</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                                <small class="form-text text-muted">
-                                    {% trans "We'll send your configuration details to this email" %}
-                                </small>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="user_count">{% trans "Number of Users" %}</label>
-                                <select class="form-control" id="user_count" name="user_count" required>
-                                    <option value="1">1 {% trans "user" %}</option>
-                                    <option value="5">5 {% trans "users" %}</option>
-                                    <option value="10">10 {% trans "users" %}</option>
-                                    <option value="20">20 {% trans "users" %}</option>
-                                    <option value="50">50 {% trans "users" %}</option>
-                                    <option value="100">100 {% trans "users" %}</option>
-                                </select>
-                                <small class="form-text text-muted">
-                                    {% trans "Select the number of users that will need access to your VPN instance" %}
-                                </small>
-                            </div>
-
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary btn-block w-100">
-                                    {% trans "Proceed to Payment" %}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+           <p> This link has already been used to create a VPN instance. Please check your email for credentials to login.</p>
         </div>
     </div>
 
