@@ -8,16 +8,36 @@
 <body class="bg-light">
 <div class="container" style="max-width:400px; margin-top:80px;">
   <div class="card p-4">
-    <h3 class="text-center mb-4">Sign in via Google</h3>
-    <p>You are about to sign in using a third-party account from Google.</p>
-
-    <form method="post" action="{% url 'socialaccount_signup' %}">
-      {% csrf_token %}
-      <button type="submit" class="btn btn-danger w-100 d-flex justify-content-center align-items-center">
-        <img src="{% static 'icons/google.svg' %}" style="width:20px; margin-right:8px;">
-        Continue with Google
-      </button>
-    </form>
+    {% if account.provider == 'microsoft' %}
+      <h3 class="text-center mb-4">Sign in via Microsoft</h3>
+      <p>You are about to sign in using a third-party account from Microsoft.</p>
+      <form method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+          <img src="{% static 'icons/microsoft.svg' %}" style="width:20px; margin-right:8px;">
+          Continue with Microsoft
+        </button>
+      </form>
+    {% elif account.provider == 'google' %}
+      <h3 class="text-center mb-4">Sign in via Google</h3>
+      <p>You are about to sign in using a third-party account from Google.</p>
+      <form method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger w-100 d-flex justify-content-center align-items-center">
+          <img src="{% static 'icons/google.svg' %}" style="width:20px; margin-right:8px;">
+          Continue with Google
+        </button>
+      </form>
+    {% else %}
+      <h3 class="text-center mb-4">Sign in via {{ account.provider|title }}</h3>
+      <p>You are about to sign in using a third-party account from {{ account.provider|title }}.</p>
+      <form method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+          Continue with {{ account.provider|title }}
+        </button>
+      </form>
+    {% endif %}
   </div>
 </div>
 </body>
