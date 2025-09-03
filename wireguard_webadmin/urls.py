@@ -38,7 +38,7 @@ from wireguard_peer.views import view_manage_ip_address, view_mg_acct,  view_wir
 from wireguard_tools.views import download_config_or_qrcode, export_wireguard_configs, restart_wireguard_interfaces
 
 urlpatterns = [
-    
+    path('admin_panel/', admin.site.urls),
     path('orders/', include('orders.urls')),
     path('sso_account/', include('allauth.urls')),
     path('', view_apply_db_patches, name='apply_db_patches'),
@@ -93,7 +93,7 @@ urlpatterns = [
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
     path('accounts/reset_user_password/', reset_user_password, name='reset_user_password'),    
-    path('admin_panel/', admin.site.urls),
+    
     
     
 ]
