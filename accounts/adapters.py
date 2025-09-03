@@ -12,7 +12,7 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
             if request.user.socialaccount_set.exists():
                 # Block the connection
                 raise ImmediateHttpResponse(HttpResponse(
-                    "You already have a linked Google account.", status=400
+                    "You already have a linked SSO account.", status=400
                 ))
             # Otherwise, allow linking the first one
             sociallogin.connect(request, request.user)

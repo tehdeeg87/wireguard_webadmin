@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'vpn.portbro.com']
 # Application definition
 
 INSTALLED_APPS = [
-     'django.contrib.sites',
+    'django.contrib.sites',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -173,10 +173,15 @@ WIREGUARD_WEBADMIN_VERSION = 9966
 N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
 CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
-       'http://vpn.portbro.com',  # Include HTTP if you're using it
+       #'http://vpn.portbro.com',  # Include HTTP if you're using it
    ]
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",  # username/password
     "allauth.account.auth_backends.AuthenticationBackend",  # allauth
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
