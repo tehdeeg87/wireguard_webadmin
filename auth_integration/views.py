@@ -66,29 +66,71 @@ def jwt_login_view(request):
 
 def redirect_to_portbro_auth(request):
     """
-    Show authentication page with instructions for getting JWT token.
-    Since we're using client credentials flow, users need to get JWT tokens differently.
+    Show authentication page with instructions for getting JWT token from portbro.com.
     """
     return render(request, 'auth_integration/portbro_auth.html', {
-        'portbro_auth_url': 'https://portbro.com/',  # Main portbro.com site
+        'portbro_auth_url': 'https://portbro.com/',
         'vpn_node_url': request.build_absolute_uri('/')
     })
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
 def jwt_callback_view(request):
     """
     Callback view for JWT authentication.
-    This would be called by portbro.com after successful authentication.
+    Handles both GET (from SSO redirect) and POST (from API) requests.
     """
-    try:
-        data = json.loads(request.body)
-        jwt_token = data.get('jwt_token')
-        
+    jwt_token = None
+    
+    if request.method == 'GET':
+        # Handle SSO redirect from portbro.com
+        jwt_token = request.GET.get('token')
         if not jwt_token:
-            return JsonResponse({'error': 'No JWT token provided'}, status=400)
-        
+            # If no token, show the manual token entry form
+            return render(request, 'auth_integration/portbro_auth.html', {
+                'portbro_auth_url': 'https://portbro.com/',
+                'vpn_node_url': request.build_absolute_uri('/')
+            })
+    
+    elif request.method == 'POST':
+        # Handle API callback from portbro.com
+        try:
+            data = json.loads(request.body)
+            
+            # Check if this is the new portbro.com response format
+            if data.get('success') and 'user' in data:
+                # This is the new portbro.com response format
+                user_data = data['user']
+                claims = {
+                    'sub': user_data.get('username'),
+                    'email': user_data.get('email'),
+                    'userlevel': user_data.get('userlevel', 30),
+                    'role': 'basic' if user_data.get('userlevel', 30) < 40 else 'admin'
+                }
+                
+                # Create or get user from claims
+                from .utils.jwt_user import ensure_user_from_jwt
+                user = ensure_user_from_jwt(claims)
+                
+                # Log the user in
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                
+                # Store success message
+                messages.success(request, f'Successfully authenticated as {user.username}!')
+                
+                # Redirect to dashboard
+                redirect_url = data.get('redirect_url', '/')
+                return redirect(redirect_url)
+            
+            # Fallback to old JWT token format
+            jwt_token = data.get('jwt_token')
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    if not jwt_token:
+        return JsonResponse({'error': 'No JWT token provided'}, status=400)
+    
+    try:
         # Validate JWT token
         if not jwt_service.is_token_valid(jwt_token):
             return JsonResponse({'error': 'Invalid JWT token'}, status=401)
@@ -182,25 +224,55 @@ def auth_instructions_view(request):
 def generate_user_token_view(request):
     """
     Generate a JWT token for user authentication.
-    This is a simplified way for users to get tokens.
+    This creates a user-specific token for testing purposes.
     """
     try:
-        # Get a fresh JWT token using the service
-        jwt_token = jwt_service.get_jwt_token(force_refresh=True)
+        # For testing: Create a user-specific JWT token
+        # In production, this would come from portbro.com with user details
         
-        if jwt_token:
-            return JsonResponse({
-                'success': True,
-                'jwt_token': jwt_token,
-                'message': 'JWT token generated successfully',
-                'instructions': 'Use this token to authenticate with the VPN node'
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': 'Failed to generate JWT token',
-                'message': 'Please try again or contact administrator'
-            }, status=500)
+        # Get user info from request (if available) or create test user
+        username = request.GET.get('username', 'test_user')
+        email = request.GET.get('email', f'{username}@portbro.com')
+        role = request.GET.get('role', 'basic')
+        
+        # Create a mock JWT token with user-specific claims
+        import jwt
+        import time
+        
+        # Create user-specific claims
+        claims = {
+            'iss': 'portbro.com',
+            'sub': username,  # This will be the username
+            'aud': 'vpn-nodes',
+            'iat': int(time.time()),
+            'exp': int(time.time()) + 3600,  # 1 hour expiry
+            'scope': 'read',
+            'user_id': username,
+            'username': username,
+            'email': email,
+            'is_active': True,
+            'is_staff': False,
+            'is_superuser': False,
+            'role': role,
+            'client_id': 'yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm',
+            'client_name': 'VPN Testing Client'
+        }
+        
+        # For testing, we'll create a simple JWT token
+        # In production, this would be signed by portbro.com
+        jwt_token = jwt.encode(claims, 'test-secret', algorithm='HS256')
+        
+        return JsonResponse({
+            'success': True,
+            'jwt_token': jwt_token,
+            'message': f'JWT token generated for user: {username}',
+            'instructions': 'Use this token to authenticate with the VPN node',
+            'user_info': {
+                'username': username,
+                'email': email,
+                'role': role
+            }
+        })
             
     except Exception as e:
         logger.error(f"Token generation error: {e}")

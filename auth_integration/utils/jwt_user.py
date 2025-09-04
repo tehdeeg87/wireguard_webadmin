@@ -10,6 +10,7 @@ def ensure_user_from_jwt(claims):
     username = claims.get("sub") or claims.get("username", "unknown_user")
     email = claims.get("email") or f"{username}@portbro.com"  # Handle null email
     role = claims.get("role", "basic")
+    userlevel = claims.get("userlevel")  # Direct userlevel from portbro.com
 
     # Ensure email is not empty or None
     if not email or email.strip() == "":
@@ -19,8 +20,11 @@ def ensure_user_from_jwt(claims):
 
     acl, _ = UserAcl.objects.get_or_create(user=user)
 
-    # Map role → user_level
-    if role == "admin":
+    # Map userlevel or role → user_level
+    if userlevel is not None:
+        # Use direct userlevel from portbro.com
+        acl.user_level = userlevel
+    elif role == "admin":
         acl.user_level = 50
     elif role == "manager":
         acl.user_level = 40
@@ -39,6 +43,8 @@ def ensure_user_from_jwt(claims):
         group.server_instance.add(instance)
         acl.peer_groups.add(group)
     except WireGuardInstance.DoesNotExist:
-        pass  # skip if no instance yet
+        # If no WireGuard instance exists, create a peer group without linking to instance
+        group, _ = PeerGroup.objects.get_or_create(name=f"{username}_group")
+        acl.peer_groups.add(group)
 
     return user
