@@ -59,8 +59,8 @@ INSTALLED_APPS = [
 ]
 
 PARENT_JWKS_URL = "https://portbro.com/o/jwks/"
-PARENT_ISSUER = "https://portbro.com"
-PARENT_AUDIENCE = "vpn-node"
+PARENT_ISSUER = "portbro.com"
+PARENT_AUDIENCE = "vpn-nodes"
 
 # Portbro OAuth2 Configuration
 PORTBRO_CLIENT_ID = "yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm"

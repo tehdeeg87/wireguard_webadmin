@@ -94,18 +94,13 @@ def jwt_callback_view(request):
         
         # Process JWT token from URL parameter
         try:
-            # Validate JWT token
-            if not jwt_service.is_token_valid(jwt_token):
-                messages.error(request, 'Invalid JWT token')
-                return render(request, 'auth_integration/portbro_auth.html', {
-                    'portbro_auth_url': 'https://portbro.com/',
-                    'vpn_node_url': request.build_absolute_uri('/')
-                })
+            # Use the same validation logic as the middleware
+            from .middleware.jwt_auth import JWTAuthenticationMiddleware
+            middleware = JWTAuthenticationMiddleware(None)
+            claims = middleware.validate_jwt(jwt_token)
             
-            # Get token claims
-            claims = jwt_service.validate_and_get_token_info(jwt_token)
             if not claims:
-                messages.error(request, 'Unable to validate JWT token')
+                messages.error(request, 'Invalid JWT token')
                 return render(request, 'auth_integration/portbro_auth.html', {
                     'portbro_auth_url': 'https://portbro.com/',
                     'vpn_node_url': request.build_absolute_uri('/')
