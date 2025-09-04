@@ -1,14 +1,19 @@
 from django.contrib.auth.models import User
-from wireguard.models import UserAcl, PeerGroup, WireGuardInstance
+from user_manager.models import UserAcl
+from wireguard.models import PeerGroup, WireGuardInstance
 
 
 def ensure_user_from_jwt(claims):
     """
     Ensure a Django User + UserAcl exists for the JWT subject.
     """
-    username = claims["sub"]  # unique user ID from portbro.com
-    email = claims.get("email", f"{username}@portbro.com")
+    username = claims.get("sub") or claims.get("username", "unknown_user")
+    email = claims.get("email") or f"{username}@portbro.com"  # Handle null email
     role = claims.get("role", "basic")
+
+    # Ensure email is not empty or None
+    if not email or email.strip() == "":
+        email = f"{username}@portbro.com"
 
     user, _ = User.objects.get_or_create(username=username, defaults={"email": email})
 
@@ -16,11 +21,11 @@ def ensure_user_from_jwt(claims):
 
     # Map role → user_level
     if role == "admin":
-        acl.userlevel = 50
+        acl.user_level = 50
     elif role == "manager":
-        acl.userlevel = 40
+        acl.user_level = 40
     else:
-        acl.userlevel = 30  # peer manager by default
+        acl.user_level = 30  # peer manager by default
 
     acl.enable_reload = True
     acl.enable_restart = True

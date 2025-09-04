@@ -50,8 +50,8 @@ def jwt_login_view(request):
     user = ensure_user_from_jwt(claims)
     
     if user:
-        # Log the user in
-        login(request, user)
+        # Log the user in using the ModelBackend
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, f'Successfully logged in as {user.username}')
         
         # Store JWT token in session for future use
@@ -103,8 +103,8 @@ def jwt_callback_view(request):
         user = ensure_user_from_jwt(claims)
         
         if user:
-            # Log the user in
-            login(request, user)
+            # Log the user in using the ModelBackend
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             
             # Store JWT token in session
             request.session['jwt_token'] = jwt_token
@@ -114,7 +114,7 @@ def jwt_callback_view(request):
                 'user': {
                     'username': user.username,
                     'email': user.email,
-                    'userlevel': user.useracl.userlevel if hasattr(user, 'useracl') else 30
+                    'userlevel': user.useracl.user_level if hasattr(user, 'useracl') else 30
                 },
                 'redirect_url': '/'
             })
@@ -157,7 +157,7 @@ def auth_status_view(request):
             'user': {
                 'username': request.user.username,
                 'email': request.user.email,
-                'userlevel': request.user.useracl.userlevel if hasattr(request.user, 'useracl') else 30
+                'userlevel': request.user.useracl.user_level if hasattr(request.user, 'useracl') else 30
             },
             'jwt_token_valid': token_valid,
             'jwt_token': jwt_token[:20] + '...' if jwt_token else None

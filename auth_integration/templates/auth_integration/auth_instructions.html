@@ -1,20 +1,33 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
 {% load static %}
-
-{% block title %}Authentication Instructions{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-graduation-cap"></i>
-                        VPN Node Authentication Guide
-                    </h3>
-                </div>
-                <div class="card-body">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Authentication Instructions - VPN Console</title>
+    
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'AdminLTE-3.2.0/plugins/fontawesome-free/css/all.min.css' %}">
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="{% static 'AdminLTE-3.2.0/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="{% static 'AdminLTE-3.2.0/dist/css/adminlte.min.css' %}">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box" style="width: 800px;">
+    <div class="login-logo">
+        <a href="/"><b>Portbro VPN Console</b></a>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-graduation-cap"></i>
+                VPN Node Authentication Guide
+            </h3>
+        </div>
+        <div class="card-body">
                     <div class="text-center mb-4">
                         <img src="{% static 'portbro-newest.png' %}" alt="Portbro" class="img-fluid" style="max-height: 100px;">
                     </div>
@@ -150,6 +163,13 @@
     </div>
 </div>
 
+<!-- jQuery -->
+<script src="{% static 'AdminLTE-3.2.0/plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'AdminLTE-3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'AdminLTE-3.2.0/dist/js/adminlte.min.js' %}"></script>
+
 <!-- API Example Modal -->
 <div class="modal fade" id="apiExampleModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -185,4 +205,6 @@ function showApiExample() {
     $('#apiExampleModal').modal('show');
 }
 </script>
-{% endblock %}
+
+</body>
+</html>
