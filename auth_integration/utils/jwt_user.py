@@ -7,7 +7,7 @@ def ensure_user_from_jwt(claims):
     """
     Ensure a Django User + UserAcl exists for the JWT subject.
     """
-    username = claims.get("sub") or claims.get("username", "unknown_user")
+    username = claims.get("username") or claims.get("sub", "unknown_user")
     email = claims.get("email") or f"{username}@portbro.com"  # Handle null email
     role = claims.get("role", "basic")
     userlevel = claims.get("userlevel")  # Direct userlevel from portbro.com
@@ -16,7 +16,12 @@ def ensure_user_from_jwt(claims):
     if not email or email.strip() == "":
         email = f"{username}@portbro.com"
 
-    user, _ = User.objects.get_or_create(username=username, defaults={"email": email})
+    user, created = User.objects.get_or_create(username=username, defaults={"email": email})
+    
+    # Update email if it's different (for existing users)
+    if not created and user.email != email:
+        user.email = email
+        user.save()
 
     acl, _ = UserAcl.objects.get_or_create(user=user)
 

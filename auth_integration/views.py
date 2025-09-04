@@ -91,6 +91,45 @@ def jwt_callback_view(request):
                 'portbro_auth_url': 'https://portbro.com/',
                 'vpn_node_url': request.build_absolute_uri('/')
             })
+        
+        # Process JWT token from URL parameter
+        try:
+            # Validate JWT token
+            if not jwt_service.is_token_valid(jwt_token):
+                messages.error(request, 'Invalid JWT token')
+                return render(request, 'auth_integration/portbro_auth.html', {
+                    'portbro_auth_url': 'https://portbro.com/',
+                    'vpn_node_url': request.build_absolute_uri('/')
+                })
+            
+            # Get token claims
+            claims = jwt_service.validate_and_get_token_info(jwt_token)
+            if not claims:
+                messages.error(request, 'Unable to validate JWT token')
+                return render(request, 'auth_integration/portbro_auth.html', {
+                    'portbro_auth_url': 'https://portbro.com/',
+                    'vpn_node_url': request.build_absolute_uri('/')
+                })
+            
+            # Create or get user from JWT claims
+            from .utils.jwt_user import ensure_user_from_jwt
+            user = ensure_user_from_jwt(claims)
+            
+            # Log the user in
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            
+            # Store success message
+            messages.success(request, f'Successfully authenticated as {user.username}!')
+            
+            # Redirect to status page
+            return redirect('auth_integration:auth_status')
+            
+        except Exception as e:
+            messages.error(request, f'Authentication error: {str(e)}')
+            return render(request, 'auth_integration/portbro_auth.html', {
+                'portbro_auth_url': 'https://portbro.com/',
+                'vpn_node_url': request.build_absolute_uri('/')
+            })
     
     elif request.method == 'POST':
         # Handle API callback from portbro.com
