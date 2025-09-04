@@ -116,8 +116,8 @@ def jwt_callback_view(request):
             # Store success message
             messages.success(request, f'Successfully authenticated as {user.username}!')
             
-            # Redirect to status page
-            return redirect('auth_integration:auth_status')
+            # Redirect to main status page
+            return redirect('wireguard_status')
             
         except Exception as e:
             messages.error(request, f'Authentication error: {str(e)}')

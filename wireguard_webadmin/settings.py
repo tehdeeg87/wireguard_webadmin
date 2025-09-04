@@ -79,7 +79,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
-    "auth_integration.middleware.JWTAuthenticationMiddleware",
+    "auth_integration.middleware.jwt_auth.JWTAuthenticationMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',    
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -194,8 +194,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # allauth
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+#CSRF_COOKIE_SECURE = True
+#ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
