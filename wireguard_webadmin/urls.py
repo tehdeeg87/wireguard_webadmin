@@ -92,8 +92,8 @@ urlpatterns = [
     path('invite/', view_public_vpn_invite, name='public_vpn_invite'),
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
-    path('accounts/reset_user_password/', reset_user_password, name='reset_user_password'),    
+    path('accounts/reset_user_password/', reset_user_password, name='reset_user_password'),
     
-    
-    
+    # Auth integration URLs
+    path('auth/', include('auth_integration.urls')),
 ]

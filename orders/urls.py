@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from products.views import jwks_view
 app_name = 'orders'
 
 urlpatterns = [
@@ -8,7 +7,7 @@ urlpatterns = [
     path('processpaymentsuccess', views.process_payment_success, name='process_payment_success'),
     path('configure/<uuid:token>/', views.configure_instance, name='configure_instance'),
     path('success/', views.order_success, name='order_success'),
-    path("o/jwks/", jwks_view, name="jwks"),
+   
     
 
 ] 

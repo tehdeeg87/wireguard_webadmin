@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Authenticate with Portbro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-shield-alt"></i>
+                        VPN Node Authentication
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{% static 'portbro-newest.png' %}" alt="Portbro" class="img-fluid" style="max-height: 100px;">
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Authentication Required</h5>
+                        <p>To access this VPN node, you need to authenticate through Portbro.com.</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5><i class="fas fa-user-check"></i> Step 1</h5>
+                                    <p>Visit Portbro.com to get your JWT token</p>
+                                    <a href="{{ portbro_auth_url }}" 
+                                       class="btn btn-primary btn-lg" 
+                                       target="_blank">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Visit Portbro.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5><i class="fas fa-key"></i> Step 2</h5>
+                                    <p>Enter your JWT token below to authenticate</p>
+                                    <button class="btn btn-success btn-lg" onclick="showTokenForm()">
+                                        <i class="fas fa-key"></i>
+                                        Enter JWT Token
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div id="tokenForm" class="alert alert-warning" style="display: none;">
+                        <h6><i class="fas fa-key"></i> Enter JWT Token</h6>
+                        <p>Paste your JWT token from Portbro.com below:</p>
+                        <form method="get" action="{% url 'auth_integration:jwt_login' %}">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="token" 
+                                       class="form-control" 
+                                       placeholder="eyJhbGciOiJSUzI1NiIs..."
+                                       required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="submit">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        Authenticate
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> How to Get JWT Token</h6>
+                        <p>To get your JWT token, you can:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-info btn-block" onclick="generateToken()">
+                                    <i class="fas fa-magic"></i>
+                                    Generate Token Automatically
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-info btn-block" onclick="showTokenForm()">
+                                    <i class="fas fa-key"></i>
+                                    Enter Token Manually
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-lock"></i>
+                            Your authentication is secure and encrypted
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTokenForm() {
+    document.getElementById('tokenForm').style.display = 'block';
+    document.querySelector('input[name="token"]').focus();
+}
+
+function generateToken() {
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    button.disabled = true;
+    
+    // Generate JWT token
+    fetch('{% url "auth_integration:generate_token" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Auto-fill the token form and show it
+                document.querySelector('input[name="token"]').value = data.jwt_token;
+                document.getElementById('tokenForm').style.display = 'block';
+                
+                // Show success message
+                alert('JWT token generated successfully! You can now authenticate.');
+            } else {
+                alert('Error generating token: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error generating token:', error);
+            alert('Error generating token. Please try again.');
+        })
+        .finally(() => {
+            // Reset button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+}
+
+function checkAuthStatus() {
+    // Check if user is authenticated
+    fetch('{% url "auth_integration:auth_status" %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.authenticated) {
+                window.location.href = '/';
+            } else {
+                console.log('User not authenticated');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking auth status:', error);
+        });
+}
+
+// Auto-check authentication status every 10 seconds
+setInterval(checkAuthStatus, 10000);
+</script>
+{% endblock %}

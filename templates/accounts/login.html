@@ -1,6 +1,5 @@
 {% extends "base_login.html" %}
 {% load i18n %}
-{% load socialaccount %}
 {% block content %}
     <div class="register-box">
         <div class="register-logo">
@@ -40,11 +39,13 @@
                 </form>
 
                 <hr>
- <a href="{% provider_login_url 'microsoft' %}" class="btn btn-primary btn-block mt-2">
-                  <i class="fab fa-microsoft"></i> Sign in with Microsoft
-                </a>
-                <a href="{% provider_login_url 'google' %}" class="btn btn-danger btn-block mt-2">
-                  <i class="fab fa-google"></i> Sign in with Google
+                
+                <!-- Portbro Authentication -->
+                <div class="alert alert-info mb-3">
+                    <small><i class="fas fa-info-circle"></i> <strong>Recommended:</strong> Use Portbro authentication for seamless access</small>
+                </div>
+                <a href="{% url 'auth_integration:jwt_login' %}" class="btn btn-success btn-block mt-2">
+                    <i class="fas fa-shield-alt"></i> Authenticate with Portbro
                 </a>
             </div>
         </div>

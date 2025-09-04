@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Authentication Instructions{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-graduation-cap"></i>
+                        VPN Node Authentication Guide
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{% static 'portbro-newest.png' %}" alt="Portbro" class="img-fluid" style="max-height: 100px;">
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Authentication System Active</h5>
+                        <p>This VPN node is configured with JWT authentication through Portbro.com.</p>
+                    </div>
+                    
+                    <h4><i class="fas fa-list-ol"></i> How to Login</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h5><i class="fas fa-mouse-pointer"></i> Method 1: Web Interface</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ol>
+                                        <li>Click the "Authenticate with Portbro" button</li>
+                                        <li>You'll be redirected to portbro.com</li>
+                                        <li>Sign in with your Portbro account</li>
+                                        <li>You'll be redirected back with a JWT token</li>
+                                        <li>You're automatically logged in!</li>
+                                    </ol>
+                                    <a href="{% url 'auth_integration:jwt_login' %}" class="btn btn-primary">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        Start Authentication
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h5><i class="fas fa-terminal"></i> Method 2: API/CLI</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>For programmatic access:</p>
+                                    <ol>
+                                        <li>Get OAuth2 token from portbro.com</li>
+                                        <li>Exchange for JWT token</li>
+                                        <li>Use JWT token in API requests</li>
+                                    </ol>
+                                    <button class="btn btn-success" onclick="showApiExample()">
+                                        <i class="fas fa-code"></i>
+                                        Show API Example
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4><i class="fas fa-shield-alt"></i> Security Features</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-key fa-2x text-primary mb-2"></i>
+                                    <h6>JWT Tokens</h6>
+                                    <p class="small">RSA-256 signed tokens with 10-hour expiry</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-shield fa-2x text-success mb-2"></i>
+                                    <h6>User ACL</h6>
+                                    <p class="small">Automatic permission assignment based on role</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-sync-alt fa-2x text-info mb-2"></i>
+                                    <h6>Auto Refresh</h6>
+                                    <p class="small">Automatic token refresh and caching</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4><i class="fas fa-cogs"></i> User Permissions</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>User Level</th>
+                                    <th>Reload</th>
+                                    <th>Restart</th>
+                                    <th>Console</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge badge-danger">Admin</span></td>
+                                    <td>50</td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge-warning">Manager</span></td>
+                                    <td>40</td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge-info">Basic</span></td>
+                                    <td>30</td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                    <td><i class="fas fa-check text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'auth_integration:jwt_login' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Start Authentication Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Example Modal -->
+<div class="modal fade" id="apiExampleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">API Authentication Example</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Get OAuth2 Token:</h6>
+                <pre><code>curl -X POST https://portbro.com/o/token/ \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials&scope=read" \
+  -u "your_client_id:your_client_secret"</code></pre>
+                
+                <h6>2. Get JWT Token:</h6>
+                <pre><code>curl -X POST https://portbro.com/vpn/auth/ \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Content-Type: application/json"</code></pre>
+                
+                <h6>3. Use JWT Token:</h6>
+                <pre><code>curl -X GET {{ vpn_node_url }}auth/vpn/status/ \
+  -H "Authorization: Bearer $JWT_TOKEN"</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showApiExample() {
+    $('#apiExampleModal').modal('show');
+}
+</script>
+{% endblock %}

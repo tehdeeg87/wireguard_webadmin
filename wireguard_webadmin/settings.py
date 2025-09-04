@@ -39,9 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'django.contrib.admin',
-    'crispy_bootstrap4',
+    'crispy_bootstrap4',    
     'intl_tools',
     'wireguard',
+    "auth_integration",
     'user_manager',
     'wireguard_tools',
     'accounts',
@@ -57,17 +58,29 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.microsoft"
 ]
 
+PARENT_JWKS_URL = "https://portbro.com/o/jwks/"
+PARENT_ISSUER = "https://portbro.com"
+PARENT_AUDIENCE = "vpn-node"
+
+# Portbro OAuth2 Configuration
+PORTBRO_CLIENT_ID = "yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm"
+PORTBRO_CLIENT_SECRET = "dur3nwcu6KYvFgS3LZngtIbFg1cjj7lgB52NMpcZiG6bd1ltp7jF9uHCqnQFfCXfgw1j8leaobnY4XrSJuBN3GEZkbYtv24uZJdLzO4gyp5A4B93neu4Y7WSyb5vLgTO"
+PORTBRO_TOKEN_URL = "https://portbro.com/o/token/"
+PORTBRO_VPN_AUTH_URL = "https://portbro.com/vpn/auth/"
+PORTBRO_SCOPE = "read"
+
 SITE_ID= 1
 LOGIN_REDIRECT_URL = "/"
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.MySocialAccountAdapter"
 MIDDLEWARE = [
-    
+     
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    "auth_integration.middleware.JWTAuthenticationMiddleware",
+    'django.middleware.csrf.CsrfViewMiddleware',    
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -181,8 +194,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # allauth
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+#ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
