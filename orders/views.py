@@ -91,7 +91,7 @@ def process_payment_success(request):
 
 def configure_instance(request, token):
     """
-    Handle the configuration form for a new VPN instance
+    Handle the configuration for a new VPN instance - automatically create on GET request
     """
     try:
         # Get the payment token
@@ -106,69 +106,65 @@ def configure_instance(request, token):
             messages.error(request, _('This configuration link has expired.'))
             return redirect('orders:order_form')
             
-        if request.method == 'POST':
-            # Get form data
-            #country = request.POST.get('country')
-            
-            # Create a new request with the required parameters
-            webhook_request = HttpRequest()
-            webhook_request.method = 'GET'
-            webhook_request.GET = {
-                'email': payment_token.email,
-                'user_count': str(payment_token.user_count)  # Use the stored user_count
-            }
-            
-            # Call the instance creation function
-            response = webhook_create_instance(webhook_request)
-            
-            if isinstance(response, JsonResponse):
-                try:
-                    data = json.loads(response.content)
-                    if data.get('status') == 'success':
-                        # Create user account
-                        username = payment_token.email
-                        if not User.objects.filter(username=username).exists():
-                            user = User.objects.create_user(
-                                username=username,
-                                email=payment_token.email,
-                                password=payment_token.password  # Use the stored password
-                            )
-                            
-                            # Get the WireGuard instance that was just created
-                            instance = WireGuardInstance.objects.latest('created')
-                            
-                            # Create a peer group for this instance
-                            peer_group_name = f"{username}_group"
-                            peer_group = PeerGroup.objects.create(name=peer_group_name)
-                            peer_group.server_instance.add(instance)
-                            
-                            # Create UserAcl with peer manager level
-                            user_acl = UserAcl.objects.create(
-                                user=user,
-                                user_level=30,
-                                enable_reload=True,
-                                enable_restart=True,
-                                enable_console=True
-                            )
-                            user_acl.peer_groups.add(peer_group)
-                            
-                            # Mark token as used
-                            payment_token.is_used = True
-                            #payment_token.country = country
-                            payment_token.save()
-                            
-                            messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
-                            return redirect('login')
-                        else:
-                            messages.error(request, _('A user with this email already exists or this link has already been used'))
+        # Automatically create the instance on GET request (when link is clicked)
+        # Create a new request with the required parameters
+        webhook_request = HttpRequest()
+        webhook_request.method = 'GET'
+        webhook_request.GET = {
+            'email': payment_token.email,
+            'user_count': str(payment_token.user_count)  # Use the stored user_count
+        }
+        
+        # Call the instance creation function
+        response = webhook_create_instance(webhook_request)
+        
+        if isinstance(response, JsonResponse):
+            try:
+                data = json.loads(response.content)
+                if data.get('status') == 'success':
+                    # Create user account
+                    username = payment_token.email
+                    if not User.objects.filter(username=username).exists():
+                        user = User.objects.create_user(
+                            username=username,
+                            email=payment_token.email,
+                            password=payment_token.password  # Use the stored password
+                        )
+                        
+                        # Get the WireGuard instance that was just created
+                        instance = WireGuardInstance.objects.latest('created')
+                        
+                        # Create a peer group for this instance
+                        peer_group_name = f"{username}_group"
+                        peer_group = PeerGroup.objects.create(name=peer_group_name)
+                        peer_group.server_instance.add(instance)
+                        
+                        # Create UserAcl with peer manager level
+                        user_acl = UserAcl.objects.create(
+                            user=user,
+                            user_level=30,
+                            enable_reload=True,
+                            enable_restart=True,
+                            enable_console=True
+                        )
+                        user_acl.peer_groups.add(peer_group)
+                        
+                        # Mark token as used
+                        payment_token.is_used = True
+                        payment_token.save()
+                        
+                        messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
+                        return redirect('login')
                     else:
-                        messages.error(request, data.get('message', _('Error creating instance')))
-                except json.JSONDecodeError:
-                    messages.error(request, _('Invalid response from server'))
-            else:
-                messages.error(request, _('Unexpected error occurred'))
-                
-        # Pass the user_count to the template
+                        messages.error(request, _('A user with this email already exists or this link has already been used'))
+                else:
+                    messages.error(request, data.get('message', _('Error creating instance')))
+            except json.JSONDecodeError:
+                messages.error(request, _('Invalid response from server'))
+        else:
+            messages.error(request, _('Unexpected error occurred'))
+            
+        # If we get here, there was an error, show the form as fallback
         return render(request, 'orders/configure_instance.html', {
             'token': token,
             'user_count': payment_token.user_count

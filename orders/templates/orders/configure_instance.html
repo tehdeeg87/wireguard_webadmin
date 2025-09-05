@@ -39,14 +39,18 @@
                             {% endfor %}
                         {% endif %}
 
-                        <form method="post" action="{% url 'orders:configure_instance' token=token %}">
-                            {% csrf_token %}         
-                          <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary btn-block w-100">
-                                    {% trans "Click to Create Your VPN Network" %}
-                                </button>
-                            </div>
-                        </form>
+                        <div class="text-center">
+                            <p class="mb-4">{% trans "If you're seeing this page, there was an issue with automatic setup. Please try again:" %}</p>
+                            
+                            <form method="post" action="{% url 'orders:configure_instance' token=token %}">
+                                {% csrf_token %}         
+                                <div class="form-group mt-4">
+                                    <button type="submit" class="btn btn-primary btn-block w-100">
+                                        {% trans "Click to Create Your VPN Network" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
