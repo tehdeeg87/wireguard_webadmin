@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _
 
 from user_manager.models import UserAcl
+from wgwadmlibrary.tools import user_allowed_instances
 from wireguard.forms import WireGuardInstanceForm
 from .models import WebadminSettings, WireGuardInstance
 
@@ -73,7 +74,8 @@ def generate_instance_defaults():
 def legacy_view_wireguard_status(request):
     user_acl = get_object_or_404(UserAcl, user=request.user)
     page_title = 'WireGuard Status'
-    wireguard_instances = WireGuardInstance.objects.all().order_by('instance_id')
+    # SECURITY FIX: Use proper user access control instead of showing all instances
+    wireguard_instances = user_allowed_instances(user_acl)
 
     if user_acl.enable_enhanced_filter:
         command_output = 'Enhanced filter is enabled. This command is not available.'
@@ -103,7 +105,8 @@ def view_wireguard_status(request):
                 if instance_temp not in wireguard_instances:
                         wireguard_instances.append(instance_temp)
     else:
-        wireguard_instances = WireGuardInstance.objects.all().order_by('instance_id')
+        # SECURITY FIX: Users without peer groups should see NO instances, not ALL instances
+        wireguard_instances = []
 
     if user_acl.enable_enhanced_filter:
         pass

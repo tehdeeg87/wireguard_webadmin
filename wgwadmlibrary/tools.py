@@ -22,7 +22,8 @@ def user_has_access_to_instance(user_acl: UserAcl, instance: WireGuardInstance):
         if user_acl.peer_groups.filter(server_instance=instance).exists():
             return True
     else:
-        return True
+        # SECURITY FIX: Users without peer groups should have NO access, not ALL access
+        return False
     return False
 
 
@@ -33,13 +34,15 @@ def user_has_access_to_peer(user_acl: UserAcl, peer: Peer):
         if user_acl.peer_groups.filter(server_instance=peer.wireguard_instance).exists():
             return True
     else:
-        return True
+        # SECURITY FIX: Users without peer groups should have NO access, not ALL access
+        return False
     return False
 
 
 def user_allowed_instances(user_acl: UserAcl):
     if not user_acl.peer_groups.exists():
-        return WireGuardInstance.objects.all().order_by('instance_id')
+        # SECURITY FIX: Users without peer groups should see NO instances, not ALL instances
+        return WireGuardInstance.objects.none()
     instances_from_groups = WireGuardInstance.objects.filter(peergroup__in=user_acl.peer_groups.all())    
     instances_from_peers = WireGuardInstance.objects.filter(peer__peergroup__in=user_acl.peer_groups.all())
     return instances_from_groups.union(instances_from_peers).order_by('instance_id')
@@ -48,7 +51,8 @@ def user_allowed_instances(user_acl: UserAcl):
 def user_allowed_peers(user_acl: UserAcl, instance: WireGuardInstance):
 
     if not user_acl.peer_groups.exists():
-        return Peer.objects.filter(wireguard_instance=instance).order_by('sort_order')
+        # SECURITY FIX: Users without peer groups should see NO peers, not ALL peers
+        return Peer.objects.none()
 
     peers_from_direct = Peer.objects.filter(
         wireguard_instance=instance,
