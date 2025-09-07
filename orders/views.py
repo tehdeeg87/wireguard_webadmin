@@ -134,9 +134,9 @@ def configure_instance(request, token):
                         # Get the WireGuard instance that was just created
                         instance = WireGuardInstance.objects.latest('created')
                         
-                        # Create a peer group for this instance
+                        # Create a peer group for this instance (use get_or_create to avoid duplicates)
                         peer_group_name = f"{username}_group"
-                        peer_group = PeerGroup.objects.create(name=peer_group_name)
+                        peer_group, created = PeerGroup.objects.get_or_create(name=peer_group_name)
                         peer_group.server_instance.add(instance)
                         
                         # Create UserAcl with peer manager level
