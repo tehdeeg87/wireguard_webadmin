@@ -186,7 +186,7 @@ WIREGUARD_WEBADMIN_VERSION = 9966
 N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
 CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
-       #'http://vpn.portbro.com',  # Include HTTP if you're using it
+       'http://vpn.portbro.com',  # Include HTTP if you're using it
    ]
 
 AUTHENTICATION_BACKENDS = [
@@ -194,8 +194,8 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",  # allauth
 ]
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True  # Optional: redirect all HTTP → HTTPS
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+#ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
