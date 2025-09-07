@@ -16,7 +16,22 @@ def ensure_user_from_jwt(claims):
     if not email or email.strip() == "":
         email = f"{username}@portbro.com"
 
-    user, created = User.objects.get_or_create(username=username, defaults={"email": email})
+    # CRITICAL FIX: Use email as the primary identifier to prevent duplicates
+    # First, try to find existing user by email
+    created = False
+    try:
+        user = User.objects.get(email=email)
+        # Update username if it's different (but keep email as primary)
+        if user.username != username:
+            user.username = username
+            user.save()
+    except User.DoesNotExist:
+        # If no user with this email exists, create one
+        # Use email as username to ensure consistency
+        user, created = User.objects.get_or_create(
+            username=email,  # Use email as username for consistency
+            defaults={"email": email}
+        )
     
     # Update email if it's different (for existing users)
     if not created and user.email != email:
@@ -48,7 +63,8 @@ def ensure_user_from_jwt(claims):
     # Check if user already has a peer group assigned
     if not acl.peer_groups.exists():
         # Only create a peer group if user doesn't have one already
-        group, created = PeerGroup.objects.get_or_create(name=f"{username}_group")
+        # Use the actual username (which is now the email) for consistency
+        group, created = PeerGroup.objects.get_or_create(name=f"{user.username}_group")
         acl.peer_groups.add(group)
     
     # Note: Instance assignment should be done manually by administrators
