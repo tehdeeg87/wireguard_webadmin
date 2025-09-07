@@ -41,15 +41,15 @@ def ensure_user_from_jwt(claims):
     acl.enable_console = True
     acl.save()
 
-    # Ensure they have a peer group & link to latest WG instance
-    try:
-        instance = WireGuardInstance.objects.latest("created")
-        group, _ = PeerGroup.objects.get_or_create(name=f"{username}_group")
-        group.server_instance.add(instance)
-        acl.peer_groups.add(group)
-    except WireGuardInstance.DoesNotExist:
-        # If no WireGuard instance exists, create a peer group without linking to instance
-        group, _ = PeerGroup.objects.get_or_create(name=f"{username}_group")
-        acl.peer_groups.add(group)
+    # SECURITY FIX: Don't automatically assign users to instances
+    # Users should only be assigned to instances they're supposed to have access to
+    # This prevents users from seeing instances they shouldn't have access to
+    
+    # Create a peer group for the user (without linking to any instance)
+    group, _ = PeerGroup.objects.get_or_create(name=f"{username}_group")
+    acl.peer_groups.add(group)
+    
+    # Note: Instance assignment should be done manually by administrators
+    # or through proper business logic, not automatically on every login
 
     return user
