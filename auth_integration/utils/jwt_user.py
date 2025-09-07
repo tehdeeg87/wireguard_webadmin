@@ -45,12 +45,10 @@ def ensure_user_from_jwt(claims):
     # Users should only be assigned to instances they're supposed to have access to
     # This prevents users from seeing instances they shouldn't have access to
     
-    # Create a peer group for the user (without linking to any instance)
-    # Use get_or_create to avoid duplicates if user was created through onboarding
-    group, created = PeerGroup.objects.get_or_create(name=f"{username}_group")
-    
-    # Only add the group to user's ACL if it's not already there
-    if not acl.peer_groups.filter(uuid=group.uuid).exists():
+    # Check if user already has a peer group assigned
+    if not acl.peer_groups.exists():
+        # Only create a peer group if user doesn't have one already
+        group, created = PeerGroup.objects.get_or_create(name=f"{username}_group")
         acl.peer_groups.add(group)
     
     # Note: Instance assignment should be done manually by administrators
