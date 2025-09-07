@@ -50,7 +50,7 @@ def ensure_user_from_jwt(claims):
     group, created = PeerGroup.objects.get_or_create(name=f"{username}_group")
     
     # Only add the group to user's ACL if it's not already there
-    if not acl.peer_groups.filter(id=group.id).exists():
+    if not acl.peer_groups.filter(uuid=group.uuid).exists():
         acl.peer_groups.add(group)
     
     # Note: Instance assignment should be done manually by administrators
