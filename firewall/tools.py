@@ -203,9 +203,18 @@ def generate_firewall_footer():
     footer += f'iptables -t filter -P FORWARD {firewall_settings.default_forward_policy.upper()}\n'
 
     footer += '# Same instance Peer to Peer traffic\n'
+    # Generate rules for instances in database
     for wireguard_instance in WireGuardInstance.objects.all().order_by('instance_id'):
         footer += f'iptables -t filter -A WGWADM_FORWARD -i wg{wireguard_instance.instance_id} -o wg{wireguard_instance.instance_id} -j '
         footer += 'ACCEPT\n' if firewall_settings.allow_peer_to_peer else deny_policy + "\n"
+    
+    # FIX: Also generate rules for common WireGuard interfaces that might exist at system level
+    # This ensures peer-to-peer works even if instances aren't in the database
+    if firewall_settings.allow_peer_to_peer:
+        footer += '# Additional peer-to-peer rules for system-level interfaces\n'
+        # Generate rules for wg0-wg9 (common range)
+        for i in range(10):
+            footer += f'iptables -t filter -A WGWADM_FORWARD -i wg{i} -o wg{i} -j ACCEPT\n'
     footer += '# Instance to Instance traffic\n'
     footer += 'iptables -t filter -A WGWADM_FORWARD -i wg+ -o wg+ -j '
     footer += 'ACCEPT\n' if firewall_settings.allow_instance_to_instance else deny_policy + "\n"
