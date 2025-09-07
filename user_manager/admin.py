@@ -1,6 +1,6 @@
 from django.contrib import admin
 from user_manager.models import UserAcl, cancelURL
-from wireguard.models import PeerGroup, WireGuardInstance, Peer, PeerAllowedIP
+from wireguard.models import PeerGroup
 
 
 class UserAclAdmin(admin.ModelAdmin):
@@ -15,27 +15,6 @@ class PeerGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ('server_instance',)
 
 
-class WireGuardInstanceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'created')
-    search_fields = ('name', 'hostname', 'address')
-    list_filter = ('created', 'netmask')
-
-
-class PeerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'wireguard_instance', 'public_key', 'created')
-    search_fields = ('name', 'public_key')
-    list_filter = ('wireguard_instance', 'created')
-
-
-class PeerAllowedIPAdmin(admin.ModelAdmin):
-    list_display = ('peer', 'allowed_ip', 'netmask', 'priority', 'config_file')
-    search_fields = ('peer__name', 'allowed_ip')
-    list_filter = ('config_file', 'priority')
-
-
 admin.site.register(UserAcl, UserAclAdmin)
 admin.site.register(PeerGroup, PeerGroupAdmin)
-admin.site.register(WireGuardInstance, WireGuardInstanceAdmin)
-admin.site.register(Peer, PeerAdmin)
-admin.site.register(PeerAllowedIP, PeerAllowedIPAdmin)
 admin.site.register(cancelURL)
