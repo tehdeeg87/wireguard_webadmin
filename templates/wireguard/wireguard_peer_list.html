@@ -1061,18 +1061,20 @@
                 const peerIPElement = row.querySelector('.peer-ip');
                 const throughputElement = row.querySelector('.throughput-display');
                 const handshakeElement = row.querySelector('.handshake-display');
+                const storedHandshakeElement = row.querySelector('[id^="peer-stored-latest-handshake-"]');
                 
                 // Get the actual text content
                 const peerName = peerNameElement ? peerNameElement.textContent.trim() : 'Unknown Peer';
                 const peerIP = peerIPElement ? peerIPElement.textContent.trim() : 'No IP';
                 const throughput = throughputElement ? throughputElement.textContent.trim() : '-- Kbps';
                 const handshake = handshakeElement ? handshakeElement.textContent.trim() : '--';
+                const storedHandshake = storedHandshakeElement ? storedHandshakeElement.textContent.trim() : '0';
                 
                 // Debug logging
-                console.log('Peer data:', { peerName, peerIP, throughput, handshake });
+                console.log('Peer data:', { peerName, peerIP, throughput, handshake, storedHandshake });
                 
-                // Determine if peer is actually online (not just showing '--')
-                const isOnline = handshake !== '--' && handshake !== '0' && handshake.length > 0;
+                // Determine if peer is actually online using the stored handshake timestamp
+                const isOnline = storedHandshake !== '0' && storedHandshake !== '' && parseInt(storedHandshake) > 0;
                 
                 // Calculate angle for this peer
                 const angle = (2 * Math.PI * index) / peerCount;
