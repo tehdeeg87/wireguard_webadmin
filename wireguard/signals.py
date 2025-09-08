@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import WireGuardInstance
-from firewall.tools import export_firewall_configuration
+from wireguard_tools.views import export_firewall_configuration
 import subprocess
 import logging
 
