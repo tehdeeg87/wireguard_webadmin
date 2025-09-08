@@ -25,6 +25,278 @@
             white-space: pre-line;
             text-align: left;
         }
+
+        /* Hub and Spoke Visualization */
+        .hub-spoke-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .hub-spoke-svg {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .hub-center {
+            fill: #007bff;
+            stroke: #0056b3;
+            stroke-width: 3;
+            cursor: pointer;
+        }
+        
+        .hub-center-text {
+            fill: white;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+        
+        .peer-node {
+            fill: #28a745;
+            stroke: #1e7e34;
+            stroke-width: 2;
+            cursor: pointer;
+        }
+        
+        .peer-node.warning {
+            fill: #ffc107;
+            stroke: #e0a800;
+        }
+        
+        .peer-node.offline {
+            fill: #dc3545;
+            stroke: #c82333;
+        }
+        
+        .peer-connection {
+            stroke: #6c757d;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .peer-connection:hover {
+            stroke: #007bff;
+            stroke-width: 3;
+            opacity: 1;
+        }
+        
+        .peer-label {
+            fill: #2c3e50;
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+        
+        .peer-ip-label {
+            fill: #6c757d;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+        
+        .peer-stats {
+            fill: #28a745;
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+        
+        .view-toggle {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+        }
+        
+        .peer-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .peer-tooltip.show {
+            opacity: 1;
+        }
+        
+        .peer-tooltip .peer-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .peer-tooltip .peer-info {
+            color: #ccc;
+            font-size: 11px;
+        }
+
+        /* Modern Table Styling */
+        .peers-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .peers-table .table {
+            margin-bottom: 0;
+        }
+        
+        .peers-table .table th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            color: #495057;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .peers-table .table td {
+            border: none;
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .peers-table .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .peers-table .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .peer-name {
+            font-weight: 600;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        
+        .peer-name:hover {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-offline { background-color: #dc3545; }
+        
+        .peer-actions {
+            white-space: nowrap;
+        }
+        
+        .peer-actions .btn {
+            margin-right: 4px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+        
+        .traffic-chart {
+            width: 80px;
+            height: 40px;
+        }
+        
+        .compact-info {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .peer-ip {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+        
+        .throughput-display {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .transfer-display {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        
+        .handshake-display {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        
+        .table-controls {
+            background: #f8f9fa;
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-controls .btn-group .btn {
+            margin-right: 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: #dee2e6;
+        }
+        
+        @media (max-width: 768px) {
+            .peers-table .table th,
+            .peers-table .table td {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .peer-actions .btn {
+                padding: 2px 6px;
+                font-size: 0.7rem;
+            }
+            
+            .traffic-chart {
+                width: 60px;
+                height: 30px;
+            }
+        }
     </style>
 {% endblock %}
 
@@ -32,78 +304,191 @@
 {% block content %}
     {% if wireguard_instances %}
         <div class="card card-primary card-outline">
-            <div class="card-body">
-                <ul class="nav nav-tabs" role="tablist">
+            <div class="card-body p-0">
+                <!-- Instance Tabs -->
+                <ul class="nav nav-tabs" role="tablist" style="margin-bottom: 0;">
                     {% for wgconf in wireguard_instances %}
                         <li class="nav-item">
                             <a class="nav-link {% if wgconf == current_instance %}active{% endif %}" href="/peer/list/?uuid={{ wgconf.uuid }}" role="tab">
+                                <i class="fas fa-network-wired"></i>
                                 wg{{ wgconf.instance_id }} {% if wgconf.name %}({{ wgconf.name }}){% endif %}
                             </a>
                         </li>
                     {% endfor %}
                 </ul>
-                <div class="tab-content" id="custom-content-below-tabContent">
-                    <div class="tab-pane fade show active" id="custom-content-below-home" role="tabpanel" aria-labelledby="custom-content-below-home-tab">
-                        <div class="row" style="padding-top: 15px">
-                            {% for peer in peer_list %}
-                                <div class="col-xl-6" id="peer-{{ peer.public_key }}" data-uuid="{{ peer.uuid }}">
-                                    <div class="callout position-relative">
-                                        {% comment %}background: linear-gradient(to right, white 50%, transparent 50%);{% endcomment %}
-                                        <div class="position-absolute p-3 div-peer-text-information" style="top: 0; left: 0; background: linear-gradient(to right, white, transparent); width: 100%; height: 100%;">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <h5 id="peer-name-{{ peer.public_key }}">
-                                                    <a href="#" onclick="openPeerModal('{{ peer.uuid }}');" style="text-decoration: none">
-                                                        {{ peer }}
-                                                    </a>
-                                                </h5>
-                                                <span>
-                                                  {% if user_acl.user_level >= 30 %}
-                                                      <div class="d-inline-flex flex-column">
-                                                        <a href="/peer/sort/?peer={{ peer.uuid }}&direction=up" style="line-height:0px">
-                                                          <i class="fas fa-sort-up"></i>
-                                                        </a>
-                                                        <div style="overflow:hidden;margin-top: -9px">
-                                                          <a href="/peer/sort/?peer={{ peer.uuid }}&direction=down" style="position:relative;top:-11px">
-                                                            <i class="fas fa-sort-down"></i>
-                                                          </a>
-                                                        </div>
-                                                      </div>
-                                                  {% endif %}
-                                                </span>
-                                            </div>
-                                            <b class="peer-extra-info">{% trans 'Throughput' %}: </b> <span id="peer-throughput-{{ peer.public_key }}"></span><br>
-                                            <span class="peer-extra-info"><b>{% trans 'Transfer' %}:</b> <span id="peer-transfer-{{ peer.public_key }}"></span><br></span>
-                                            <span class="peer-extra-info"><b>{% trans 'Latest Handshake' %}:</b> <span id="peer-latest-handshake-{{ peer.public_key }}"></span></span>
-                                            <span class="peer-extra-info"><span style="display: none;" id="peer-stored-latest-handshake-{{ peer.public_key }}">{% if peer.peerstatus.last_handshake %}{{ peer.peerstatus.last_handshake|date:"U" }}{% else %}0{% endif %}</span><br></span>
-                                            <span class="peer-extra-info"><b>{% trans 'Endpoints' %}:</b> <span id="peer-endpoints-{{ peer.public_key }}"></span><br></span>
-                                            <span class="peer-extra-info" id="peer-extra-info-allowed-ips-{{ peer.public_key }}">
-                                                <b>{% trans 'Allowed IPs' %}:</b>
-                                                <span id="peer-allowed-ips-{{ peer.public_key }}">
-                                                    {% for address in peer.peerallowedip_set.all %}
-                                                        {% if address.priority == 0 and address.config_file == 'server' %}
-                                                            {{ address }}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    {% for address in peer.peerallowedip_set.all %}
-                                                        {% if address.priority >= 1 and address.config_file == 'server' %}
-                                                            {{ address }}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                </span>
-                                            </span>
-                                        </div>
-                                        <canvas class="" id="chart-{{ peer.public_key }}" width="800" height="130" style="min-height: 85px"></canvas>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                
+                <!-- View Controls -->
+                <div class="table-controls">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0 mr-3">
+                            <i class="fas fa-users"></i>
+                            {% trans 'Peers' %} ({{ peer_list|length }})
+                        </h6>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button id="toggleExtraInfo" class="btn btn-outline-secondary">
+                                <i class="fas fa-eye"></i> {% trans 'Show Details' %}
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="location.reload()">
+                                <i class="fas fa-sync-alt"></i> {% trans 'Refresh' %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="btn-group btn-group-sm mr-3" role="group">
+                            <button id="viewTable" class="btn btn-outline-primary active">
+                                <i class="fas fa-table"></i> {% trans 'Table' %}
+                            </button>
+                            <button id="viewHub" class="btn btn-outline-primary">
+                                <i class="fas fa-project-diagram"></i> {% trans 'Hub View' %}
+                            </button>
                         </div>
                         {% if add_peer_enabled %}
-                            <a class="btn btn-primary" href="/peer/manage/?instance={{ current_instance.uuid }}" onclick="return confirm('{% trans 'Are you sure you want to create a new peer?' %}');">{% trans 'Create Peer' %}</a>
+                            <a class="btn btn-primary btn-sm" href="/peer/manage/?instance={{ current_instance.uuid }}" onclick="return confirm('{% trans 'Are you sure you want to create a new peer?' %}');">
+                                <i class="fas fa-plus"></i> {% trans 'Create Peer' %}
+                            </a>
                         {% else %}
-                            <a class="btn btn-primary disabled" href="">{% trans 'Create Peer' %}</a>
+                            <a class="btn btn-primary btn-sm disabled" href="">
+                                <i class="fas fa-plus"></i> {% trans 'Create Peer' %}
+                            </a>
                         {% endif %}
-                        <button id="toggleExtraInfo" class="btn btn-outline-primary">{% trans 'Show extras' %}</button>
+                                                        </div>
+                                                      </div>
+
+                <!-- Peers Table -->
+                <div class="peers-table" id="tableView">
+                    {% if peer_list %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="5%">
+                                        <i class="fas fa-circle"></i>
+                                    </th>
+                                    <th width="20%">{% trans 'Peer' %}</th>
+                                    <th width="15%">{% trans 'IP Address' %}</th>
+                                    <th width="15%">{% trans 'Throughput' %}</th>
+                                    <th width="15%">{% trans 'Transfer' %}</th>
+                                    <th width="15%">{% trans 'Last Handshake' %}</th>
+                                    <th width="10%">{% trans 'Traffic' %}</th>
+                                    <th width="5%">{% trans 'Actions' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for peer in peer_list %}
+                                    <tr id="peer-{{ peer.public_key }}" data-uuid="{{ peer.uuid }}">
+                                        <td>
+                                            <span class="status-indicator status-offline" id="status-{{ peer.public_key }}"></span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <a href="#" onclick="openPeerModal('{{ peer.uuid }}');" class="peer-name" id="peer-name-{{ peer.public_key }}">
+                                                    {{ peer }}
+                                                </a>
+                                                <div class="compact-info peer-extra-info" id="peer-endpoints-{{ peer.public_key }}"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="peer-ip" id="peer-allowed-ips-{{ peer.public_key }}">
+                                                    {% for address in peer.peerallowedip_set.all %}
+                                                        {% if address.priority == 0 and address.config_file == 'server' %}
+                                                        {{ address.allowed_ip }}/{{ address.netmask }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="throughput-display" id="peer-throughput-{{ peer.public_key }}">
+                                                <i class="fas fa-arrow-down text-primary"></i> -- Kbps, 
+                                                <i class="fas fa-arrow-up text-success"></i> -- Kbps
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="transfer-display" id="peer-transfer-{{ peer.public_key }}">
+                                                -- TX, -- RX
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="handshake-display" id="peer-latest-handshake-{{ peer.public_key }}">
+                                                --
+                                            </div>
+                                            <span style="display: none;" id="peer-stored-latest-handshake-{{ peer.public_key }}">
+                                                {% if peer.peerstatus.last_handshake %}{{ peer.peerstatus.last_handshake|date:"U" }}{% else %}0{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <canvas class="traffic-chart" id="chart-{{ peer.public_key }}" width="80" height="40"></canvas>
+                                        </td>
+                                        <td>
+                                            <div class="peer-actions">
+                                                {% if user_acl.user_level >= 30 %}
+                                                    <div class="btn-group-vertical btn-group-sm">
+                                                        <a href="/peer/sort/?peer={{ peer.uuid }}&direction=up" class="btn btn-outline-secondary btn-xs" title="{% trans 'Move Up' %}">
+                                                            <i class="fas fa-chevron-up"></i>
+                                                        </a>
+                                                        <a href="/peer/sort/?peer={{ peer.uuid }}&direction=down" class="btn btn-outline-secondary btn-xs" title="{% trans 'Move Down' %}">
+                                                            <i class="fas fa-chevron-down"></i>
+                                                        </a>
+                                                    </div>
+                                                        {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                                    {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <h5>{% trans 'No Peers Found' %}</h5>
+                            <p>{% trans 'No peers are configured for this WireGuard instance.' %}</p>
+                            {% if add_peer_enabled %}
+                                <a class="btn btn-primary" href="/peer/manage/?instance={{ current_instance.uuid }}">
+                                    <i class="fas fa-plus"></i> {% trans 'Create Your First Peer' %}
+                                </a>
+                            {% endif %}
+                                        </div>
+                    {% endif %}
+                                    </div>
+
+                <!-- Hub and Spoke Visualization -->
+                <div class="hub-spoke-container" id="hubView" style="display: none;">
+                    <div class="view-toggle">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button id="hubViewTable" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-table"></i> {% trans 'Table' %}
+                            </button>
+                            <button id="hubViewHub" class="btn btn-outline-secondary btn-sm active">
+                                <i class="fas fa-project-diagram"></i> {% trans 'Hub View' %}
+                            </button>
+                                </div>
+                        </div>
+                    {% if peer_list %}
+                        <svg class="hub-spoke-svg" id="hubSpokeSvg">
+                            <!-- Hub center -->
+                            <circle class="hub-center" cx="250" cy="250" r="40" data-uuid="{{ current_instance.uuid }}">
+                                <title>WireGuard Server - {% if current_instance.name %}{{ current_instance.name }}{% else %}wg{{ current_instance.instance_id }}{% endif %}</title>
+                            </circle>
+                            <text class="hub-center-text" x="250" y="250">WG{{ current_instance.instance_id }}</text>
+                            
+                            <!-- Peer nodes and connections will be generated by JavaScript -->
+                        </svg>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-project-diagram"></i>
+                            <h5>{% trans 'No Peers Found' %}</h5>
+                            <p>{% trans 'No peers are configured for this WireGuard instance.' %}</p>
+                            {% if add_peer_enabled %}
+                                <a class="btn btn-primary" href="/peer/manage/?instance={{ current_instance.uuid }}">
+                                    <i class="fas fa-plus"></i> {% trans 'Create Your First Peer' %}
+                                </a>
+                        {% endif %}
                     </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tooltip -->
+                <div class="peer-tooltip" id="peerTooltip">
+                    <div class="peer-name"></div>
+                    <div class="peer-info"></div>
                 </div>
             </div>
         </div>
@@ -306,17 +691,19 @@
             $(".info-content").show();
             $("#qrCodeImg").attr("src", "");
             $('#graphImg').attr('src', '').hide();
+            
             // Find the peer element by its data-uuid attribute
             var peerElem = document.querySelector('[data-uuid="' + uuid + '"]');
             if (peerElem) {
-                var peerNameFromCard = peerElem.querySelector('h5').innerText;
+                // Get peer name from the table row
+                var peerNameFromCard = peerElem.querySelector('.peer-name').innerText;
                 var peerThroughput = peerElem.querySelector('[id^="peer-throughput-"]').innerHTML;
                 var peerTransfer = peerElem.querySelector('[id^="peer-transfer-"]').innerText;
                 var peerHandshake = peerElem.querySelector('[id^="peer-latest-handshake-"]').innerText;
                 var peerEndpoints = peerElem.querySelector('[id^="peer-endpoints-"]').innerText;
                 var peerAllowedIPs = peerElem.querySelector('[id^="peer-allowed-ips-"]').innerHTML;
 
-                // Update the modal fields with the card values
+                // Update the modal fields with the table values
                 $('#peerPreviewModalLabel').text(peerNameFromCard);
                 $('#peerThroughput').html(peerThroughput);
                 $('#peerTransfer').text(peerTransfer);
@@ -505,7 +892,7 @@
             };
 
             fetchWireguardStatus();
-            setInterval(fetchWireguardStatus, {{ current_instance.peer_list_refresh_interval }} * 1000);
+            setInterval(fetchWireguardStatus, {{ current_instance.peer_list_refresh_interval|default:5 }} * 1000);
         });
 
         const updateUI = (data) => {
@@ -538,6 +925,9 @@
                     }
                 }
             }
+            
+            // Update hub view if it's visible
+            updateHubView();
         };
 
         const updatePeerInfo = (peerDiv, peerId, peerInfo) => {
@@ -591,20 +981,23 @@
         };
 
         const updateCalloutClass = (peerDiv, latestHandshake) => {
-            const calloutDiv = peerDiv.querySelector('.callout');
-            calloutDiv.classList.remove('callout-success', 'callout-info', 'callout-warning', 'callout-danger');
+            const statusIndicator = peerDiv.querySelector('.status-indicator');
             const handshakeAge = Date.now() / 1000 - parseInt(latestHandshake);
 
+            // Remove all status classes
+            statusIndicator.classList.remove('status-online', 'status-warning', 'status-offline');
+
             if (latestHandshake === '0') {
-                calloutDiv.classList.add('callout-danger');
+                statusIndicator.classList.add('status-offline');
             } else if (handshakeAge < 600) {
-                calloutDiv.classList.add('callout-success');
+                statusIndicator.classList.add('status-online');
             } else if (handshakeAge < 1800) {
-                calloutDiv.classList.add('callout-info');
+                statusIndicator.classList.add('status-warning');
             } else if (handshakeAge < 21600) {
-                calloutDiv.classList.add('callout-warning');
+                statusIndicator.classList.add('status-warning');
+            } else {
+                statusIndicator.classList.add('status-offline');
             }
-            calloutDiv.style.transition = 'all 5s';
         };
     </script>
 
@@ -613,14 +1006,170 @@
             $("#toggleExtraInfo").click(function(){
                 $(".peer-extra-info").toggle();
                 if($(".peer-extra-info").is(":visible")){
-                    $(this).text("{% trans 'Hide extras' %}");
-                    $(".div-peer-text-information").removeClass('position-absolute');
+                    $(this).html('<i class="fas fa-eye-slash"></i> {% trans "Hide Details" %}');
                 } else {
-                    $(this).text("{% trans 'Show extras' %}");
-                    $(".div-peer-text-information").addClass('position-absolute');
+                    $(this).html('<i class="fas fa-eye"></i> {% trans "Show Details" %}');
+                }
+            });
+
+            // View switching
+            $("#viewTable, #hubViewTable").click(function(){
+                $("#tableView").show();
+                $("#hubView").hide();
+                $("#viewTable, #hubViewTable").addClass('active').removeClass('btn-outline-primary').addClass('btn-primary');
+                $("#viewHub, #hubViewHub").removeClass('active').removeClass('btn-primary').addClass('btn-outline-primary');
+            });
+
+            $("#viewHub, #hubViewHub").click(function(){
+                $("#tableView").hide();
+                $("#hubView").show();
+                $("#viewHub, #hubViewHub").addClass('active').removeClass('btn-outline-primary').addClass('btn-primary');
+                $("#viewTable, #hubViewTable").removeClass('active').removeClass('btn-primary').addClass('btn-outline-primary');
+                
+                // Initialize hub view if not already done
+                if (!window.hubInitialized) {
+                    initializeHubView();
+                    window.hubInitialized = true;
                 }
             });
         });
+
+        // Hub and Spoke Visualization
+        function initializeHubView() {
+            const svg = document.getElementById('hubSpokeSvg');
+            if (!svg) return;
+
+            // Clear existing peer elements
+            const existingPeers = svg.querySelectorAll('.peer-node, .peer-connection, .peer-label, .peer-ip-label, .peer-stats');
+            existingPeers.forEach(el => el.remove());
+
+            // Get peer data from the table
+            const peerRows = document.querySelectorAll('#tableView tbody tr[data-uuid]');
+            const peerCount = peerRows.length;
+            
+            if (peerCount === 0) return;
+
+            const centerX = 250;
+            const centerY = 250;
+            const radius = 180;
+            const peerRadius = 25;
+
+            // Calculate positions for peers in a circle
+            peerRows.forEach((row, index) => {
+                const uuid = row.getAttribute('data-uuid');
+                const peerNameElement = row.querySelector('.peer-name');
+                const peerIPElement = row.querySelector('.peer-ip');
+                const throughputElement = row.querySelector('.throughput-display');
+                const handshakeElement = row.querySelector('.handshake-display');
+                
+                // Get the actual text content
+                const peerName = peerNameElement ? peerNameElement.textContent.trim() : 'Unknown Peer';
+                const peerIP = peerIPElement ? peerIPElement.textContent.trim() : 'No IP';
+                const throughput = throughputElement ? throughputElement.textContent.trim() : '-- Kbps';
+                const handshake = handshakeElement ? handshakeElement.textContent.trim() : '--';
+                
+                // Debug logging
+                console.log('Peer data:', { peerName, peerIP, throughput, handshake });
+                
+                // Determine if peer is actually online (not just showing '--')
+                const isOnline = handshake !== '--' && handshake !== '0' && handshake.length > 0;
+                
+                // Calculate angle for this peer
+                const angle = (2 * Math.PI * index) / peerCount;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                // Create connection line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('class', 'peer-connection');
+                line.setAttribute('x1', centerX);
+                line.setAttribute('y1', centerY);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('data-peer-uuid', uuid);
+                svg.appendChild(line);
+
+                // Create peer node
+                const peerNode = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                peerNode.setAttribute('class', isOnline ? 'peer-node' : 'peer-node offline');
+                peerNode.setAttribute('cx', x);
+                peerNode.setAttribute('cy', y);
+                peerNode.setAttribute('r', peerRadius);
+                peerNode.setAttribute('data-uuid', uuid);
+                peerNode.setAttribute('data-peer-name', peerName);
+                peerNode.setAttribute('data-peer-ip', peerIP);
+                peerNode.setAttribute('data-throughput', throughput);
+                peerNode.setAttribute('data-handshake', handshake);
+                
+                // Add click handler
+                peerNode.addEventListener('click', function() {
+                    openPeerModal(uuid);
+                });
+                
+                // Add hover handlers
+                peerNode.addEventListener('mouseenter', function(e) {
+                    showTooltip(e, peerName, peerIP, throughput, handshake);
+                });
+                
+                peerNode.addEventListener('mouseleave', function() {
+                    hideTooltip();
+                });
+                
+                svg.appendChild(peerNode);
+
+                // Create peer name label (above the node)
+                const nameLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                nameLabel.setAttribute('class', 'peer-label');
+                nameLabel.setAttribute('x', x);
+                nameLabel.setAttribute('y', y - 45);
+                nameLabel.textContent = peerName.length > 12 ? peerName.substring(0, 12) + '...' : peerName;
+                svg.appendChild(nameLabel);
+
+                // Create IP label (below the node)
+                const ipLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                ipLabel.setAttribute('class', 'peer-ip-label');
+                ipLabel.setAttribute('x', x);
+                ipLabel.setAttribute('y', y + 45);
+                ipLabel.textContent = peerIP;
+                svg.appendChild(ipLabel);
+
+                // Create status label (further below)
+                const statusLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                statusLabel.setAttribute('class', 'peer-stats');
+                statusLabel.setAttribute('x', x);
+                statusLabel.setAttribute('y', y + 60);
+                statusLabel.textContent = isOnline ? '● Online' : '● Offline';
+                statusLabel.setAttribute('fill', isOnline ? '#28a745' : '#dc3545');
+                svg.appendChild(statusLabel);
+            });
+        }
+
+        // Tooltip functions
+        function showTooltip(event, name, ip, throughput, handshake) {
+            const tooltip = document.getElementById('peerTooltip');
+            tooltip.querySelector('.peer-name').textContent = name;
+            tooltip.querySelector('.peer-info').innerHTML = 
+                `<div>IP: ${ip}</div>
+                 <div>Status: ${handshake !== '--' ? 'Online' : 'Offline'}</div>
+                 <div>Throughput: ${throughput}</div>
+                 <div>Last Handshake: ${handshake}</div>`;
+            
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+            tooltip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('peerTooltip');
+            tooltip.classList.remove('show');
+        }
+
+        // Update hub view when data changes
+        function updateHubView() {
+            if (window.hubInitialized && document.getElementById('hubView').style.display !== 'none') {
+                initializeHubView();
+            }
+        }
     </script>
 
     <!-- VPN Invite functionality with adjustments -->
