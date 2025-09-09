@@ -97,13 +97,21 @@ def configure_instance(request, token):
         # Get the payment token
         payment_token = PaymentToken.objects.get(token=token)
         
-        # Check if token is valid
-        if payment_token.is_used:
-            messages.error(request, _('This configuration link has already been used.'))
-            return redirect('orders:order_form')
-            
+        # Check if token is expired
         if timezone.now() > payment_token.expires_at:
             messages.error(request, _('This configuration link has expired.'))
+            return redirect('orders:order_form')
+        
+        # Check if user already exists (token was used before)
+        username = payment_token.email
+        if User.objects.filter(username=username).exists():
+            # User already exists, show success message and redirect to login
+            messages.success(request, _('Your VPN instance is already set up! Please log in with your credentials.'))
+            return redirect('login')
+        
+        # Check if token is already used but user doesn't exist (edge case)
+        if payment_token.is_used:
+            messages.error(request, _('This configuration link has already been used.'))
             return redirect('orders:order_form')
             
         # Automatically create the instance on GET request (when link is clicked)
@@ -123,40 +131,36 @@ def configure_instance(request, token):
                 data = json.loads(response.content)
                 if data.get('status') == 'success':
                     # Create user account
-                    username = payment_token.email
-                    if not User.objects.filter(username=username).exists():
-                        user = User.objects.create_user(
-                            username=username,
-                            email=payment_token.email,
-                            password=payment_token.password  # Use the stored password
-                        )
-                        
-                        # Get the WireGuard instance that was just created
-                        instance = WireGuardInstance.objects.latest('created')
-                        
-                        # Create a peer group for this instance (use get_or_create to avoid duplicates)
-                        peer_group_name = f"{username}_group"
-                        peer_group, created = PeerGroup.objects.get_or_create(name=peer_group_name)
-                        peer_group.server_instance.add(instance)
-                        
-                        # Create UserAcl with peer manager level
-                        user_acl = UserAcl.objects.create(
-                            user=user,
-                            user_level=30,
-                            enable_reload=True,
-                            enable_restart=True,
-                            enable_console=True
-                        )
-                        user_acl.peer_groups.add(peer_group)
-                        
-                        # Mark token as used
-                        payment_token.is_used = True
-                        payment_token.save()
-                        
-                        messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
-                        return redirect('login')
-                    else:
-                        messages.error(request, _('A user with this email already exists or this link has already been used'))
+                    user = User.objects.create_user(
+                        username=username,
+                        email=payment_token.email,
+                        password=payment_token.password  # Use the stored password
+                    )
+                    
+                    # Get the WireGuard instance that was just created
+                    instance = WireGuardInstance.objects.latest('created')
+                    
+                    # Create a peer group for this instance (use get_or_create to avoid duplicates)
+                    peer_group_name = f"{username}_group"
+                    peer_group, created = PeerGroup.objects.get_or_create(name=peer_group_name)
+                    peer_group.server_instance.add(instance)
+                    
+                    # Create UserAcl with peer manager level
+                    user_acl = UserAcl.objects.create(
+                        user=user,
+                        user_level=30,
+                        enable_reload=True,
+                        enable_restart=True,
+                        enable_console=True
+                    )
+                    user_acl.peer_groups.add(peer_group)
+                    
+                    # Mark token as used AFTER successful user creation
+                    payment_token.is_used = True
+                    payment_token.save()
+                    
+                    messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
+                    return redirect('login')
                 else:
                     messages.error(request, data.get('message', _('Error creating instance')))
             except json.JSONDecodeError:
