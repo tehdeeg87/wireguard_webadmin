@@ -48,98 +48,10 @@
     <div class="card-header text-center">
         <label class="label" style="font-size: 1.3rem; font-weight: bold;">{% trans "Cancel Your Subscription" %}</label>
     </div>
-    <div class="card-body">
-        <!-- Warning Alert -->
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <h4 class="alert-heading">
-                <i class="fas fa-exclamation-triangle"></i> {% trans "Warning: Permanent Data Loss" %}
-            </h4>
-            <p class="mb-2">
-                <strong>{% trans "Cancelling your subscription will immediately and permanently:" %}</strong>
-            </p>
-            <ul class="mb-2">
-                <li>{% trans "Remove your entire VPN network and all configuration" %}</li>
-                <li>{% trans "Delete all peer connections and their data" %}</li>
-                <li>{% trans "Remove your user account and access permissions" %}</li>
-                <li>{% trans "Make all VPN access immediately unavailable" %}</li>
-            </ul>
-            <hr>
-            <p class="mb-0">
-                <strong>{% trans "This action cannot be undone." %} {% trans "All data will be permanently lost and cannot be recovered." %}</strong>
-            </p>
-        </div>
-        
-        <!-- Confirmation Checkbox -->
-        <div class="form-group text-center mb-3">
-            <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="confirmCancellation" required>
-                <label class="custom-control-label" for="confirmCancellation">
-                    <strong>{% trans "I understand that cancelling will permanently delete my network and all data" %}</strong>
-                </label>
-            </div>
-        </div>
-        
-        <!-- Cancel Button -->
-        <div class="text-center">
-            <a href="{{cancel}}" target="_blank" rel="noopener noreferrer" id="cancelLink" style="pointer-events: none; opacity: 0.5;">
-                <button type="button" class="btn btn-danger btn-lg" id="cancelButton" disabled>
-                    <i class="fas fa-trash-alt"></i> {% trans "Cancel Subscription" %}
-                </button>
-            </a>
-        </div>
+    <div class="card-body text-center">
+        <a href="{{cancel}}" target="_blank" rel="noopener noreferrer">
+            <button type="button" class="btn btn-danger">{% trans "Cancel Subscription" %}</button>
+        </a>
     </div>
 </div>
-{% endblock %}
-
-{% block custom_page_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.getElementById('confirmCancellation');
-    const cancelButton = document.getElementById('cancelButton');
-    const cancelLink = document.getElementById('cancelLink');
-    
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            // Enable the button and link
-            cancelButton.disabled = false;
-            cancelButton.classList.remove('btn-secondary');
-            cancelButton.classList.add('btn-danger');
-            cancelLink.style.pointerEvents = 'auto';
-            cancelLink.style.opacity = '1';
-        } else {
-            // Disable the button and link
-            cancelButton.disabled = true;
-            cancelButton.classList.remove('btn-danger');
-            cancelButton.classList.add('btn-secondary');
-            cancelLink.style.pointerEvents = 'none';
-            cancelLink.style.opacity = '0.5';
-        }
-    });
-    
-    // Add click handler for additional confirmation
-    cancelButton.addEventListener('click', function(e) {
-        if (!checkbox.checked) {
-            e.preventDefault();
-            return false;
-        }
-        
-        // Additional confirmation dialog
-        const confirmed = confirm(
-            '⚠️ FINAL WARNING ⚠️\n\n' +
-            'You are about to permanently delete:\n' +
-            '• Your entire VPN network\n' +
-            '• All peer connections\n' +
-            '• Your user account\n' +
-            '• All configuration data\n\n' +
-            'This action CANNOT be undone!\n\n' +
-            'Are you absolutely sure you want to proceed?'
-        );
-        
-        if (!confirmed) {
-            e.preventDefault();
-            return false;
-        }
-    });
-});
-</script>
 {% endblock %}

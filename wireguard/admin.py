@@ -3,9 +3,9 @@ from .models import WireGuardInstance, Peer, PeerAllowedIP, PeerStatus, Webadmin
 
 
 class WireGuardInstanceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'allow_peer_to_peer', 'created', 'updated')
+    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'created', 'updated')
     search_fields = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask')
-    list_filter = ('allow_peer_to_peer', 'created', 'updated')
+    list_filter = ('created', 'updated')
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'instance_id', 'hostname', 'listen_port')
@@ -18,7 +18,7 @@ class WireGuardInstanceAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Advanced Settings', {
-            'fields': ('post_up', 'post_down', 'peer_list_refresh_interval', 'allow_peer_to_peer'),
+            'fields': ('post_up', 'post_down', 'peer_list_refresh_interval'),
             'classes': ('collapse',)
         }),
         ('System', {

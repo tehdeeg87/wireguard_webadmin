@@ -22,12 +22,7 @@ from vpn_invite.models import InviteSettings, PeerInvite
 from wgwadmlibrary.tools import create_peer_invite, get_peer_invite_data, send_email, user_allowed_peers, \
     user_has_access_to_peer
 from wireguard.models import Peer, PeerStatus, WebadminSettings, WireGuardInstance, PeerGroup
-from django.db import models, transaction
-from django.views.decorators.csrf import csrf_exempt
-import json
-import logging
-
-logger = logging.getLogger(__name__)
+from django.db import models
 
 
 def get_api_key(api_name):
@@ -509,219 +504,94 @@ def webhook_create_instance(request):
         }, status=500)
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
-def remove_instances(request):
+def remove_instance(request):
     """
-    Complete removal endpoint for instances, peers, peer groups, users, and user ACLs.
-    
-    Expected payload:
-    {
-        "body": {
-            "instance": "user@example.com"
-        },
-        "headers": {
-            "x-api-key": "your_api_key"
-        }
-    }
+    Remove a WireGuard instance and all associated data.
+    Accepts JSON payload with 'instance' field containing the instance name/email.
+    Requires x-api-key header for authentication.
     """
     try:
-        # Parse request data
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Invalid JSON in request body'
-            }, status=400)
-        
-        # Validate required fields
-        if 'body' not in data or 'instance' not in data['body']:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Missing required field: body.instance'
-            }, status=400)
-        
-        # Validate API key
+        # Check API key authentication
         api_key = request.headers.get('x-api-key')
-        if not api_key:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Missing x-api-key header'
-            }, status=401)
-        
-        # Check API key validity
         expected_api_key = get_api_key('api')
-        if not expected_api_key or api_key != expected_api_key:
+        
+        if not api_key or not expected_api_key or api_key != expected_api_key:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid API key'
+                'message': 'Invalid or missing API key'
             }, status=401)
         
-        instance_identifier = data['body']['instance']
-        logger.info(f"Starting complete removal for instance: {instance_identifier}")
+        # Parse JSON body
+        import json
+        try:
+            body = json.loads(request.body)
+            instance_name = body.get('instance')
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON payload'
+            }, status=400)
         
-        # Use database transaction to ensure atomicity
-        with transaction.atomic():
-            removal_results = {
-                'instance_identifier': instance_identifier,
-                'removed_items': [],
-                'errors': []
-            }
-            
-            # 1. Find and remove WireGuard instance by name or email
-            try:
-                # Try to find instance by name first (in case instance name is the email)
-                instance = WireGuardInstance.objects.filter(name=instance_identifier).first()
-                
-                # If not found by name, try to find by looking for user with that email
-                if not instance:
-                    user = User.objects.filter(email=instance_identifier).first()
-                    if user:
-                        # Look for instances that might be associated with this user
-                        # This is a fallback - in practice, you might need to adjust this logic
-                        instance = WireGuardInstance.objects.filter(name=instance_identifier).first()
-                
-                if instance:
-                    # Remove all peers associated with this instance
-                    peers = Peer.objects.filter(wireguard_instance=instance)
-                    peer_count = peers.count()
-                    
-                    for peer in peers:
-                        # Remove peer status records
-                        PeerStatus.objects.filter(peer=peer).delete()
-                        
-                        # Remove peer allowed IPs
-                        from wireguard.models import PeerAllowedIP
-                        PeerAllowedIP.objects.filter(peer=peer).delete()
-                        
-                        # Remove peer invites
-                        PeerInvite.objects.filter(peer=peer).delete()
-                        
-                        # Delete the peer
-                        peer.delete()
-                    
-                    # Mark instance for pending changes
-                    instance.pending_changes = True
-                    instance.save()
-                    
-                    # Delete the instance
-                    instance.delete()
-                    
-                    removal_results['removed_items'].append({
-                        'type': 'wireguard_instance',
-                        'identifier': str(instance.uuid) if hasattr(instance, 'uuid') else instance_identifier,
-                        'peers_removed': peer_count
-                    })
-                    
-                    logger.info(f"Removed WireGuard instance: {instance_identifier} with {peer_count} peers")
-                else:
-                    removal_results['errors'].append(f"WireGuard instance not found: {instance_identifier}")
-                    
-            except Exception as e:
-                error_msg = f"Error removing WireGuard instance: {str(e)}"
-                removal_results['errors'].append(error_msg)
-                logger.error(error_msg)
-            
-            # 2. Remove peer group (append "_group" to instance name)
-            try:
-                peer_group_name = f"{instance_identifier}_group"
-                peer_groups = PeerGroup.objects.filter(name=peer_group_name)
-                
-                for peer_group in peer_groups:
-                    # Remove all peer associations
-                    peer_group.peer.clear()
-                    peer_group.server_instance.clear()
-                    
-                    # Delete the peer group
-                    peer_group.delete()
-                    
-                    removal_results['removed_items'].append({
-                        'type': 'peer_group',
-                        'identifier': peer_group_name
-                    })
-                    
-                    logger.info(f"Removed peer group: {peer_group_name}")
-                    
-            except Exception as e:
-                error_msg = f"Error removing peer group: {str(e)}"
-                removal_results['errors'].append(error_msg)
-                logger.error(error_msg)
-            
-            # 3. Remove user and user ACL
-            try:
-                # Find user by email
-                user = User.objects.filter(email=instance_identifier).first()
-                
-                if user:
-                    # Remove user ACL
-                    try:
-                        user_acl = UserAcl.objects.get(user=user)
-                        user_acl.delete()
-                        removal_results['removed_items'].append({
-                            'type': 'user_acl',
-                            'identifier': str(user_acl.uuid)
-                        })
-                    except UserAcl.DoesNotExist:
-                        pass  # No ACL to remove
-                    
-                    # Remove authentication tokens
-                    AuthenticationToken.objects.filter(user=user).delete()
-                    
-                    # Remove user sessions
-                    from django.contrib.sessions.models import Session
-                    for session in Session.objects.all():
-                        if str(user.id) == session.get_decoded().get('_auth_user_id'):
-                            session.delete()
-                    
-                    # Delete the user
-                    user.delete()
-                    
-                    removal_results['removed_items'].append({
-                        'type': 'user',
-                        'identifier': instance_identifier
-                    })
-                    
-                    logger.info(f"Removed user: {instance_identifier}")
-                else:
-                    removal_results['errors'].append(f"User not found: {instance_identifier}")
-                    
-            except Exception as e:
-                error_msg = f"Error removing user: {str(e)}"
-                removal_results['errors'].append(error_msg)
-                logger.error(error_msg)
-            
-            # 4. Regenerate WireGuard configurations to reflect changes
-            try:
-                from wireguard_tools.views import export_wireguard_configs
-                export_wireguard_configs(request)
-                removal_results['removed_items'].append({
-                    'type': 'wireguard_configs',
-                    'identifier': 'regenerated'
-                })
-                logger.info("Regenerated WireGuard configurations")
-            except Exception as e:
-                error_msg = f"Error regenerating WireGuard configs: {str(e)}"
-                removal_results['errors'].append(error_msg)
-                logger.error(error_msg)
+        if not instance_name:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Instance name is required'
+            }, status=400)
         
-        # Determine response status
-        if removal_results['errors']:
-            status_code = 207  # Multi-status (partial success)
-            if not removal_results['removed_items']:
-                status_code = 500  # Complete failure
-        else:
-            status_code = 200  # Success
+        # Find the instance by name
+        try:
+            instance = WireGuardInstance.objects.get(name=instance_name)
+        except WireGuardInstance.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Instance with name "{instance_name}" not found'
+            }, status=404)
+        
+        # Get related data counts for response
+        peers_count = instance.peer_set.count()
+        peer_groups_count = PeerGroup.objects.filter(server_instance=instance).count()
+        
+        # Delete all associated peers and their data
+        for peer in instance.peer_set.all():
+            # Delete peer status
+            try:
+                peer.peerstatus.delete()
+            except:
+                pass
+            
+            # Delete peer allowed IPs
+            peer.peerallowedip_set.all().delete()
+            
+            # Remove peer from all peer groups
+            for peer_group in PeerGroup.objects.filter(peer=peer):
+                peer_group.peer.remove(peer)
+            
+            # Delete the peer
+            peer.delete()
+        
+        # Remove instance from all peer groups
+        for peer_group in PeerGroup.objects.filter(server_instance=instance):
+            peer_group.server_instance.remove(instance)
+        
+        # Delete the instance
+        instance_uuid = str(instance.uuid)
+        instance_id = instance.instance_id
+        instance.delete()
         
         return JsonResponse({
-            'status': 'success' if status_code == 200 else 'partial_success' if status_code == 207 else 'error',
-            'message': f'Removal completed for {instance_identifier}',
-            'results': removal_results
-        }, status=status_code)
+            'status': 'success',
+            'message': f'Instance "{instance_name}" and all associated data deleted successfully',
+            'deleted_data': {
+                'instance_uuid': instance_uuid,
+                'instance_id': instance_id,
+                'peers_deleted': peers_count,
+                'peer_groups_updated': peer_groups_count
+            }
+        })
         
     except Exception as e:
-        logger.error(f"Unexpected error in remove_instances: {str(e)}")
         return JsonResponse({
             'status': 'error',
-            'message': f'Internal server error: {str(e)}'
+            'message': f'An error occurred: {str(e)}'
         }, status=500)
