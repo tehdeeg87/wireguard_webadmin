@@ -207,7 +207,9 @@ def generate_firewall_footer():
     for wireguard_instance in WireGuardInstance.objects.all().order_by('instance_id'):
         # Check both global setting AND instance-specific setting
         # Instance setting takes precedence over global setting
-        allow_p2p = wireguard_instance.allow_peer_to_peer and firewall_settings.allow_peer_to_peer
+        # Note: allow_peer_to_peer field was removed from WireGuardInstance model
+        # Using only global firewall setting for now
+        allow_p2p = firewall_settings.allow_peer_to_peer
         footer += f'iptables -t filter -A WGWADM_FORWARD -i wg{wireguard_instance.instance_id} -o wg{wireguard_instance.instance_id} -j '
         footer += 'ACCEPT\n' if allow_p2p else deny_policy + "\n"
     

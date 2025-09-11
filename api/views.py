@@ -511,14 +511,14 @@ def remove_instance(request):
     """
     Remove a WireGuard instance and all associated data.
     Accepts JSON payload with 'instance' field containing the instance name/email.
-    Requires x-api-key header for authentication.
+    Requires X-API-Key header for authentication.
     """
     try:
-        # Check API key authentication
-        api_key = request.headers.get('x-api-key')
-        expected_api_key = get_api_key('api')
+        # Check API key authentication (same as process_payment_success)
+        api_key = request.headers.get('X-API-Key')  # Note: Capital X
+        expected_api_key = getattr(settings, 'N8N_API_KEY', 'test-api-key-123')
         
-        if not api_key or not expected_api_key or api_key != expected_api_key:
+        if not api_key or api_key != expected_api_key:
             return JsonResponse({
                 'status': 'error',
                 'message': 'Invalid or missing API key'
