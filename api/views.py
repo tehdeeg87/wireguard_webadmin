@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
 from user_manager.models import AuthenticationToken, UserAcl
 from vpn_invite.models import InviteSettings, PeerInvite
@@ -504,6 +505,7 @@ def webhook_create_instance(request):
         }, status=500)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def remove_instance(request):
     """
