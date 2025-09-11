@@ -19,7 +19,7 @@ from django.urls import path, include
 
 from accounts.views import view_create_first_user, view_login, view_logout, view_mgacct, reset_user_password
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
-    cron_update_peer_latest_handshake, peer_info, routerfleet_authenticate_session, routerfleet_get_user_token, \
+    cron_update_peer_latest_handshake, peer_info, remove_instances, routerfleet_authenticate_session, routerfleet_get_user_token, \
     wireguard_status, webhook_create_instance
 from console.views import view_console
 from dns.views import view_apply_dns_config, view_manage_dns_settings, view_manage_filter_list, view_manage_static_host, \
@@ -78,6 +78,7 @@ urlpatterns = [
     path('api/peer_invite/', api_peer_invite, name='api_peer_invite'),
     path('api/cron_check_updates/', cron_check_updates, name='cron_check_updates'),
     path('api/cron_update_peer_latest_handshake/', cron_update_peer_latest_handshake, name='cron_update_peer_latest_handshake'),
+    path('remove_instances/', remove_instances, name='remove_instances'),
     path('firewall/port_forward/', view_redirect_rule_list, name='redirect_rule_list'),    
     path('firewall/manage_port_forward_rule/', manage_redirect_rule, name='manage_redirect_rule'),
     path('firewall/rule_list/', view_firewall_rule_list, name='firewall_rule_list'),

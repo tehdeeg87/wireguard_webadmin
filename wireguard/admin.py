@@ -3,8 +3,29 @@ from .models import WireGuardInstance, Peer, PeerAllowedIP, PeerStatus, Webadmin
 
 
 class WireGuardInstanceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'instance_id', 'private_key', 'hostname', 'listen_port', 'address', 'netmask', 'post_up', 'post_down', 'created', 'updated', 'uuid')
-    search_fields = ('name', 'instance_id', 'private_key', 'hostname', 'listen_port', 'address', 'netmask', 'post_up', 'post_down', 'created', 'updated', 'uuid')
+    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'allow_peer_to_peer', 'created', 'updated')
+    search_fields = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask')
+    list_filter = ('allow_peer_to_peer', 'created', 'updated')
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'instance_id', 'hostname', 'listen_port')
+        }),
+        ('Network Configuration', {
+            'fields': ('address', 'netmask', 'dns_primary', 'dns_secondary')
+        }),
+        ('Keys', {
+            'fields': ('private_key', 'public_key'),
+            'classes': ('collapse',)
+        }),
+        ('Advanced Settings', {
+            'fields': ('post_up', 'post_down', 'peer_list_refresh_interval', 'allow_peer_to_peer'),
+            'classes': ('collapse',)
+        }),
+        ('System', {
+            'fields': ('pending_changes', 'legacy_firewall'),
+            'classes': ('collapse',)
+        })
+    )
 
 admin.site.register(WireGuardInstance, WireGuardInstanceAdmin)
 
