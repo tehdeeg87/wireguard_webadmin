@@ -49,9 +49,63 @@
         <label class="label" style="font-size: 1.3rem; font-weight: bold;">{% trans "Cancel Your Subscription" %}</label>
     </div>
     <div class="card-body text-center">
-        <a href="{{cancel}}" target="_blank" rel="noopener noreferrer">
-            <button type="button" class="btn btn-danger">{% trans "Cancel Subscription" %}</button>
-        </a>
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelSubscriptionModal">
+            {% trans "Cancel Subscription" %}
+        </button>
+    </div>
+</div>
+
+<!-- Cancel Subscription Warning Modal -->
+<div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-labelledby="cancelSubscriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="cancelSubscriptionModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> {% trans "Warning: Cancel Subscription" %}
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> {% trans "Warning" %}</h6>
+                    <p class="mb-0">{% trans "Proceeding with the cancellation will cause the following:" %}</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-users text-danger mr-2"></i>
+                        <span>{% trans "All VPN peers will be immediately revoked and disconnected" %}</span>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-network-wired text-danger mr-2"></i>
+                        <span>{% trans "Network access will be terminated instantly" %}</span>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-server text-danger mr-2"></i>
+                        <span>{% trans "Your VPN instance will be permanently deleted" %}</span>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="fas fa-download text-danger mr-2"></i>
+                        <span>{% trans "All configuration files will become invalid" %}</span>
+                    </li>
+                </ul>
+                <div class="mt-3">
+                    <p class="text-muted small">
+                        <i class="fas fa-info-circle"></i> 
+                        {% trans "This action cannot be undone. If you need to reactivate service, you will need to create a new subscription." %}
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> {% trans "Keep Subscription" %}
+                </button>
+                <a href="{{cancel}}" target="_blank" rel="noopener noreferrer" class="btn btn-danger">
+                    <i class="fas fa-exclamation-triangle"></i> {% trans "Proceed to Cancel" %}
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
