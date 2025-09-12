@@ -3,7 +3,7 @@ from .models import WireGuardInstance, Peer, PeerAllowedIP, PeerStatus, Webadmin
 
 
 class WireGuardInstanceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'created', 'updated')
+    list_display = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask', 'bandwidth_limit_enabled', 'bandwidth_limit_mbps', 'created', 'updated')
     search_fields = ('name', 'instance_id', 'hostname', 'listen_port', 'address', 'netmask')
     list_filter = ('created', 'updated')
     fieldsets = (
@@ -19,6 +19,10 @@ class WireGuardInstanceAdmin(admin.ModelAdmin):
         }),
         ('Advanced Settings', {
             'fields': ('post_up', 'post_down', 'peer_list_refresh_interval'),
+            'classes': ('collapse',)
+        }),
+        ('Bandwidth Limiting', {
+            'fields': ('bandwidth_limit_enabled', 'bandwidth_limit_mbps'),
             'classes': ('collapse',)
         }),
         ('System', {

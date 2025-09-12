@@ -21,12 +21,15 @@ class WireGuardInstanceForm(forms.ModelForm):
     peer_list_refresh_interval = forms.IntegerField(label=_('Web Refresh Interval'), initial=10)
     dns_primary = forms.GenericIPAddressField(label=_('Primary DNS'), initial='1.1.1.1', required=False)
     dns_secondary = forms.GenericIPAddressField(label=_('Secondary DNS'), initial='', required=False)
+    bandwidth_limit_enabled = forms.BooleanField(label=_('Enable Bandwidth Limiting'), initial=True, required=False)
+    bandwidth_limit_mbps = forms.IntegerField(label=_('Bandwidth Limit (Mbps)'), initial=50, min_value=1, max_value=10000)
 
     class Meta:
         model = WireGuardInstance
         fields = [
             'name', 'instance_id', 'private_key', 'public_key','hostname', 'listen_port', 'address', 
-            'netmask', 'post_up', 'post_down', 'peer_list_refresh_interval', 'dns_primary', 'dns_secondary'
+            'netmask', 'post_up', 'post_down', 'peer_list_refresh_interval', 'dns_primary', 'dns_secondary',
+            'bandwidth_limit_enabled', 'bandwidth_limit_mbps'
             ]
         
     def clean(self):
@@ -40,6 +43,10 @@ class WireGuardInstanceForm(forms.ModelForm):
         peer_list_refresh_interval = cleaned_data.get('peer_list_refresh_interval')
         if peer_list_refresh_interval < 5:
             raise forms.ValidationError(_('Peer List Refresh Interval must be at least 5 seconds'))
+        
+        bandwidth_limit_mbps = cleaned_data.get('bandwidth_limit_mbps')
+        if bandwidth_limit_mbps and (bandwidth_limit_mbps < 1 or bandwidth_limit_mbps > 10000):
+            raise forms.ValidationError(_('Bandwidth limit must be between 1 and 10000 Mbps'))
 
         if not is_valid_ip_or_hostname(hostname):
             raise forms.ValidationError(_('Invalid hostname or IP Address'))

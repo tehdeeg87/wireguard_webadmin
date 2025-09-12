@@ -63,6 +63,10 @@ class WireGuardInstance(models.Model):
     pending_changes = models.BooleanField(default=True)
     legacy_firewall = models.BooleanField(default=False)
     #allow_peer_to_peer = models.BooleanField(default=True, help_text="Allow peers within this instance to communicate with each other")
+    
+    # Bandwidth limiting fields
+    bandwidth_limit_enabled = models.BooleanField(default=True, help_text="Enable bandwidth limiting for this instance")
+    bandwidth_limit_mbps = models.PositiveIntegerField(default=50, help_text="Bandwidth limit in Mbps")
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

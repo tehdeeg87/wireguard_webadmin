@@ -19,6 +19,7 @@ from user_manager.models import UserAcl
 from vpn_invite.models import PeerInvite
 from wgwadmlibrary.tools import user_has_access_to_peer
 from wireguard.models import Peer, PeerAllowedIP, WireGuardInstance
+from .bandwidth_limiter import generate_bandwidth_limiting_script, generate_bandwidth_cleanup_script
 
 
 def clean_command_field(command_field):
@@ -114,8 +115,42 @@ def export_wireguard_configs(request):
                         rule_text_down += f"iptables -t nat -D POSTROUTING -d {rule_destination} -p {redirect_rule.protocol} --dport {redirect_rule.port} -j MASQUERADE ; "
                     post_up_processed += rule_text_up
                     post_down_processed += rule_text_down
+            
+            # Add bandwidth limiting if enabled (for legacy firewall case)
+            if instance.bandwidth_limit_enabled:
+                bandwidth_script_path = f'/etc/wireguard/wg{instance.instance_id}_bandwidth.sh'
+                bandwidth_cleanup_script_path = f'/etc/wireguard/wg{instance.instance_id}_bandwidth_cleanup.sh'
+                
+                # Generate bandwidth limiting script
+                bandwidth_script_content = generate_bandwidth_limiting_script(
+                    instance.instance_id, 
+                    instance.bandwidth_limit_mbps
+                )
+                
+                # Generate bandwidth cleanup script
+                bandwidth_cleanup_script_content = generate_bandwidth_cleanup_script(
+                    instance.instance_id
+                )
+                
+                # Write bandwidth scripts to files
+                with open(bandwidth_script_path, 'w') as f:
+                    f.write(bandwidth_script_content)
+                os.chmod(bandwidth_script_path, 0o755)
+                
+                with open(bandwidth_cleanup_script_path, 'w') as f:
+                    f.write(bandwidth_cleanup_script_content)
+                os.chmod(bandwidth_cleanup_script_path, 0o755)
+                
+                # Add bandwidth limiting to PostUp and PostDown
+                if post_up_processed:
+                    post_up_processed += f' ; {bandwidth_script_path}'
+                else:
+                    post_up_processed = bandwidth_script_path
                     
-            pass
+                if post_down_processed:
+                    post_down_processed += f' ; {bandwidth_cleanup_script_path}'
+                else:
+                    post_down_processed = bandwidth_cleanup_script_path
         else:
             post_down_processed = ''
             
@@ -124,6 +159,42 @@ def export_wireguard_configs(request):
                 firewall_inserted = True
             else:
                 post_up_processed = ''
+            
+            # Add bandwidth limiting if enabled
+            if instance.bandwidth_limit_enabled:
+                bandwidth_script_path = f'/etc/wireguard/wg{instance.instance_id}_bandwidth.sh'
+                bandwidth_cleanup_script_path = f'/etc/wireguard/wg{instance.instance_id}_bandwidth_cleanup.sh'
+                
+                # Generate bandwidth limiting script
+                bandwidth_script_content = generate_bandwidth_limiting_script(
+                    instance.instance_id, 
+                    instance.bandwidth_limit_mbps
+                )
+                
+                # Generate bandwidth cleanup script
+                bandwidth_cleanup_script_content = generate_bandwidth_cleanup_script(
+                    instance.instance_id
+                )
+                
+                # Write bandwidth scripts to files
+                with open(bandwidth_script_path, 'w') as f:
+                    f.write(bandwidth_script_content)
+                os.chmod(bandwidth_script_path, 0o755)
+                
+                with open(bandwidth_cleanup_script_path, 'w') as f:
+                    f.write(bandwidth_cleanup_script_content)
+                os.chmod(bandwidth_cleanup_script_path, 0o755)
+                
+                # Add bandwidth limiting to PostUp and PostDown
+                if post_up_processed:
+                    post_up_processed += f' ; {bandwidth_script_path}'
+                else:
+                    post_up_processed = bandwidth_script_path
+                    
+                if post_down_processed:
+                    post_down_processed += f' ; {bandwidth_cleanup_script_path}'
+                else:
+                    post_down_processed = bandwidth_cleanup_script_path
             
 
         config_lines = [
