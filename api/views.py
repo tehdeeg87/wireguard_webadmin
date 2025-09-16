@@ -428,6 +428,7 @@ def api_peer_invite(request):
 
 @require_http_methods(["GET"])
 def webhook_create_instance(request):
+    from wgwadmlibrary.dns_utils import get_optimal_dns_config
 
     try:
         # Get user count and email from request
@@ -477,8 +478,8 @@ def webhook_create_instance(request):
             listen_port=new_listen_port,
             address=new_address,
             netmask=netmask,  # Use calculated netmask
-            dns_primary=request.GET.get('dns_primary', '8.8.8.8'),
-            dns_secondary=request.GET.get('dns_secondary', '8.8.4.4'),
+            dns_primary=request.GET.get('dns_primary', get_optimal_dns_config()[0]),
+            dns_secondary=request.GET.get('dns_secondary', get_optimal_dns_config()[1]),
             pending_changes=True
         )
 

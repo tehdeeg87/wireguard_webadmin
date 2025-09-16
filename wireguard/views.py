@@ -14,6 +14,8 @@ from .models import WebadminSettings, WireGuardInstance
 
 
 def generate_instance_defaults():
+    from wgwadmlibrary.dns_utils import get_optimal_dns_config
+    
     max_instance_id = WireGuardInstance.objects.all().aggregate(models.Max('instance_id'))['instance_id__max']
     new_instance_id = (max_instance_id + 1) if max_instance_id is not None else 0
 
@@ -61,7 +63,8 @@ def generate_instance_defaults():
         'private_key': new_private_key,
         'public_key': new_public_key,
         'address': new_address,
-        'dns_primary': new_address,
+        'dns_primary': get_optimal_dns_config()[0],
+        'dns_secondary': get_optimal_dns_config()[1],
         'netmask': 24,
         'persistent_keepalive': 25,
         'hostname': 'myserver.example.com',

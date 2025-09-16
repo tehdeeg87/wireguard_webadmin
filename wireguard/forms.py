@@ -19,8 +19,8 @@ class WireGuardInstanceForm(forms.ModelForm):
     post_up = forms.CharField(label=_('Post Up'), required=False)
     post_down = forms.CharField(label=_('Post Down'), required=False)
     peer_list_refresh_interval = forms.IntegerField(label=_('Web Refresh Interval'), initial=10)
-    dns_primary = forms.GenericIPAddressField(label=_('Primary DNS'), initial='1.1.1.1', required=False)
-    dns_secondary = forms.GenericIPAddressField(label=_('Secondary DNS'), initial='', required=False)
+    dns_primary = forms.GenericIPAddressField(label=_('Primary DNS'), initial='172.19.0.2', required=False)
+    dns_secondary = forms.GenericIPAddressField(label=_('Secondary DNS'), initial='8.8.8.8', required=False)
     bandwidth_limit_enabled = forms.BooleanField(label=_('Enable Bandwidth Limiting'), initial=True, required=False)
     bandwidth_limit_mbps = forms.IntegerField(label=_('Bandwidth Limit (Mbps)'), initial=50, min_value=1, max_value=10000)
 
