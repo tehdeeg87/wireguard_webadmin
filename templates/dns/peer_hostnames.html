@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-network-wired"></i>
+                    {% trans 'Peer Hostnames' %}
+                </h3>
+                <div class="card-tools">
+                    <a href="/dns/" class="btn btn-tool">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if dns_settings.pending_changes %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        {% trans 'Pending Changes|There are pending DNS changes that have not been applied' %}
+                        <a href="/dns/apply_config/" class="btn btn-warning btn-sm float-right">
+                            {% trans 'Apply Changes' %}
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'Instance' %}</th>
+                                <th>{% trans 'Peer Name' %}</th>
+                                <th>{% trans 'Hostname' %}</th>
+                                <th>{% trans 'IP Address' %}</th>
+                                <th>{% trans 'DNS Resolution' %}</th>
+                                <th>{% trans 'Actions' %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for peer_data in peers_with_ips %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-info">{{ peer_data.instance_name }}</span>
+                                </td>
+                                <td>
+                                    {% if peer_data.peer.name %}
+                                        {{ peer_data.peer.name }}
+                                    {% else %}
+                                        <em class="text-muted">{% trans 'Unnamed' %}</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if peer_data.peer.hostname %}
+                                        <code>{{ peer_data.peer.hostname }}</code>
+                                    {% else %}
+                                        <em class="text-muted">{% trans 'No hostname' %}</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <code>{{ peer_data.ip_address }}</code>
+                                </td>
+                                <td>
+                                    {% if peer_data.peer.hostname and peer_data.ip_address != 'No IP assigned' %}
+                                        <div class="small">
+                                            <div><code>{{ peer_data.peer.hostname }}</code> → <code>{{ peer_data.ip_address }}</code></div>
+                                            <div><code>{{ peer_data.peer.hostname }}.{{ peer_data.instance_name }}</code> → <code>{{ peer_data.ip_address }}</code></div>
+                                        </div>
+                                    {% else %}
+                                        <em class="text-muted">{% trans 'Not available' %}</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/peer/manage/?uuid={{ peer_data.peer.uuid }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> {% trans 'Edit' %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    {% trans 'No peers found' %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                    <h5>{% trans 'How to Use Peer Hostnames' %}</h5>
+                    <div class="alert alert-info">
+                        <ul class="mb-0">
+                            <li>{% trans 'Set a hostname for each peer in the peer management interface' %}</li>
+                            <li>{% trans 'Peers can then resolve each other using hostnames like:' %}
+                                <ul>
+                                    <li><code>hostname</code> - {% trans 'Resolves to the peer IP' %}</li>
+                                    <li><code>hostname.instance</code> - {% trans 'Instance-specific resolution' %}</li>
+                                </ul>
+                            </li>
+                            <li>{% trans 'DNS changes are applied automatically when you save peer settings' %}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

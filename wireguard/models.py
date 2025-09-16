@@ -81,6 +81,7 @@ class WireGuardInstance(models.Model):
 
 class Peer(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
+    hostname = models.CharField(max_length=100, blank=True, null=True, help_text="DNS hostname for this peer (e.g., 'laptop', 'server')")
     public_key = models.CharField(max_length=100)
     pre_shared_key = models.CharField(max_length=100)
     private_key = models.CharField(max_length=100, blank=True, null=True)

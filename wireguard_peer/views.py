@@ -34,8 +34,12 @@ def generate_peer_default(wireguard_instance):
             free_ip_address = str(ip)
             break
     
+    # Generate a default hostname based on the IP address
+    default_hostname = f"peer-{free_ip_address.split('.')[-1]}" if free_ip_address else "peer-unknown"
+    
     return {
         'name': '',
+        'hostname': default_hostname,
         'public_key': public_key,
         'pre_shared_key': pre_shared_key,
         'persistent_keepalive': 25,

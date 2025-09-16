@@ -23,7 +23,7 @@ from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_ch
     wireguard_status, webhook_create_instance
 from console.views import view_console
 from dns.views import view_apply_dns_config, view_manage_dns_settings, view_manage_filter_list, view_manage_static_host, \
-    view_static_host_list, view_toggle_dns_list, view_update_dns_list
+    view_peer_hostnames, view_static_host_list, view_toggle_dns_list, view_update_dns_list
 from firewall.views import manage_firewall_rule, manage_redirect_rule, view_firewall_migration_required, \
     view_firewall_rule_list, view_generate_iptables_script, view_manage_firewall_settings, view_redirect_rule_list, \
     view_reset_firewall
@@ -50,6 +50,7 @@ urlpatterns = [
     path('dns/manage_filter_list/', view_manage_filter_list, name='manage_filter_list'),
     path('dns/update_dns_list/', view_update_dns_list, name='update_dns_list'),
     path('dns/toggle_dns_list/', view_toggle_dns_list, name='toggle_dns_list'),
+    path('dns/peer_hostnames/', view_peer_hostnames, name='peer_hostnames'),
     path('peer/list/', view_wireguard_peer_list, name='wireguard_peer_list'),
     path('peer/sort/', view_wireguard_peer_sort, name='wireguard_peer_sort'),
     path('peer/manage/', view_wireguard_peer_manage, name='wireguard_peer_manage'),

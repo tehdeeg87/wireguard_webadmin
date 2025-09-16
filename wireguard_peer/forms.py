@@ -8,6 +8,7 @@ from wireguard.models import NETMASK_CHOICES, Peer, PeerAllowedIP
 
 class PeerForm(forms.ModelForm):
     name = forms.CharField(label=_('Name'), required=False)
+    hostname = forms.CharField(label=_('Hostname'), required=False, help_text=_('DNS hostname for this peer (e.g., laptop, server)'))
     public_key = forms.CharField(label=_('Public Key'), required=True)
     private_key = forms.CharField(label=_('Private Key'), required=False)
     pre_shared_key = forms.CharField(label=_('Pre-Shared Key'), required=True)
@@ -15,7 +16,7 @@ class PeerForm(forms.ModelForm):
     
     class Meta:
         model = Peer
-        fields = ['name', 'public_key', 'private_key', 'pre_shared_key', 'persistent_keepalive']
+        fields = ['name', 'hostname', 'public_key', 'private_key', 'pre_shared_key', 'persistent_keepalive']
         
 
 class PeerAllowedIPForm(forms.ModelForm):

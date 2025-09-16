@@ -15,6 +15,7 @@ from .forms import DNSSettingsForm, StaticHostForm
 from .functions import generate_dnsmasq_config
 from .models import DNSFilterList, DNSSettings
 from .models import StaticHost
+from wireguard.models import Peer
 
 
 def export_dns_configuration():
@@ -280,3 +281,34 @@ def view_toggle_dns_list(request):
         export_dns_configuration()
         messages.success(request, _('DNS Filter List disabled successfully'))
     return redirect('/dns/')
+
+
+@login_required
+def view_peer_hostnames(request):
+    """Display all peers with their hostnames for DNS management."""
+    if not UserAcl.objects.filter(user=request.user, user_level__gte=40).exists():
+        return render(request, 'access_denied.html', {'page_title': 'Access Denied'})
+    
+    dns_settings, _ = DNSSettings.objects.get_or_create(name='dns_settings')
+    
+    # Get all peers with their IP addresses
+    peers_with_ips = []
+    for peer in Peer.objects.all().order_by('wireguard_instance__instance_id', 'name', 'hostname'):
+        peer_ip = PeerAllowedIP.objects.filter(
+            peer=peer, 
+            config_file='server', 
+            priority=0
+        ).first()
+        
+        peers_with_ips.append({
+            'peer': peer,
+            'ip_address': peer_ip.allowed_ip if peer_ip else 'No IP assigned',
+            'instance_name': peer.wireguard_instance.name or f'wg{peer.wireguard_instance.instance_id}'
+        })
+    
+    context = {
+        'dns_settings': dns_settings,
+        'peers_with_ips': peers_with_ips,
+        'page_title': 'Peer Hostnames'
+    }
+    return render(request, 'dns/peer_hostnames.html', context)
