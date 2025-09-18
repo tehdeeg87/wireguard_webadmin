@@ -66,10 +66,12 @@ def generate_instance_defaults():
         'dns_primary': get_optimal_dns_config()[0],
         'dns_secondary': get_optimal_dns_config()[1],
         'netmask': 24,
-        'persistent_keepalive': 25,
+        'peer_list_refresh_interval': 10,
         'hostname': 'myserver.example.com',
         'post_up': post_up_script,
         'post_down': post_down_script,
+        'bandwidth_limit_enabled': True,
+        'bandwidth_limit_mbps': 50,
     }
 
 
@@ -141,8 +143,23 @@ def view_wireguard_manage_instance(request):
                 if current_instance.peer_set.all().count() > 0:
                     messages.warning(request, _('Error removing instance: wg') + str(current_instance.instance_id) + _('|Cannot delete the requested WireGuard instance. There are still peers associated with this instance.'))
                     return redirect('/server/manage/?uuid=' + str(current_instance.uuid))
+                
+                # Store instance info before deletion
+                instance_id = current_instance.instance_id
+                instance_name = current_instance.name or f'wg{instance_id}'
+                
+                # Delete the instance
                 current_instance.delete()
-                messages.success(request, message_title + _('|WireGuard instance deleted: wg') + str(current_instance.instance_id))
+                
+                # Reload WireGuard interfaces to apply changes
+                from wireguard_tools.views import reload_wireguard_interfaces
+                success, message = reload_wireguard_interfaces()
+                
+                if success:
+                    messages.success(request, message_title + _('|WireGuard instance deleted: wg') + str(instance_id) + _(' and interfaces reloaded successfully.'))
+                else:
+                    messages.warning(request, message_title + _('|WireGuard instance deleted: wg') + str(instance_id) + f' but reload failed: {message}')
+                
                 return redirect('/server/manage/')
             else:
                 messages.warning(request, _('Invalid confirmation|Please confirm deletion of WireGuard instance: wg') + str(current_instance.instance_id))

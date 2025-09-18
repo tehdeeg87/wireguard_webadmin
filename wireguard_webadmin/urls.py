@@ -35,7 +35,7 @@ from wgrrd.views import view_rrd_graph
 from wireguard.views import view_apply_db_patches, view_wireguard_manage_instance, view_wireguard_status
 from wireguard_peer.views import view_manage_ip_address, view_mg_acct,  view_wireguard_peer_list, view_wireguard_peer_manage, \
     view_wireguard_peer_sort
-from wireguard_tools.views import download_config_or_qrcode, export_wireguard_configs, restart_wireguard_interfaces
+from wireguard_tools.views import download_config_or_qrcode, download_remote_access_file, export_wireguard_configs, restart_wireguard_interfaces
 
 urlpatterns = [
     path('admin_panel/', admin.site.urls),
@@ -63,6 +63,7 @@ urlpatterns = [
     path('user/peer-group/manage/', view_peer_group_manage, name='peer_group_manage'),
     path('tools/export_wireguard_config/', export_wireguard_configs, name='export_wireguard_configs'),
     path('tools/download_peer_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
+    path('tools/download_remote_access/', download_remote_access_file, name='download_remote_access_file'),
     path('tools/restart_wireguard/', restart_wireguard_interfaces, name='restart_wireguard_interfaces'),
     path('server/manage/', view_wireguard_manage_instance, name='wireguard_manage_instance'),
     path('accounts/create_first_user/', view_create_first_user, name='create_first_user'),

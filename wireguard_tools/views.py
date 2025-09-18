@@ -10,6 +10,10 @@ from django.http import HttpResponse
 from django.shortcuts import Http404, get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.template.loader import render_to_string
+import logging
+
+logger = logging.getLogger(__name__)
 
 from dns.views import export_dns_configuration
 from firewall.models import RedirectRule
@@ -24,8 +28,68 @@ from .bandwidth_limiter import generate_bandwidth_limiting_script, generate_band
 
 def clean_command_field(command_field):
     cleaned_field = re.sub(r'[\r\n]+', '; ', command_field)
-    cleaned_field = re.sub(r'[\x00-\x1F\x7F]+', '', cleaned_field)
+    cleaned_field = re.sub(r'[\x00-\x1F\x7F]+', '', command_field)
     return cleaned_field
+
+
+def reload_wireguard_interfaces():
+    """
+    Reload all WireGuard interfaces to apply configuration changes.
+    This function is called after instance deletion to ensure peers can no longer connect.
+    """
+    try:
+        config_dir = "/etc/wireguard"
+        interface_count = 0
+        error_count = 0
+        
+        logger.info("Starting WireGuard interface reload after instance deletion...")
+        
+        for filename in os.listdir(config_dir):
+            if filename.endswith(".conf"):
+                interface_name = filename[:-5]
+                
+                # Use wg syncconf for reloading (safer than restart)
+                config_path = os.path.join(config_dir, filename)
+                
+                # Create a temporary config without the interface section for syncconf
+                with open(config_path, 'r') as f:
+                    lines = f.readlines()
+                
+                filtered_lines = []
+                for line in lines:
+                    stripped_line = line.strip()
+                    if stripped_line.startswith("Address") or stripped_line.startswith("PostUp") or stripped_line.startswith("PostDown"):
+                        continue
+                    filtered_lines.append(line)
+
+                temp_config_path = f"/tmp/wgreload_{interface_name}.conf"
+                with open(temp_config_path, 'w') as f:
+                    f.writelines(filtered_lines)
+
+                reload_command = f"wg syncconf {interface_name} {temp_config_path}"
+                result = subprocess.run(reload_command, shell=True, capture_output=True, text=True)
+                os.remove(temp_config_path)
+
+                if result.returncode != 0:
+                    logger.error(f"Error reloading {interface_name}: {result.stderr}")
+                    error_count += 1
+                else:
+                    logger.info(f"Successfully reloaded {interface_name}")
+                    interface_count += 1
+
+        if interface_count > 0 and error_count == 0:
+            logger.info(f"✅ Successfully reloaded {interface_count} WireGuard interfaces")
+            return True, f"Reloaded {interface_count} interfaces successfully"
+        elif error_count > 0:
+            logger.error(f"❌ Errors encountered reloading interfaces: {error_count} failed")
+            return False, f"Errors reloading {error_count} interfaces"
+        else:
+            logger.warning("No WireGuard interfaces found to reload")
+            return True, "No interfaces found to reload"
+            
+    except Exception as e:
+        logger.error(f"❌ Unexpected error during WireGuard reload: {e}")
+        return False, f"Error during reload: {str(e)}"
 
 
 def generate_peer_config(peer_uuid):
@@ -60,6 +124,92 @@ def generate_peer_config(peer_uuid):
         f"PersistentKeepalive = {peer.persistent_keepalive}",
     ]
     return "\n".join(config_lines)
+
+
+def get_peer_connection_info(peer_uuid):
+    """Get peer connection information for remote access files"""
+    peer = get_object_or_404(Peer, uuid=peer_uuid)
+    priority_zero_ip = PeerAllowedIP.objects.filter(config_file='server', peer=peer, priority=0).first()
+    
+    if not priority_zero_ip:
+        return None
+    
+    return {
+        'peer_name': str(peer),
+        'peer_ip': priority_zero_ip.allowed_ip,
+        'peer_uuid': str(peer.uuid),
+        'instance_name': peer.wireguard_instance.name or f"wg{peer.wireguard_instance.instance_id}",
+    }
+
+
+def generate_remote_access_file(peer_uuid, file_type):
+    """Generate remote access configuration files using templates"""
+    connection_info = get_peer_connection_info(peer_uuid)
+    if not connection_info:
+        return None, "No IP with priority zero found for this peer."
+    
+    # Map file types to template names
+    template_mapping = {
+        'nomachine': 'wireguard_tools/nomachine.nxs',
+        'rdp': 'wireguard_tools/rdp.rdp',
+        'vnc': 'wireguard_tools/vnc.vnc',
+        'ssh': 'wireguard_tools/ssh_config',
+    }
+    
+    template_name = template_mapping.get(file_type)
+    if not template_name:
+        return None, f"Unsupported file type: {file_type}"
+    
+    try:
+        content = render_to_string(template_name, connection_info)
+        return content, None
+    except Exception as e:
+        return None, f"Error generating {file_type} file: {str(e)}"
+
+
+@login_required
+def download_remote_access_file(request):
+    """Download remote access configuration files"""
+    if not request.user.is_authenticated:
+        raise Http404
+
+    if not UserAcl.objects.filter(user=request.user).filter(user_level__gte=20).exists():
+        return render(request, 'access_denied.html', {'page_title': 'Access Denied'})
+    
+    peer = get_object_or_404(Peer, uuid=request.GET.get('uuid'))
+    user_acl = get_object_or_404(UserAcl, user=request.user)
+
+    if not user_has_access_to_peer(user_acl, peer):
+        raise Http404
+
+    file_type = request.GET.get('type', 'nomachine')
+    
+    content, error = generate_remote_access_file(peer.uuid, file_type)
+    if error:
+        return HttpResponse(error, content_type="text/plain", status=400)
+    
+    # Set appropriate content type and filename
+    content_types = {
+        'nomachine': 'application/xml',
+        'rdp': 'application/rdp',
+        'vnc': 'text/plain',
+        'ssh': 'text/plain',
+    }
+    
+    file_extensions = {
+        'nomachine': 'nxs',
+        'rdp': 'rdp',
+        'vnc': 'vnc',
+        'ssh': 'txt',
+    }
+    
+    peer_filename = re.sub(r'[^a-zA-Z0-9]', '_', str(peer))
+    filename = f"{peer_filename}.{file_extensions.get(file_type, 'txt')}"
+    
+    response = HttpResponse(content, content_type=content_types.get(file_type, 'text/plain'))
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
 
 
 def export_firewall_configuration():
@@ -261,9 +411,8 @@ def download_config_or_qrcode(request):
 
     format_type = request.GET.get('format', 'conf')
 
-    config_content = generate_peer_config(peer.uuid)
-
     if format_type == 'qrcode':
+        config_content = generate_peer_config(peer.uuid)
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -279,8 +428,8 @@ def download_config_or_qrcode(request):
         img.save(img_io)
         img_io.seek(0)
         response.write(img_io.getvalue())
-
     else:
+        config_content = generate_peer_config(peer.uuid)
         response = HttpResponse(config_content, content_type="text/plain")
         peer_filename = re.sub(r'[^a-zA-Z0-9]', '_', str(peer))
         response['Content-Disposition'] = f'attachment; filename="peer_{peer_filename}.conf"'
@@ -362,4 +511,3 @@ def restart_wireguard_interfaces(request):
             wireguard_instancee.pending_changes = False
             wireguard_instancee.save()
     return redirect("/status/")
-

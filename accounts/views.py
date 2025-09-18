@@ -10,7 +10,7 @@ from user_manager.forms import UserAclForm
 from api.views import get_api_key
 from .forms import CreateUserForm, LoginForm, CustomPasswordResetForm
 from django.http import HttpResponse
-from user_manager.models import UserAcl, cancelURL
+from user_manager.models import UserAcl
 from django import forms
 
 
@@ -43,13 +43,11 @@ def view_mgacct(request):
         return render(request, 'error.html', {"message": f"Invalid UUID. {e}"})
 
     form = CustomPasswordResetForm()  # no initial needed since we're not binding username anymore
-    cancel = cancelURL.objects.values_list('url', flat=True).first()
 
     return render(request, 'accounts/mgacct.html', {
         'uuid': uuid_str,
         'form': form,
-        'username': user.username,
-        'cancel': str(cancel)        
+        'username': user.username
     })
 
 

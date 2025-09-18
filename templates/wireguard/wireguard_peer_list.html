@@ -577,6 +577,10 @@
                         <a href="#" class="btn btn-info" id="downloadConfigButton"><i class="fas fa-download"></i> {% trans 'Config' %}</a>
                         <a href="#" class="btn btn-info" id="qrcodeButton"><i class="fas fa-qrcode"></i> {% trans 'QR Code' %}</a>
                         <a href="#" class="btn btn-info" id="inviteButton"><i class="fas fa-share"></i> {% trans 'VPN Invite' %}</a>
+                        <button type="button" class="btn btn-secondary" onclick="downloadRemoteAccessFile('nomachine')">NoMachine</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadRemoteAccessFile('rdp')">RDP</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadRemoteAccessFile('vnc')">VNC</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadRemoteAccessFile('ssh')">SSH</button>
                         <a href="#" class="btn btn-outline-primary" id="editPeerButton"><i class="far fa-edit"></i> {% trans 'Edit' %}</a>
                                                
                     </div>
@@ -1382,5 +1386,54 @@
     });
     </script>
 
+    <script>
+    function downloadRemoteAccessFile(fileType) {
+        var peerUuid = $('#peerPreviewModal').data('peer-uuid');
+        if (!peerUuid) {
+            alert('{% trans "No peer selected" %}');
+            return;
+        }
+
+        var peerName = document.getElementById('peerPreviewModalLabel').innerText;
+        var peerAllowedIpsRaw = document.getElementById('peerAllowedIPs').innerText;
+        var peerAllowedIps = peerAllowedIpsRaw.replace(/\/\d{1,2}/g, '');
+
+        // File type descriptions
+        var descriptions = {
+            'nomachine': 'NoMachine NX Client configuration file',
+            'rdp': 'Windows Remote Desktop connection file',
+            'vnc': 'VNC Viewer connection file',
+            'ssh': 'SSH client configuration file'
+        };
+
+        var description = descriptions[fileType] || 'Remote access configuration file';
+        
+        if (confirm(
+            description + ' will be generated!\n\n' +
+            'Peer Name: ' + peerName + '\n' +
+            'WireGuard IP Address: ' + peerAllowedIps + '\n\n' +
+            'Click OK to download the file.'
+        )) {
+            // Create download link
+            var downloadUrl = '/tools/download_remote_access/?uuid=' + peerUuid + '&type=' + fileType;
+            var link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = (peerName ? peerName.replace(/\s+/g, '_') : 'remote_access') + '.' + getFileExtension(fileType);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    function getFileExtension(fileType) {
+        var extensions = {
+            'nomachine': 'nxs',
+            'rdp': 'rdp',
+            'vnc': 'vnc',
+            'ssh': 'txt'
+        };
+        return extensions[fileType] || 'txt';
+    }
+    </script>
 
 {% endblock %}

@@ -577,21 +577,47 @@ def remove_instance(request):
         for peer_group in PeerGroup.objects.filter(server_instance=instance):
             peer_group.server_instance.remove(instance)
         
-        # Delete the instance
+        # Store instance info before deletion
         instance_uuid = str(instance.uuid)
         instance_id = instance.instance_id
+        
+        # Delete the instance
         instance.delete()
         
-        return JsonResponse({
-            'status': 'success',
-            'message': f'Instance "{instance_name}" and all associated data deleted successfully',
-            'deleted_data': {
-                'instance_uuid': instance_uuid,
-                'instance_id': instance_id,
-                'peers_deleted': peers_count,
-                'peer_groups_updated': peer_groups_count
-            }
-        })
+        # Reload WireGuard interfaces to apply changes
+        from wireguard_tools.views import reload_wireguard_interfaces
+        success, message = reload_wireguard_interfaces()
+        
+        if success:
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Instance "{instance_name}" and all associated data deleted successfully. WireGuard interfaces reloaded.',
+                'deleted_data': {
+                    'instance_uuid': instance_uuid,
+                    'instance_id': instance_id,
+                    'peers_deleted': peers_count,
+                    'peer_groups_updated': peer_groups_count
+                },
+                'wireguard_reload': {
+                    'success': True,
+                    'message': message
+                }
+            })
+        else:
+            return JsonResponse({
+                'status': 'partial_success',
+                'message': f'Instance "{instance_name}" deleted but WireGuard reload failed: {message}',
+                'deleted_data': {
+                    'instance_uuid': instance_uuid,
+                    'instance_id': instance_id,
+                    'peers_deleted': peers_count,
+                    'peer_groups_updated': peer_groups_count
+                },
+                'wireguard_reload': {
+                    'success': False,
+                    'message': message
+                }
+            })
         
     except Exception as e:
         return JsonResponse({

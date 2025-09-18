@@ -1,0 +1,32 @@
+# SSH Configuration for {{ peer_name }}
+# Generated for WireGuard peer: {{ peer_name }}
+# Instance: {{ instance_name }}
+# Peer UUID: {{ peer_uuid }}
+
+Host {{ peer_name|lower|slugify }}
+    HostName {{ peer_ip }}
+    Port 22
+    User root
+    # Uncomment and set your preferred authentication method:
+    # PubkeyAuthentication yes
+    # IdentityFile ~/.ssh/id_rsa
+    # PasswordAuthentication yes
+    # PreferredAuthentications publickey,password
+    
+    # Connection settings
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    TCPKeepAlive yes
+    
+    # Compression and multiplexing
+    Compression yes
+    ControlMaster auto
+    ControlPath ~/.ssh/control-%r@%h:%p
+    ControlPersist 10m
+    
+    # Security settings
+    StrictHostKeyChecking ask
+    UserKnownHostsFile ~/.ssh/known_hosts
+    
+    # Logging
+    LogLevel INFO

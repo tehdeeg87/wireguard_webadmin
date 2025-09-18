@@ -22,7 +22,7 @@ class WireGuardInstanceForm(forms.ModelForm):
     dns_primary = forms.GenericIPAddressField(label=_('Primary DNS'), initial='172.19.0.2', required=False)
     dns_secondary = forms.GenericIPAddressField(label=_('Secondary DNS'), initial='8.8.8.8', required=False)
     bandwidth_limit_enabled = forms.BooleanField(label=_('Enable Bandwidth Limiting'), initial=True, required=False)
-    bandwidth_limit_mbps = forms.IntegerField(label=_('Bandwidth Limit (Mbps)'), initial=50, min_value=1, max_value=10000)
+    bandwidth_limit_mbps = forms.IntegerField(label=_('Bandwidth Limit (Mbps)'), initial=50, min_value=1, max_value=10000, required=False)
 
     class Meta:
         model = WireGuardInstance
@@ -41,24 +41,28 @@ class WireGuardInstanceForm(forms.ModelForm):
         post_down = cleaned_data.get('post_down')
 
         peer_list_refresh_interval = cleaned_data.get('peer_list_refresh_interval')
-        if peer_list_refresh_interval < 5:
+        if peer_list_refresh_interval is not None and peer_list_refresh_interval < 5:
             raise forms.ValidationError(_('Peer List Refresh Interval must be at least 5 seconds'))
         
         bandwidth_limit_mbps = cleaned_data.get('bandwidth_limit_mbps')
-        if bandwidth_limit_mbps and (bandwidth_limit_mbps < 1 or bandwidth_limit_mbps > 10000):
+        if bandwidth_limit_mbps is not None and (bandwidth_limit_mbps < 1 or bandwidth_limit_mbps > 10000):
             raise forms.ValidationError(_('Bandwidth limit must be between 1 and 10000 Mbps'))
 
-        if not is_valid_ip_or_hostname(hostname):
+        if hostname and not is_valid_ip_or_hostname(hostname):
             raise forms.ValidationError(_('Invalid hostname or IP Address'))
 
-        current_network = ipaddress.ip_network(f"{address}/{netmask}", strict=False)
-        all_other_instances = WireGuardInstance.objects.all()
-        if self.instance:
-            all_other_instances = all_other_instances.exclude(uuid=self.instance.uuid)
-        for instance in all_other_instances:
-            other_network = ipaddress.ip_network(f"{instance.address}/{instance.netmask}", strict=False)
-            if current_network.overlaps(other_network):
-                raise forms.ValidationError(_('The selected network range overlaps with another instance.'))
+        if address and netmask:
+            try:
+                current_network = ipaddress.ip_network(f"{address}/{netmask}", strict=False)
+                all_other_instances = WireGuardInstance.objects.all()
+                if self.instance:
+                    all_other_instances = all_other_instances.exclude(uuid=self.instance.uuid)
+                for instance in all_other_instances:
+                    other_network = ipaddress.ip_network(f"{instance.address}/{instance.netmask}", strict=False)
+                    if current_network.overlaps(other_network):
+                        raise forms.ValidationError(_('The selected network range overlaps with another instance.'))
+            except (ValueError, TypeError) as e:
+                raise forms.ValidationError(_('Invalid network configuration: {}').format(str(e)))
 
         #if self.instance:
         #    if post_up or post_down:
