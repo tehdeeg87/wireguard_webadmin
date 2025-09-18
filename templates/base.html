@@ -104,10 +104,6 @@
                             <strong>Auth:</strong> Portbro.com JWT
                         </small>
                     </p>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/accounts/mgacct/?uuid={{ user.useracl.uuid }}">
-                        <i class="fas fa-cog"></i> Account Settings
-                    </a>
                 </div>
             </li>
             {% endif %}
@@ -219,14 +215,6 @@
 
                     {% endif %}
                         
-                    <li class="nav-item">
-                        <a href="/accounts/mgacct/?uuid={{ user_acl.uuid }}" class="nav-link {% if '/accounts/mgacct/' in request.path %}active{% endif %}">
-                            <i class="fas fa-user nav-icon"></i>
-                            <p>
-                                {% trans 'Account' %}
-                            </p>
-                        </a>
-                    </li>
                     
                 </ul>
             </nav>

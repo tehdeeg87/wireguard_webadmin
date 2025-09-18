@@ -589,13 +589,10 @@
         </div>
 
     {% else %}
-        <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">{% trans 'No WireGuard Instances Found' %}</h4>
-            <p>{% trans 'There are no WireGuard instances configured. You can add a new instance by clicking the button below.' %}</p>
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">There is nothing here yet!</h4>
+            <p>Head over to <a href="https://portbro.com/user_portal/" target="_blank" class="alert-link">https://portbro.com/user_portal/</a> to get yourself setup with an instance. Once complete you can start adding your team and devices!</p>
         </div>
-        <p>
-            <a href="/server/manage/" class="btn btn-primary">{% trans 'Add WireGuard Instance' %}</a>
-        </p>
     {% endif %}
 {% endblock %}
 

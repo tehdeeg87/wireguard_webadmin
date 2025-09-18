@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from accounts.views import view_create_first_user, view_login, view_logout, view_mgacct, reset_user_password
+from accounts.views import view_create_first_user, view_login, view_logout
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
     cron_update_peer_latest_handshake, peer_info, remove_instance, routerfleet_authenticate_session, routerfleet_get_user_token, \
     wireguard_status, webhook_create_instance
@@ -33,7 +33,7 @@ from vpn_invite.views import view_email_settings, view_vpn_invite_list, view_vpn
 from vpn_invite_public.views import view_public_vpn_invite
 from wgrrd.views import view_rrd_graph
 from wireguard.views import view_apply_db_patches, view_wireguard_manage_instance, view_wireguard_status
-from wireguard_peer.views import view_manage_ip_address, view_mg_acct,  view_wireguard_peer_list, view_wireguard_peer_manage, \
+from wireguard_peer.views import view_manage_ip_address, view_wireguard_peer_list, view_wireguard_peer_manage, \
     view_wireguard_peer_sort
 from wireguard_tools.views import download_config_or_qrcode, download_remote_access_file, export_wireguard_configs, restart_wireguard_interfaces
 
@@ -69,7 +69,6 @@ urlpatterns = [
     path('accounts/create_first_user/', view_create_first_user, name='create_first_user'),
     path('accounts/login/', view_login, name='login'),    
     path('accounts/logout/', view_logout, name='logout'),
-    path('accounts/mgacct/', view_mgacct, name='mgacct'),
     path('api/webhook/create-instance/', webhook_create_instance, name='webhook_create_instance'),
     path('remove_instances/', remove_instance, name='remove_instance'),
     path('accounts/routerfleet_authenticate_session/', routerfleet_authenticate_session, name='routerfleet_authenticate_session'),
@@ -95,7 +94,6 @@ urlpatterns = [
     path('invite/', view_public_vpn_invite, name='public_vpn_invite'),
     path('invite/download_config/', download_config_or_qrcode, name='download_config_or_qrcode'),
     path('change_language/', view_change_language, name='change_language'),
-    path('accounts/reset_user_password/', reset_user_password, name='reset_user_password'),
     
     # Auth integration URLs
     path('auth/', include('auth_integration.urls')),
