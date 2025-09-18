@@ -38,44 +38,96 @@ def reload_wireguard_interfaces():
     This function is called after instance deletion to ensure peers can no longer connect.
     """
     try:
+        # Use the same base directory as export_wireguard_configs
         config_dir = "/etc/wireguard"
         interface_count = 0
         error_count = 0
         
         logger.info("Starting WireGuard interface reload after instance deletion...")
         
+        # Check if config directory exists
+        if not os.path.exists(config_dir):
+            logger.warning(f"WireGuard config directory {config_dir} does not exist. This might be a development environment.")
+            return True, f"Config directory {config_dir} not found (development environment)"
+        
+        # Check if wg command is available
+        try:
+            subprocess.run(['wg', '--version'], capture_output=True, text=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            logger.warning("WireGuard 'wg' command not available. This might be a development environment.")
+            return True, "WireGuard 'wg' command not available (development environment)"
+        
+        # First, export the current configuration to ensure it's up to date
+        logger.info("Exporting current WireGuard configuration...")
+        try:
+            from .views import export_firewall_configuration
+            from dns.views import export_dns_configuration
+            
+            export_firewall_configuration()
+            export_dns_configuration()
+            logger.info("Configuration exported successfully")
+        except Exception as e:
+            logger.warning(f"Failed to export configuration: {e}")
+        
+        # Get list of currently running interfaces
+        try:
+            result = subprocess.run(['wg', 'show', 'interfaces'], capture_output=True, text=True, check=True)
+            running_interfaces = result.stdout.strip().split('\n') if result.stdout.strip() else []
+            logger.info(f"Currently running interfaces: {running_interfaces}")
+        except Exception as e:
+            logger.warning(f"Could not get running interfaces: {e}")
+            running_interfaces = []
+        
+        # Now reload all interfaces
         for filename in os.listdir(config_dir):
             if filename.endswith(".conf"):
                 interface_name = filename[:-5]
-                
-                # Use wg syncconf for reloading (safer than restart)
                 config_path = os.path.join(config_dir, filename)
                 
-                # Create a temporary config without the interface section for syncconf
-                with open(config_path, 'r') as f:
-                    lines = f.readlines()
+                # Check if config file exists and is readable
+                if not os.path.exists(config_path):
+                    logger.warning(f"Config file {config_path} does not exist, skipping")
+                    continue
                 
-                filtered_lines = []
-                for line in lines:
-                    stripped_line = line.strip()
-                    if stripped_line.startswith("Address") or stripped_line.startswith("PostUp") or stripped_line.startswith("PostDown"):
-                        continue
-                    filtered_lines.append(line)
+                try:
+                    # Check if interface is running
+                    if interface_name in running_interfaces:
+                        logger.info(f"Interface {interface_name} is running, reloading...")
+                        
+                        # Create a temporary config without the interface section for syncconf
+                        with open(config_path, 'r') as f:
+                            lines = f.readlines()
+                        
+                        filtered_lines = []
+                        for line in lines:
+                            stripped_line = line.strip()
+                            if stripped_line.startswith("Address") or stripped_line.startswith("PostUp") or stripped_line.startswith("PostDown"):
+                                continue
+                            filtered_lines.append(line)
 
-                temp_config_path = f"/tmp/wgreload_{interface_name}.conf"
-                with open(temp_config_path, 'w') as f:
-                    f.writelines(filtered_lines)
+                        temp_config_path = f"/tmp/wgreload_{interface_name}.conf"
+                        with open(temp_config_path, 'w') as f:
+                            f.writelines(filtered_lines)
 
-                reload_command = f"wg syncconf {interface_name} {temp_config_path}"
-                result = subprocess.run(reload_command, shell=True, capture_output=True, text=True)
-                os.remove(temp_config_path)
+                        reload_command = f"wg syncconf {interface_name} {temp_config_path}"
+                        result = subprocess.run(reload_command, shell=True, capture_output=True, text=True)
+                        
+                        # Clean up temp file
+                        if os.path.exists(temp_config_path):
+                            os.remove(temp_config_path)
 
-                if result.returncode != 0:
-                    logger.error(f"Error reloading {interface_name}: {result.stderr}")
+                        if result.returncode != 0:
+                            logger.error(f"Error reloading {interface_name}: {result.stderr}")
+                            error_count += 1
+                        else:
+                            logger.info(f"Successfully reloaded {interface_name}")
+                            interface_count += 1
+                    else:
+                        logger.info(f"Interface {interface_name} is not running, skipping")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing {interface_name}: {e}")
                     error_count += 1
-                else:
-                    logger.info(f"Successfully reloaded {interface_name}")
-                    interface_count += 1
 
         if interface_count > 0 and error_count == 0:
             logger.info(f"✅ Successfully reloaded {interface_count} WireGuard interfaces")
