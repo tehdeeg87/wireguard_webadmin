@@ -97,7 +97,14 @@ def routerfleet_get_user_token(request):
                     data['status'] = 'error'
                     data['message'] = 'User not found'
                 else:
-                    user = User.objects.create_user(username=request.GET.get('username'), password=str(uuid.uuid4()))
+                    username = request.GET.get('username')
+                    try:
+                        user = User.objects.create_user(username=username, password=str(uuid.uuid4()))
+                    except Exception as e:
+                        # If username already exists, try with a unique suffix
+                        import uuid as uuid_module
+                        unique_username = f"{username}_{uuid_module.uuid4().hex[:8]}"
+                        user = User.objects.create_user(username=unique_username, password=str(uuid.uuid4()))
                     user_acl = UserAcl.objects.create(user=user, user_level=default_user_level, enable_reload=True, enable_restart=True)
 
             if user and user_acl:

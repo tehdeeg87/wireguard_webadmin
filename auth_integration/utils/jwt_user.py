@@ -23,15 +23,30 @@ def ensure_user_from_jwt(claims):
         user = User.objects.get(email=email)
         # Update username if it's different (but keep email as primary)
         if user.username != username:
-            user.username = username
-            user.save()
+            # Check if the new username is already taken by another user
+            if not User.objects.filter(username=username).exclude(email=email).exists():
+                user.username = username
+                user.save()
+            # If username is taken, keep the existing username but log a warning
+            else:
+                print(f"Warning: Username '{username}' is already taken, keeping existing username '{user.username}' for user {email}")
     except User.DoesNotExist:
         # If no user with this email exists, create one
         # Use email as username to ensure consistency
-        user, created = User.objects.get_or_create(
-            username=email,  # Use email as username for consistency
-            defaults={"email": email}
-        )
+        try:
+            user, created = User.objects.get_or_create(
+                username=email,  # Use email as username for consistency
+                defaults={"email": email}
+            )
+        except Exception as e:
+            # If there's still a constraint violation, try with a unique username
+            print(f"Warning: Could not create user with email as username: {e}")
+            import uuid
+            unique_username = f"{email}_{uuid.uuid4().hex[:8]}"
+            user, created = User.objects.get_or_create(
+                username=unique_username,
+                defaults={"email": email}
+            )
     
     # Update email if it's different (for existing users)
     if not created and user.email != email:
