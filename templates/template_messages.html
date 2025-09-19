@@ -4,16 +4,24 @@
         var fullMessage = "{{ message.message|escapejs }}";
         var parts = fullMessage.split("|");
         if (parts.length > 1) {
-            $(document).Toasts('create', {
+            var toastBody = parts[1];
+            var toastOptions = {
                 {% if message.tags %}
                 class: '{% if message.tags == 'error' %}bg-danger{% else %}bg-{{ message.tags }}{% endif %}',
                 {% endif %}
                 title: parts[0],
                 subtitle: '{{ message.tags }}',
-                body: parts[1],
+                body: toastBody,
                 delay: 10000, 
                 autohide: true, 
-            });
+            };
+            
+            // Add reload service button for peer creation messages
+            if (parts[0] === 'Peer created' && parts[1].includes('reload your instance service')) {
+                toastOptions.body = toastBody + '<br><br><a href="/tools/export_wireguard_config/?action=update_and_reload" class="btn btn-sm btn-light">Reload Service</a>';
+            }
+            
+            $(document).Toasts('create', toastOptions);
         } else {
             $(document).Toasts('create', {
                 {% if message.tags %}

@@ -149,7 +149,7 @@ def view_wireguard_peer_manage(request):
                 priority=0,
                 netmask=32,
             )
-            messages.success(request, _('Peer created|Peer created successfully.'))
+            messages.success(request, _('Peer created|Peer created successfully. In order for newly added peers to be able to connect, ensure that you update and reload your instance service.'))
             new_peer.wireguard_instance.pending_changes = True
             new_peer.wireguard_instance.save()
             return redirect('/peer/manage/?peer=' + str(new_peer.uuid))
