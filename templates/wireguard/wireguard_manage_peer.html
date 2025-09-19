@@ -85,7 +85,7 @@
                                 <i class="fas fa-info-circle" title="{% trans 'AllowedIPs at Peer section of wg' %}{{ current_peer.wireguard_instance.instance_id }}.conf"></i>
                                 {% trans 'Peer IP Addresses and networks' %}
                             </label>
-                            <a class="btn btn-outline-primary btn-xs" href="/peer/manage_ip_address/?peer={{ current_peer.uuid }}&config=server" >{% trans 'Add IP Address' %}</a>
+                            <a class="btn btn-outline-primary btn-xs disabled" href="#" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add IP Address' %}</a>
                         </div>
                     
                         {% for ip_address in peer_ip_list %}
@@ -115,7 +115,7 @@
                                 <i class="fas fa-info-circle" title="AllowedIPs at client configuration file"></i> 
                                 {% trans 'Client Routing Configuration' %}
                             </label>
-                            <a class="btn btn-outline-primary btn-xs" href="/peer/manage_ip_address/?peer={{ current_peer.uuid }}&config=client" >{% trans 'Add Client route' %}</a>
+                            <a class="btn btn-outline-primary btn-xs disabled" href="#" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add Client route' %}</a>
                         </div>
                         <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
                                 <p>
@@ -124,12 +124,12 @@
                                             onclick="alert('{% trans 'The client is not configured to use the VPN as the default gateway.\n\nOnly the specific networks listed below are routed through the VPN.\n\nNote: These routes are not automatically pushed to the client. You will need to manually update the client configuration file to reflect these settings.' %}');"
                                        style="text-decoration: line-through;"
                                        {% else %}
-                                            onclick="alert('{% trans 'The client is configured to use the VPN as the default gateway. \n\nThis setting routes all client internet traffic through the VPN, enhancing privacy and security across all connections.' %}');"
+                                            onclick="alert('{% trans 'The client is configured with split-tunnel routing. \n\nThis setting routes internet traffic through the VPN while allowing local network access, providing a balance between privacy and local connectivity.' %}');"
                                         {% endif %}
                                         
                                     >
                                         <i class="fas fa-network-wired"></i>
-                                        0.0.0.0/0, ::/0
+                                        0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1
                                     </a>
                                 </p>
                                 <p class="d-flex flex-column text-right small">
@@ -166,7 +166,7 @@
         </div>
         <div class="card-footer">
             <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
-            <a href="/peer/manage_ip_address/?peer={{ current_peer.uuid }}" class="btn btn-outline-primary">{% trans 'Add IP Address' %}</a>
+            <a href="#" class="btn btn-outline-primary disabled" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add IP Address' %}</a>
             <a class="btn btn-outline-secondary" href="/peer/list/?uuid={{ current_peer.wireguard_instance.uuid }}#peer-{{ current_peer.public_key }}">{% trans 'Back' %}</a>
             <a href='javascript:void(0)' class='btn btn-outline-danger' data-command='delete' onclick='openCommandDialog(this)'>{% trans 'Delete Peer' %}</a>
 

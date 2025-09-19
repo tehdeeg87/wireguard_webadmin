@@ -159,7 +159,8 @@ def generate_peer_config(peer_uuid):
     if allowed_ips:
         allowed_ips_line = ", ".join([f"{ip.allowed_ip}/{ip.netmask}" for ip in allowed_ips])
     else:
-        allowed_ips_line = "0.0.0.0/0, ::/0"
+        # Use split-tunnel format to allow LAN access
+        allowed_ips_line = "0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1"
     dns_entries = [wg_instance.dns_primary, wg_instance.dns_secondary]
     dns_line = ", ".join(filter(None, dns_entries))
 

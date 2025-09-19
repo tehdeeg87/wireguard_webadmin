@@ -1080,9 +1080,10 @@
                 });
                 
                 // Add hover handlers
-                peerNode.addEventListener('mouseenter', function(e) {
-                    showTooltip(e, peerName, peerIP, throughput, handshake);
-                });
+                peerNode._mouseEnterHandler = function(e) {
+                    showTooltip(e, peerName, peerIP, throughput, handshake, isOnline);
+                };
+                peerNode.addEventListener('mouseenter', peerNode._mouseEnterHandler);
                 
                 peerNode.addEventListener('mouseleave', function() {
                     hideTooltip();
@@ -1119,12 +1120,12 @@
         }
 
         // Tooltip functions
-        function showTooltip(event, name, ip, throughput, handshake) {
+        function showTooltip(event, name, ip, throughput, handshake, isOnline) {
             const tooltip = document.getElementById('peerTooltip');
             tooltip.querySelector('.peer-name').textContent = name;
             tooltip.querySelector('.peer-info').innerHTML = 
                 `<div>IP: ${ip}</div>
-                 <div>Status: ${handshake !== '--' ? 'Online' : 'Offline'}</div>
+                 <div>Status: ${isOnline ? 'Online' : 'Offline'}</div>
                  <div>Throughput: ${throughput}</div>
                  <div>Last Handshake: ${handshake}</div>`;
             
@@ -1199,6 +1200,9 @@
                 // Find existing peer node and update its status
                 const existingNode = svg.querySelector(`circle[data-uuid="${uuid}"]`);
                 if (existingNode) {
+                    // Debug logging
+                    console.log(`Updating peer ${uuid}: isOnline=${isOnline}, storedHandshake=${storedHandshake}`);
+                    
                     // Update the node class based on online status
                     existingNode.className.baseVal = isOnline ? 'peer-node' : 'peer-node offline';
                     
@@ -1208,6 +1212,13 @@
                         statusLabel.textContent = isOnline ? '● Online' : '● Offline';
                         statusLabel.setAttribute('fill', isOnline ? '#28a745' : '#dc3545');
                     }
+                    
+                    // Update the hover handler to use the correct status
+                    existingNode.removeEventListener('mouseenter', existingNode._mouseEnterHandler);
+                    existingNode._mouseEnterHandler = function(e) {
+                        showTooltip(e, peerName, peerIP, throughput, handshake, isOnline);
+                    };
+                    existingNode.addEventListener('mouseenter', existingNode._mouseEnterHandler);
                 } else {
                     // If node doesn't exist, recreate the entire hub view
                     initializeHubView();
@@ -1434,9 +1445,9 @@
             return;
         }
 
-        var peerName = document.getElementById('peerPreviewModalLabel').innerText;
-        var peerAllowedIpsRaw = document.getElementById('peerAllowedIPs').innerText;
-        var peerAllowedIps = peerAllowedIpsRaw.replace(/\/\d{1,2}/g, '');
+    var peerName = document.getElementById('peerPreviewModalLabel').innerText;
+    var peerAllowedIpsRaw = document.getElementById('peerAllowedIPs').innerText;
+    var peerAllowedIps = peerAllowedIpsRaw.replace(/\/\d{1,2}/g, '');
 
         // File type descriptions
         var descriptions = {
