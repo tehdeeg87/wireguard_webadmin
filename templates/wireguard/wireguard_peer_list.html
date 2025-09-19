@@ -512,29 +512,6 @@
                             <p><b><i class="far fa-address-card nav-icon"></i> {% trans 'Endpoints' %}:</b> <span id="peerEndpoints">--</span></p>
                             <p><b><i class="fas fa-network-wired nav-icon"></i> {% trans 'Allowed IPs' %}:</b> <span id="peerAllowedIPs">--</span></p>
 
-                            <!-- Traffic Graph -->
-                            <div class="graph-container" style="margin-top:20px;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label>
-                                        <i class="fas fa-chart-area nav-icon"></i>
-                                        {% trans 'Peer Traffic' %}
-                                    </label>
-                                    <div class="btn-group" role="group" aria-label="Graph interval">
-                                        <a href="#" data-period="1h" class="btn btn-outline-primary btn-xs">1h</a>
-                                        <a href="#" data-period="3h" class="btn btn-outline-primary btn-xs">3h</a>
-                                        <a href="#" data-period="6h" class="btn btn-outline-primary btn-xs">6h</a>
-                                        <a href="#" data-period="1d" class="btn btn-outline-primary btn-xs">1d</a>
-                                        <a href="#" data-period="7d" class="btn btn-outline-primary btn-xs">7d</a>
-                                        <a href="#" data-period="30d" class="btn btn-outline-primary btn-xs">1m</a>
-                                        <a href="#" data-period="90d" class="btn btn-outline-primary btn-xs">3m</a>
-                                        <a href="#" data-period="180d" class="btn btn-outline-primary btn-xs">6m</a>
-                                        <a href="#" data-period="365d" class="btn btn-outline-primary btn-xs">1y</a>
-                                    </div>
-                                </div>
-                                <center style="margin-top:10px;">
-                                    <img id="graphImg" src="" class="img-fluid" alt="{% trans 'No traffic history, please wait a few minutes' %}" style="display:block;">
-                                </center>
-                            </div>
                         </div>
 
                         <!-- QR Code content section (initially hidden) -->
@@ -690,7 +667,6 @@
             $(".invite-content").hide();
             $(".info-content").show();
             $("#qrCodeImg").attr("src", "");
-            $('#graphImg').attr('src', '').hide();
             
             // Find the peer element by its data-uuid attribute
             var peerElem = document.querySelector('[data-uuid="' + uuid + '"]');
@@ -713,7 +689,6 @@
                 $('#editPeerButton').attr('href', '/peer/manage/?peer=' + uuid);
                 $('#downloadConfigButton').attr('href', '/tools/download_peer_config/?uuid=' + uuid);
                 $('#qrcodeButton').attr('href', '/tools/download_peer_config/?uuid=' + uuid + '&format=qrcode');
-                $('#graphImg').attr('src', '/rrd/graph/?peer=' + uuid).show();
                 $('#peerPreviewModal').data('peer-uuid', uuid);
 
                 $.ajax({
@@ -737,13 +712,6 @@
             }
         }
 
-        $(document).on('click', '.graph-container .btn-group a', function(e) {
-            e.preventDefault();
-            var period = $(this).data('period');
-            var uuid = $('#peerPreviewModal').data('peer-uuid');
-            var newSrc = '/rrd/graph/?peer=' + uuid + '&period=' + period;
-            $('#graphImg').attr('src', newSrc);
-        });
     </script>
 
     <script>
