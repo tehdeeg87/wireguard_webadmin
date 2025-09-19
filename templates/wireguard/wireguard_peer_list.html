@@ -898,6 +898,9 @@
             // Reset the toast flag for this update cycle
             toastShownThisCycle = false;
 
+            // Store the API data for hub view updates
+            latestApiData = data;
+
             for (const [interfaceName, peers] of Object.entries(data)) {
                 for (const [peerId, peerInfo] of Object.entries(peers)) {
                     const peerDiv = document.getElementById(`peer-${peerId}`);
@@ -1139,6 +1142,7 @@
                 statusLabel.setAttribute('class', 'peer-stats');
                 statusLabel.setAttribute('x', x);
                 statusLabel.setAttribute('y', y + 60);
+                statusLabel.setAttribute('data-peer-uuid', uuid);
                 statusLabel.textContent = isOnline ? '● Online' : '● Offline';
                 statusLabel.setAttribute('fill', isOnline ? '#28a745' : '#dc3545');
                 svg.appendChild(statusLabel);
@@ -1165,11 +1169,81 @@
             tooltip.classList.remove('show');
         }
 
+        // Store the latest API data for hub view updates
+        let latestApiData = null;
+
         // Update hub view when data changes
         function updateHubView() {
             if (window.hubInitialized && document.getElementById('hubView').style.display !== 'none') {
-                initializeHubView();
+                // Wait a bit for the table to update first
+                setTimeout(() => {
+                    updateHubViewWithData(latestApiData);
+                }, 100);
             }
+        }
+
+        // Update hub view with specific API data
+        function updateHubViewWithData(apiData) {
+            if (!apiData) {
+                initializeHubView();
+                return;
+            }
+
+            const svg = document.getElementById('hubSpokeSvg');
+            if (!svg) return;
+
+            // Get peer data from the table
+            const peerRows = document.querySelectorAll('#tableView tbody tr[data-uuid]');
+            const peerCount = peerRows.length;
+            
+            if (peerCount === 0) return;
+
+            const centerX = 250;
+            const centerY = 250;
+            const radius = 180;
+            const peerRadius = 25;
+
+            // Update existing peer nodes with new status
+            peerRows.forEach((row, index) => {
+                const uuid = row.getAttribute('data-uuid');
+                const peerNameElement = row.querySelector('.peer-name');
+                const peerIPElement = row.querySelector('.peer-ip');
+                const throughputElement = row.querySelector('.throughput-display');
+                const handshakeElement = row.querySelector('.handshake-display');
+                const storedHandshakeElement = row.querySelector('[id^="peer-stored-latest-handshake-"]');
+                
+                // Get the actual text content
+                const peerName = peerNameElement ? peerNameElement.textContent.trim() : 'Unknown Peer';
+                const peerIP = peerIPElement ? peerIPElement.textContent.trim() : 'No IP';
+                const throughput = throughputElement ? throughputElement.textContent.trim() : '-- Kbps';
+                const handshake = handshakeElement ? handshakeElement.textContent.trim() : '--';
+                const storedHandshake = storedHandshakeElement ? storedHandshakeElement.textContent.trim() : '0';
+                
+                // Determine if peer is actually online using the stored handshake timestamp
+                const isOnline = storedHandshake !== '0' && storedHandshake !== '' && parseInt(storedHandshake) > 0;
+                
+                // Calculate angle for this peer
+                const angle = (2 * Math.PI * index) / peerCount;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                // Find existing peer node and update its status
+                const existingNode = svg.querySelector(`circle[data-uuid="${uuid}"]`);
+                if (existingNode) {
+                    // Update the node class based on online status
+                    existingNode.className.baseVal = isOnline ? 'peer-node' : 'peer-node offline';
+                    
+                    // Update the status label
+                    const statusLabel = svg.querySelector(`text[data-peer-uuid="${uuid}"].peer-stats`);
+                    if (statusLabel) {
+                        statusLabel.textContent = isOnline ? '● Online' : '● Offline';
+                        statusLabel.setAttribute('fill', isOnline ? '#28a745' : '#dc3545');
+                    }
+                } else {
+                    // If node doesn't exist, recreate the entire hub view
+                    initializeHubView();
+                }
+            });
         }
     </script>
 
