@@ -18,13 +18,13 @@
 <body class="hold-transition login-page">
 <div class="login-box">
     <div class="login-logo">
-        <a href="/"><b>Portbro VPN Console</b></a>
+        <a href="https://portbro.com/user_portal/" target="_blank">
+            <img src="{% static 'portbro-newest.png' %}" alt="Portbro VPN Console" style="height: 120px; width: auto; object-fit: contain;">
+        </a>
+        <!-- Debug: Template updated at {{ "now"|date:"Y-m-d H:i:s" }} -->
     </div>
     <div class="card">
         <div class="card-body login-card-body">
-            <div class="text-center mb-4">
-                <img src="{% static 'portbro-newest.png' %}" alt="Portbro" class="img-fluid" style="max-height: 100px;">
-            </div>
             
             <!-- User Information Display -->
             {% if user.is_authenticated %}
@@ -58,8 +58,8 @@
             </div>
             
             <div class="text-center mb-4">
-                <a href="https://portbro.com/" target="_blank" class="btn btn-primary btn-lg">
-                    <i class="fas fa-external-link-alt"></i> Go to Portbro.com
+                <a href="https://portbro.com/user_portal/" target="_blank" class="btn btn-primary btn-lg">
+                    <i class="fas fa-external-link-alt"></i> Go to Portbro User Portal
                 </a>
             </div>
             
