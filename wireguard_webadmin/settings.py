@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-rj$$(1+#ca#xkpf8ieclzfa-igi9bhnw!vc46dm0&eov3#m91o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'vpn.portbro.com']
 
@@ -199,3 +199,9 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 #ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# Import production settings if they exist
+try:
+    from .production_settings import *
+except ImportError:
+    pass
