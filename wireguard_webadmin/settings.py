@@ -199,9 +199,3 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 #ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
-
-# Import production settings if they exist
-try:
-    from .production_settings import *
-except ImportError:
-    pass

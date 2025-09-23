@@ -7,7 +7,7 @@ services:
     build: . 
     environment:
       - SERVER_ADDRESS=${SERVER_ADDRESS}
-      - DEBUG_MODE=False
+      - DEBUG_MODE=True
       - COMPOSE_VERSION=02r
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
       - TZ=${TIMEZONE}
