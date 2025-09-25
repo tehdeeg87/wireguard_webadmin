@@ -23,8 +23,6 @@ services:
       - dnsmasq_conf:/etc/dnsmasq
       - app_secrets:/app_secrets/
       - rrd_data:/rrd_data/
-    depends_on:
-      - wireguard-webadmin-dns
     ports:
       # Do not directly expose the Django port to the internet, use some kind of reverse proxy with SSL.
       - "127.0.0.1:8000:8000"
@@ -74,11 +72,6 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - dnsmasq_conf:/etc/dnsmasq/
-    ports:
-      - "53:53/udp"
-      - "53:53/tcp"
-    networks:
-      - default
 
 volumes:
   static_volume:
