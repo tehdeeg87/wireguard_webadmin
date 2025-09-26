@@ -1,0 +1,389 @@
+/* PortBro VPN Manager Custom Styles */
+
+/* Color Variables */
+:root {
+    --p-base: #F5E5C0;
+    --p-light: #2f1a17;
+    --p-accent: #F6A622;
+    --p-text: #231b17;
+    --p-text-light: #F5E5C0;
+    --scale: 1;
+    --grain-opacity: 0.3;
+}
+
+/* Pendleton-style Striped Background */
+.pendleton-bg {
+    background: 
+        /* Diagonal stripes */
+        repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            transparent 20px,
+            rgba(246, 166, 34, 0.1) 20px,
+            rgba(246, 166, 34, 0.1) 40px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0px,
+            transparent 20px,
+            rgba(246, 166, 34, 0.05) 20px,
+            rgba(246, 166, 34, 0.05) 40px
+        ),
+        /* Base gradient */
+        linear-gradient(135deg, var(--p-base) 0%, #f0d9a8 50%, var(--p-base) 100%);
+    background-size: 40px 40px, 40px 40px, 100% 100%;
+    position: relative;
+}
+
+.pendleton-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* Subtle texture overlay */
+        radial-gradient(circle at 20% 80%, rgba(246, 166, 34, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(246, 166, 34, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(246, 166, 34, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Alternative striped background for cards */
+.card-pendleton {
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            transparent 15px,
+            rgba(246, 166, 34, 0.08) 15px,
+            rgba(246, 166, 34, 0.08) 30px
+        ),
+        linear-gradient(135deg, #fff 0%, #faf8f5 100%);
+    background-size: 30px 30px, 100% 100%;
+    border: 1px solid rgba(246, 166, 34, 0.2);
+}
+
+/* Subtle striped background for content areas */
+.content-pendleton {
+    background: 
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 25px,
+            rgba(246, 166, 34, 0.03) 25px,
+            rgba(246, 166, 34, 0.03) 50px
+        ),
+        var(--p-base);
+    background-size: 50px 50px, 100% 100%;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: var(--p-base);
+    color: var(--p-text);
+}
+
+/* Typography */
+.bevan-font {
+    font-family: 'Bevan', serif;
+}
+
+.glory-font {
+    font-family: 'Glory', sans-serif;
+}
+
+/* Custom Button Styles */
+.btn-portbro {
+    background: linear-gradient(135deg, var(--p-accent) 0%, #e6951f 100%);
+    border: none;
+    color: var(--p-light);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(246, 166, 34, 0.3);
+}
+
+.btn-portbro:hover {
+    background: linear-gradient(135deg, #e6951f 0%, #d4851c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(246, 166, 34, 0.4);
+    color: var(--p-light);
+}
+
+.btn-portbro:active {
+    transform: translateY(0);
+}
+
+.btn-portbro-outline {
+    background: transparent;
+    border: 2px solid var(--p-accent);
+    color: var(--p-accent);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-portbro-outline:hover {
+    background: var(--p-accent);
+    color: var(--p-light);
+    transform: translateY(-2px);
+}
+
+/* Card Styles */
+.card-portbro {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(246, 166, 34, 0.2);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.card-portbro .card-header {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.card-portbro .card-title {
+    color: var(--p-accent);
+    font-family: 'Bevan', serif;
+}
+
+/* Form Styles */
+.form-control-portbro {
+    border: 2px solid rgba(246, 166, 34, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.form-control-portbro:focus {
+    border-color: var(--p-accent);
+    box-shadow: 0 0 0 0.2rem rgba(246, 166, 34, 0.25);
+    outline: none;
+    background-color: #fff;
+}
+
+/* Table Styles */
+.table-portbro {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-portbro thead th {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+    font-weight: 600;
+}
+
+.table-portbro tbody tr:hover {
+    background-color: rgba(246, 166, 34, 0.05);
+}
+
+.table-portbro tbody tr:nth-child(even) {
+    background-color: rgba(246, 166, 34, 0.02);
+}
+
+/* Alert Styles */
+.alert-portbro {
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+.alert-portbro-warning {
+    background-color: rgba(246, 166, 34, 0.1);
+    color: var(--p-text);
+    border-left-color: var(--p-accent);
+}
+
+.alert-portbro-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: var(--p-text);
+    border-left-color: #28a745;
+}
+
+.alert-portbro-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--p-text);
+    border-left-color: #dc3545;
+}
+
+.alert-portbro-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    color: var(--p-text);
+    border-left-color: #17a2b8;
+}
+
+/* Badge Styles */
+.badge-portbro {
+    background: linear-gradient(135deg, var(--p-accent) 0%, #e6951f 100%);
+    color: var(--p-light);
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+.badge-portbro-outline {
+    background: transparent;
+    border: 1px solid var(--p-accent);
+    color: var(--p-accent);
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Progress Bar Styles */
+.progress-portbro {
+    background-color: rgba(246, 166, 34, 0.1);
+    border-radius: 0.5rem;
+    height: 0.75rem;
+}
+
+.progress-bar-portbro {
+    background: linear-gradient(135deg, var(--p-accent) 0%, #e6951f 100%);
+    border-radius: 0.5rem;
+    transition: width 0.6s ease;
+}
+
+/* Modal Styles */
+.modal-portbro .modal-content {
+    border-radius: 0.75rem;
+    border: 2px solid var(--p-accent);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-portbro .modal-header {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.modal-portbro .modal-title {
+    color: var(--p-accent);
+    font-family: 'Bevan', serif;
+}
+
+/* Loading Spinner */
+.spinner-portbro {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(246, 166, 34, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--p-accent);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Utility Classes */
+.text-portbro-accent {
+    color: var(--p-accent) !important;
+}
+
+.text-portbro-light {
+    color: var(--p-text-light) !important;
+}
+
+.text-portbro-dark {
+    color: var(--p-text) !important;
+}
+
+.bg-portbro-base {
+    background-color: var(--p-base) !important;
+}
+
+.bg-portbro-light {
+    background-color: var(--p-light) !important;
+}
+
+.bg-portbro-accent {
+    background-color: var(--p-accent) !important;
+}
+
+.border-portbro {
+    border-color: var(--p-accent) !important;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.bounce-in {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+    .btn-portbro,
+    .btn-portbro-outline {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+    
+    .card-portbro {
+        margin: 0.5rem;
+    }
+    
+    .table-portbro {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-portbro .card-body {
+        padding: 1rem 0.75rem;
+    }
+    
+    .table-portbro th,
+    .table-portbro td {
+        padding: 0.375rem 0.25rem;
+    }
+}

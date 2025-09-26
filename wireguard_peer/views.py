@@ -152,6 +152,14 @@ def view_wireguard_peer_manage(request):
             messages.success(request, _('Peer created|Peer created successfully. In order for newly added peers to be able to connect, ensure that you update and reload your instance service.'))
             new_peer.wireguard_instance.pending_changes = True
             new_peer.wireguard_instance.save()
+            
+            # Update CoreDNS zones automatically
+            try:
+                from django.core.management import call_command
+                call_command('update_coredns_zones', zone='peers')
+            except Exception as e:
+                print(f"Warning: Could not update CoreDNS zones: {e}")
+            
             return redirect('/peer/manage/?peer=' + str(new_peer.uuid))
         else:
             messages.warning(request, _('Error creating peer|No available IP address found for peer creation.'))

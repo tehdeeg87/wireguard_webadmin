@@ -2,6 +2,26 @@
 {% load i18n %}
 {% block content %}
 
+<style>
+    .graph-container {
+        text-align: center;
+        margin: 10px 0;
+        padding: 20px;
+        overflow: visible;
+        position: relative;
+    }
+    
+    .instance-graph {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%) scale(1.25);
+    }
+</style>
+
 <div class='row'>
     <div class='col-lg-12'>    
 <div class="card card-primary card-outline">
@@ -41,7 +61,9 @@
                     <div class="col-md-6">
                         <h3>wg{{ wireguard_instance.instance_id }} {% if wireguard_instance.name %}({{ wireguard_instance.name }}){% endif %}</h3>
                         <p><b><i class="fas fa-chart-area nav-icon"></i> {% trans 'Instance Traffic' %}</b></p>
-                        <img id="graphImg" src="/rrd/graph/?instance={{ wireguard_instance.uuid }}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" class="img-fluid" alt="No traffic history, please wait a few minutes" onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend', this.alt);">
+                        <div class="graph-container">
+                            <img id="graphImg" src="/rrd/graph/?instance={{ wireguard_instance.uuid }}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" class="instance-graph" alt="No traffic history, please wait a few minutes" onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend', this.alt);">
+                        </div>
                         <p>
                             <b><i class="fas fa-network-wired nav-icon"></i> {% trans 'IP Address' %}: </b>{{ wireguard_instance.address }}/{{ wireguard_instance.netmask }}<br>
                             <b><i class="fas fa-link nav-icon"></i> {% trans 'Public Address' %}: </b>{{ wireguard_instance.hostname }}<br>

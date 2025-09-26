@@ -1,10 +1,10 @@
-{% extends "base_login.html" %}
+{% extends "base_login_portbro.html" %}
 {% load i18n %}
 {% block content %}
     <div class="register-box">
         <div class="register-logo">
             <a href="/">
-                <img src="/static/portbro-newest.png" alt="Portbro VPN Console" style="max-height: 60px; max-width: 200px;">
+                <b>PortBro VPN Manager</b>
             </a>
         </div>
         <div class="card">
@@ -12,41 +12,33 @@
                 <form method="post" action="{% url 'login' %}">
                     {% csrf_token %}
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="{% trans 'Username' %}" name="username">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
                         </div>
+                        <input type="text" class="form-control" placeholder="{% trans 'Username' %}" name="username">
                     </div>
 
                     <div class="input-group mb-3">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
                         <input type="password" class="form-control" placeholder="{% trans 'Password' %}" name="password">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
-                        </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button type="submit" class="btn btn-primary btn-block">{% trans 'Login' %}</button>
-                        </div>
-                        <div class="col-md-6">
-                            <a class="btn btn-outline-primary btn-block" href="/change_language/">
-                                {% trans 'Language' %}
-                            </a>
-                        </div>
+                    <div class="button-stack">
+                        <button type="submit" class="btn btn-primary btn-block btn-portbro">{% trans 'Login' %}</button>
+                        <a class="btn btn-secondary btn-block" href="/change_language/">
+                            {% trans 'Language' %}
+                        </a>
                     </div>
                 </form>
 
                 <hr>
                 
                 <!-- Portbro Authentication -->
-                <div class="alert alert-info mb-3">
+                <div class="alert alert-portbro-info mb-3">
                     <small><i class="fas fa-info-circle"></i> <strong>Recommended:</strong> Use Portbro authentication for seamless access</small>
                 </div>
-                <a href="{% url 'auth_integration:jwt_login' %}" class="btn btn-success btn-block mt-2">
+                <a href="{% url 'auth_integration:jwt_login' %}" class="btn btn-primary btn-block mt-2">
                     <i class="fas fa-shield-alt"></i> Authenticate with Portbro
                 </a>
             </div>
@@ -57,4 +49,182 @@
             this.value = this.value.toLowerCase().replace(/\s/g, '');
         });
     </script>
+    
+    <style>
+        /* PortBro Color Variables */
+        :root {
+            --p-base: #F5E5C0;
+            --p-light: #2f1a17;
+            --p-accent: #F6A622;
+            --p-text: #231b17;
+            --p-text-light: #F5E5C0;
+        }
+
+        /* Register logo styling with Bevan font */
+        .register-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .register-logo a {
+            font-family: 'Bevan', serif;
+            font-size: 2.5rem;
+            color: var(--p-accent) !important;
+            text-decoration: none;
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .register-logo a:hover {
+            color: #e6951f !important;
+        }
+
+        /* Fix card alignment and add striped background */
+        .register-box {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: #F5E5C0;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        
+        .register-box .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.98);
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+        }
+        
+        .register-box .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Button stack styling */
+        .button-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        /* Fix button styling */
+        .register-box .btn {
+            width: 100%;
+            margin: 0;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-height: 48px;
+        }
+        
+        .register-box .btn-primary {
+            background: linear-gradient(135deg, #F6A622 0%, #e6951f 100%);
+            border: none;
+            color: #2f1a17;
+        }
+        
+        .register-box .btn-primary:hover {
+            background: linear-gradient(135deg, #e6951f 0%, #d4851c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(246, 166, 34, 0.3);
+        }
+        
+        .register-box .btn-secondary {
+            background: #2f1a17;
+            border: none;
+            color: #F5E5C0;
+        }
+        
+        .register-box .btn-secondary:hover {
+            background: #3d2a27;
+            transform: translateY(-2px);
+        }
+        
+        /* Fix form styling */
+        .register-box .form-control {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(246, 166, 34, 0.3);
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .register-box .form-control:focus {
+            border-color: #F6A622;
+            box-shadow: 0 0 0 0.2rem rgba(246, 166, 34, 0.25);
+            background: #fff;
+        }
+        
+        .register-box .input-group-text {
+            background: #2f1a17;
+            border: 2px solid rgba(246, 166, 34, 0.3);
+            color: #F5E5C0;
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+        
+        .register-box .input-group .form-control {
+            border-left: none;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .register-box .input-group:focus-within .input-group-text {
+            border-color: #F6A622;
+        }
+        
+        /* Fix text readability */
+        .register-box .card-body h1,
+        .register-box .card-body h2,
+        .register-box .card-body h3,
+        .register-box .card-body h4,
+        .register-box .card-body h5,
+        .register-box .card-body h6 {
+            color: #2f1a17 !important;
+            font-weight: 700;
+        }
+        
+        .register-box .card-body p,
+        .register-box .card-body small {
+            color: #2f1a17 !important;
+            font-weight: 500;
+        }
+        
+        .register-box .alert {
+            background: rgba(246, 166, 34, 0.1);
+            border: 1px solid rgba(246, 166, 34, 0.3);
+            color: #2f1a17;
+            border-radius: 0.5rem;
+        }
+        
+        /* Ensure proper spacing */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .register-box {
+                max-width: 100%;
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+            
+            .register-box .card-body {
+                padding: 1rem;
+            }
+        }
+    </style>
 {% endblock %}

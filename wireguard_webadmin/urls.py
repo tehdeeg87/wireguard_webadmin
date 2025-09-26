@@ -51,6 +51,7 @@ urlpatterns = [
     path('dns/update_dns_list/', view_update_dns_list, name='update_dns_list'),
     path('dns/toggle_dns_list/', view_toggle_dns_list, name='toggle_dns_list'),
     path('dns/peer_hostnames/', view_peer_hostnames, name='peer_hostnames'),
+    path('dns/', include('dns.urls')),
     path('peer/list/', view_wireguard_peer_list, name='wireguard_peer_list'),
     path('peer/sort/', view_wireguard_peer_sort, name='wireguard_peer_sort'),
     path('peer/manage/', view_wireguard_peer_manage, name='wireguard_peer_manage'),

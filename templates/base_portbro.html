@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+{% load i18n %}
+{%load static%}
+{% get_current_language as CURRENT_LANGUAGE %}
+<html lang="{{ CURRENT_LANGUAGE }}">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XGZ7RZEXD0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XGZ7RZEXD0');
+</script>
+{% block gtag_e %}
+{%  endblock %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{% block title %}{% if page_title %}{{page_title}} | {% endif %}PortBro VPN Manager{% endblock %}</title>
+{% load static  %}
+<link rel="shortcut icon" type="image/png" href="{% static 'icon.ico' %}"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Glory:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bevan:ital@0;1&display=swap" rel="stylesheet">
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/fontawesome-free/css/all.min.css">
+<!-- Ionicons -->
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<!-- Tempusdominus Bootstrap 4 -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+<!-- iCheck -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- JQVMap -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/jqvmap/jqvmap.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/dist/css/adminlte.min.css">
+<!-- overlayScrollbars -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+<!-- Daterange picker -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/daterangepicker/daterangepicker.css">
+<!-- summernote -->
+<link rel="stylesheet" href="/static/AdminLTE-3.2.0/plugins/summernote/summernote-bs4.min.css">
+<link rel="stylesheet" href="{% static 'portbro.css' %}"/>
+
+<style>
+  /* PortBro Color Variables */
+  :root {
+    --p-base: #F5E5C0;
+    --p-light: #2f1a17;
+    --p-accent: #F6A622;
+    --p-text: #231b17;
+    --p-text-light: #F5E5C0;
+    --scale: 1;
+    --grain-opacity: 0.3;
+  }
+
+  /* Mobile-First Responsive Design */
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    background-color: var(--p-base);
+    color: var(--p-text);
+  }
+  
+  /* PortBro Brand Styling */
+  .bevan-link {
+    font-family: 'Bevan', serif !important;
+    color: var(--p-accent) !important;
+    text-decoration: none !important;
+  }
+  
+  .bevan-link:hover {
+    color: #e6951f !important;
+  }
+  
+  /* Custom Navbar Styling */
+  .navbar-portbro {
+    background-color: var(--p-light) !important;
+    border-bottom: 0.5em solid var(--p-base) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-portbro .navbar-brand,
+  .navbar-portbro .nav-link {
+    color: var(--p-text-light) !important;
+  }
+  
+  .navbar-portbro .nav-link:hover {
+    color: var(--p-accent) !important;
+  }
+  
+  /* Sidebar Styling */
+  .main-sidebar {
+    background-color: var(--p-light) !important;
+    border-right: 3px solid var(--p-accent) !important;
+  }
+  
+  .main-sidebar .brand-link {
+    background-color: var(--p-light) !important;
+    border-bottom: 2px solid var(--p-accent) !important;
+  }
+  
+  .main-sidebar .brand-text {
+    color: var(--p-accent) !important;
+    font-family: 'Bevan', serif;
+    font-size: 1.2rem;
+  }
+  
+  .main-sidebar .nav-sidebar .nav-link {
+    color: var(--p-text-light) !important;
+    border-radius: 0.375rem;
+    margin: 0.125rem 0.5rem;
+  }
+  
+  .main-sidebar .nav-sidebar .nav-link:hover {
+    background-color: rgba(246, 166, 34, 0.1) !important;
+    color: var(--p-accent) !important;
+  }
+  
+  .main-sidebar .nav-sidebar .nav-link.active {
+    background-color: var(--p-accent) !important;
+    color: var(--p-light) !important;
+  }
+  
+  .main-sidebar .nav-sidebar .nav-icon {
+    color: var(--p-accent) !important;
+  }
+  
+  /* Content Area Styling */
+  .content-wrapper {
+    background-color: var(--p-base) !important;
+  }
+  
+  .content-header {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+  }
+  
+  .content-header h1 {
+    color: var(--p-accent) !important;
+    font-family: 'Bevan', serif;
+  }
+  
+  .breadcrumb {
+    background-color: transparent !important;
+  }
+  
+  .breadcrumb-item a {
+    color: var(--p-text-light) !important;
+  }
+  
+  .breadcrumb-item.active {
+    color: var(--p-accent) !important;
+  }
+  
+  /* Card Styling */
+  .card {
+    background-color: #fff;
+    border: 1px solid rgba(246, 166, 34, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+  }
+  
+  .card-title {
+    color: var(--p-accent) !important;
+    font-family: 'Bevan', serif;
+  }
+  
+  /* Button Styling */
+  .btn-primary {
+    background-color: var(--p-accent) !important;
+    border-color: var(--p-accent) !important;
+    color: var(--p-light) !important;
+  }
+  
+  .btn-primary:hover {
+    background-color: #e6951f !important;
+    border-color: #e6951f !important;
+  }
+  
+  .btn-secondary {
+    background-color: var(--p-light) !important;
+    border-color: var(--p-light) !important;
+    color: var(--p-text-light) !important;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #3d2a27 !important;
+    border-color: #3d2a27 !important;
+  }
+  
+  .btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+  }
+  
+  .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+  }
+  
+  .btn-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: var(--p-light) !important;
+  }
+  
+  /* Table Styling */
+  .table {
+    background-color: #fff;
+  }
+  
+  .table thead th {
+    background-color: var(--p-light);
+    color: var(--p-text-light);
+    border-bottom: 2px solid var(--p-accent);
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(246, 166, 34, 0.05);
+  }
+  
+  /* Form Styling */
+  .form-control {
+    border: 1px solid rgba(246, 166, 34, 0.3);
+    border-radius: 0.375rem;
+  }
+  
+  .form-control:focus {
+    border-color: var(--p-accent);
+    box-shadow: 0 0 0 0.2rem rgba(246, 166, 34, 0.25);
+  }
+  
+  .form-label {
+    color: var(--p-text);
+    font-weight: 600;
+  }
+  
+  /* Alert Styling */
+  .alert-warning {
+    background-color: rgba(246, 166, 34, 0.1);
+    border-color: var(--p-accent);
+    color: var(--p-text);
+  }
+  
+  .alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: #28a745;
+    color: var(--p-text);
+  }
+  
+  .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+    color: var(--p-text);
+  }
+  
+  .alert-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-color: #17a2b8;
+    color: var(--p-text);
+  }
+  
+  /* Footer Styling */
+  .main-footer {
+    background: linear-gradient(135deg, var(--p-light) 0%, #3d2a27 100%);
+    color: var(--p-text-light);
+    border-top: 2px solid var(--p-accent);
+  }
+  
+  .main-footer a {
+    color: var(--p-accent) !important;
+  }
+  
+  /* Mobile Navbar */
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+  
+  .navbar-brand, .nav-link {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border: 2px solid var(--p-accent) !important;
+    background-color: rgba(246, 166, 34, 0.1) !important;
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(246, 166, 34, 0.25) !important;
+  }
+  
+  .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F6A622' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+  }
+  
+  /* Mobile Typography */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.9rem; }
+  
+  /* Mobile Container */
+  .container, .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Mobile Buttons */
+  .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+  }
+  
+  .btn-lg {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  /* Mobile Cards/Boxes */
+  .card, .box {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  /* Mobile Tables */
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .table th, .table td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  /* Mobile Forms */
+  .form-control {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+  
+  .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Mobile Spacing */
+  .mb-mobile-2 { margin-bottom: 0.5rem !important; }
+  .mb-mobile-3 { margin-bottom: 1rem !important; }
+  .mb-mobile-4 { margin-bottom: 1.5rem !important; }
+  .mb-mobile-5 { margin-bottom: 3rem !important; }
+  
+  .mt-mobile-2 { margin-top: 0.5rem !important; }
+  .mt-mobile-3 { margin-top: 1rem !important; }
+  .mt-mobile-4 { margin-top: 1.5rem !important; }
+  .mt-mobile-5 { margin-top: 3rem !important; }
+  
+  /* Mobile Padding */
+  .p-mobile-2 { padding: 0.5rem !important; }
+  .p-mobile-3 { padding: 1rem !important; }
+  .p-mobile-4 { padding: 1.5rem !important; }
+  .p-mobile-5 { padding: 3rem !important; }
+  
+  /* Mobile Text Sizing */
+  .text-mobile-sm { font-size: 0.75rem !important; }
+  .text-mobile-base { font-size: 0.875rem !important; }
+  .text-mobile-lg { font-size: 1rem !important; }
+  .text-mobile-xl { font-size: 1.125rem !important; }
+  
+  /* Mobile Flexbox Utilities */
+  .d-mobile-flex { display: flex !important; }
+  .d-mobile-block { display: block !important; }
+  .d-mobile-none { display: none !important; }
+  
+  .flex-mobile-column { flex-direction: column !important; }
+  .flex-mobile-row { flex-direction: row !important; }
+  .flex-mobile-wrap { flex-wrap: wrap !important; }
+  .flex-mobile-nowrap { flex-wrap: nowrap !important; }
+  
+  .justify-mobile-center { justify-content: center !important; }
+  .justify-mobile-start { justify-content: flex-start !important; }
+  .justify-mobile-end { justify-content: flex-end !important; }
+  .justify-mobile-between { justify-content: space-between !important; }
+  
+  .align-mobile-center { align-items: center !important; }
+  .align-mobile-start { align-items: flex-start !important; }
+  .align-mobile-end { align-items: flex-end !important; }
+  
+  /* Mobile Grid */
+  .col-mobile-12 { width: 100% !important; flex: 0 0 100% !important; }
+  .col-mobile-6 { width: 50% !important; flex: 0 0 50% !important; }
+  .col-mobile-4 { width: 33.333% !important; flex: 0 0 33.333% !important; }
+  .col-mobile-3 { width: 25% !important; flex: 0 0 25% !important; }
+  
+  /* Mobile Visibility */
+  .d-mobile-none { display: none !important; }
+  .d-mobile-block { display: block !important; }
+  .d-mobile-inline { display: inline !important; }
+  .d-mobile-inline-block { display: inline-block !important; }
+  
+  /* Mobile-specific overrides */
+  @media (max-width: 768px) {
+    .container {
+      max-width: 100%;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .row {
+      margin-left: -0.5rem;
+      margin-right: -0.5rem;
+    }
+    
+    .col, [class*="col-"] {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    
+    /* Stack columns on mobile */
+    .col-md-6, .col-lg-6, .col-xl-6 {
+      width: 100% !important;
+      flex: 0 0 100% !important;
+      margin-bottom: 1rem;
+    }
+    
+    /* Mobile navbar adjustments */
+    .navbar-nav {
+      text-align: center;
+    }
+    
+    .navbar-nav .nav-link {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Mobile button adjustments */
+    .btn {
+      width: 100%;
+      margin: 0.25rem 0;
+    }
+    
+    .btn-group .btn {
+      width: auto;
+      margin: 0.125rem;
+    }
+    
+    /* Mobile table adjustments */
+    .table-responsive {
+      border: none;
+    }
+    
+    .table {
+      font-size: 0.8rem;
+    }
+    
+    .table th, .table td {
+      padding: 0.375rem 0.25rem;
+      white-space: nowrap;
+    }
+    
+    /* Mobile card adjustments */
+    .card-body {
+      padding: 1rem 0.75rem;
+    }
+    
+    /* Mobile text adjustments */
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.1rem; }
+    
+    /* Mobile spacing adjustments */
+    .mb-5 { margin-bottom: 2rem !important; }
+    .mb-4 { margin-bottom: 1.5rem !important; }
+    .mb-3 { margin-bottom: 1rem !important; }
+    
+    .mt-5 { margin-top: 2rem !important; }
+    .mt-4 { margin-top: 1.5rem !important; }
+    .mt-3 { margin-top: 1rem !important; }
+    
+    /* Mobile padding adjustments */
+    .p-5 { padding: 2rem !important; }
+    .p-4 { padding: 1.5rem !important; }
+    .p-3 { padding: 1rem !important; }
+  }
+  
+  @media (max-width: 576px) {
+    /* Extra small devices */
+    .container {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+    
+    .btn {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .card-body {
+      padding: 0.75rem 0.5rem;
+    }
+    
+    h1 { font-size: 1.25rem; }
+    h2 { font-size: 1.1rem; }
+    h3 { font-size: 1rem; }
+    
+    .table {
+      font-size: 0.75rem;
+    }
+    
+    .table th, .table td {
+      padding: 0.25rem 0.125rem;
+    }
+  }
+  
+  /* Landscape mobile adjustments */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .navbar {
+      padding: 0.25rem 1rem;
+    }
+    
+    .container {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  /* Footer texture - cream base with texture but no colored stripes */
+  .footer-texture {
+    min-height: 80px;
+    color: var(--p-text);
+    background-color: var(--p-base);
+
+    /* Layered background with texture but no colored stripes */
+    background-image:
+      /* thin accent chevrons - repeat every 260px*--scale */
+      repeating-linear-gradient(
+        135deg,
+        transparent 0 calc(48px * var(--scale)),
+        rgba(0,0,0,0.02) calc(48px * var(--scale)) calc(50px * var(--scale)),
+        transparent calc(50px * var(--scale)) calc(98px * var(--scale))
+      ),
+
+      /* angled chevron/diamond accent created with repeating-linear-gradient */
+      repeating-linear-gradient(
+        45deg,
+        transparent 0 calc(28px * var(--scale)),
+        rgba(255,255,255,0.04) calc(28px * var(--scale)) calc(30px * var(--scale)),
+        transparent calc(30px * var(--scale)) calc(56px * var(--scale))
+      ),
+
+      /* wool grain texture (SVG) */
+      url("data:image/svg+xml;utf8,\
+      <svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'>\
+        <filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch' /></filter>\
+        <rect width='120' height='120' filter='url(%23f)' opacity='0.9' fill='white'/>\
+      </svg>");
+    background-blend-mode: normal, overlay, normal;
+    background-size:
+      calc(120px * var(--scale)) calc(120px * var(--scale)),
+      calc(60px * var(--scale)) calc(60px * var(--scale)),
+      300px 300px;
+
+    /* subtle border to mimic woven edge */
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.04), inset 0 -4px 12px rgba(0,0,0,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  /* tone down grain with overlay using pseudo-element so we can control opacity */
+  .footer-texture::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(transparent, rgba(0,0,0,0.02));
+    mix-blend-mode: multiply;
+    opacity: var(--grain-opacity);
+  }
+
+  /* Preloader styling */
+  .preloader{
+    display: none;
+  }
+
+  /* Wrapper styling */
+  .wrapper {
+    max-width: 1400px !important;
+    margin: 0 auto;
+  }
+
+  body.layout-boxed {
+    background: radial-gradient(circle at center, #444 0%, #ccc 80%, #fff 100%);
+  }
+  body.layout-boxed .wrapper {
+    background-color: var(--p-base);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  }
+</style>
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!--<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+
+</head>
+{% load custom_tags %}
+{% tag_webadmin_version as webadmin_version %}
+
+<body class="hold-transition sidebar-mini layout-boxed {% if request.COOKIES.sidebarState == 'collapsed' %}sidebar-collapse{% endif %}">
+<div class="wrapper">
+
+    <!-- Preloader -->
+    <div class="preloader flex-column justify-content-center align-items-center">
+    </div>
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light navbar-portbro">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- User Information Display -->
+            {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user"></i> {{ user.username }}
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                    <h6 class="dropdown-header">
+                        <i class="fas fa-user-check"></i> {{ user.username }}
+                    </h6>
+                    <div class="dropdown-divider"></div>
+                    <p class="dropdown-item-text">
+                        <small>
+                            <strong>Email:</strong> {{ user.email|default:"Not provided" }}<br>
+                            <strong>Level:</strong> 
+                            {% if user.useracl.user_level == 50 %}
+                                Administrator
+                            {% elif user.useracl.user_level == 40 %}
+                                Manager
+                            {% elif user.useracl.user_level == 30 %}
+                                Peer Manager
+                            {% else %}
+                                Level {{ user.useracl.user_level|default:"Unknown" }}
+                            {% endif %}<br>
+                            <strong>Auth:</strong> Portbro.com JWT
+                        </small>
+                    </p>
+                </div>
+            </li>
+            {% endif %}
+            
+            <li class="nav-item">
+                <a href="/change_language/" class="nav-link" title="{% trans 'Change Language' %}">
+                    <i class="fas fa-language"></i>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/accounts/logout/" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/" class="brand-link">
+            <span class="brand-text font-weight-light bevan-link">PortBro VPN Manager</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
+
+                    <li class="nav-item">
+                        <a href="/status/" class="nav-link {% if '/status/' in request.path %}active{% endif %}">
+                            <i class="fas fa-tachometer-alt nav-icon"></i>
+                            <p>
+                                {% trans 'Status' %}
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/peer/list/" class="nav-link {% if '/peer/' in request.path %}active{% endif %}">
+                            <i class="fas fa-users-cog nav-icon"></i>
+                            <p>
+                                Peers
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/vpn_invite/" class="nav-link {% if '/vpn_invite/' in request.path %}active{% endif %}">
+                            <i class="fas fa-share-square nav-icon"></i>
+                            <p>
+                                {% trans 'VPN Invite' %}
+                            </p>
+                        </a>
+                    </li>
+
+                    {% if user_acl.user_level != 30 %}
+                    <li class="nav-item">
+                        <a href="/dns/" class="nav-link {% if '/dns/' in request.path %}active{% endif %}">
+                            <i class="fas fa-address-book nav-icon"></i>
+                            <p>
+                                DNS
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/firewall/rule_list/" class="nav-link {% if '/firewall/' in request.path %}active{% endif %}">
+                            <i class="fas fa-shield-alt nav-icon"></i>
+                            <p>
+                                Firewall
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/console/" class="nav-link {% if '/console/' in request.path %}active{% endif %}">
+                            <i class="fas fa-terminal nav-icon"></i>
+                            <p>
+                                Console
+                            </p>
+                        </a>
+                    </li>
+
+               
+                    <li class="nav-item">
+                        <a href="/user/list/" class="nav-link {% if '/user/' in request.path %}active{% endif %}">
+                            <i class="fas fa-users nav-icon"></i>
+                            <p>
+                                {% trans 'User Manager' %}
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="/server/manage/" class="nav-link {% if '/server/' in request.path %}active{% endif %}">
+                            <i class="fas fa-cogs nav-icon"></i>
+                            <p>
+                                WireGuard
+                            </p>
+                        </a>
+                    </li>
+
+                    
+
+                    {% endif %}
+                        
+                    
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                {% if page_title %}
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">{{ page_title }}</h1>
+                        </div><!-- /.col -->
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                {% if breadcrumb %}
+                                    <li class="breadcrumb-item active">
+                                        {%if breadcrumb.level2.href%}
+                                            <a href="{{ breadcrumb.level2.href }}">{{ breadcrumb.level2.title }}</a>
+                                        {%else%}
+                                            {{breadcrumb.level2.title}}
+                                        {%endif%}
+                                    </li>
+
+                                {% endif %}
+
+                                <li class="breadcrumb-item active">{{ page_title }}</li>
+                            </ol>
+                        </div><!-- /.col -->
+                    </div><!-- /.row -->
+                {% endif %}
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Generic Modal Structure -->
+        <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="genericModalLabel">Modal Title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="genericModalBody">
+                        <!-- Content will be loaded here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="genericModalCloseButton">Close</button>
+                        <a href="#" class="btn btn-primary" id="genericModalActionButton">Action</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- End modal -->
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                {% if pending_changes_warning %}
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">{% trans 'Update Required' %}</h4>
+                        <p>
+                            {% trans 'Your WireGuard settings have been modified. To apply these changes, please update the configuration and reload the WireGuard service.' %}
+                        </p>
+                        <p>
+                            <a
+                                    {% if user_acl.enable_reload %}
+                                    href="/tools/export_wireguard_config/?action=update_and_reload" class="btn btn-secondary"
+                                    {% else %}
+                                    href="#" class="btn btn-secondary disabled"
+                                    {% endif %}
+                            >{% trans 'Update and reload service' %}</a>
+                        </p>
+
+                    </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div><!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+    <footer class="main-footer footer-texture">
+        {% if webadmin_version.update_available %}<a class='btn btn-sm btn-danger' id="btn_update_changelog">{% trans 'Update Available' %}</a>{% else %}PortBro VPN {% endif %}
+        <div class="float-right d-none d-sm-inline-block">
+            <b>{% trans 'Version' %}</b> {{ webadmin_version.current_version }}
+        </div>
+    </footer>
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="/static/AdminLTE-3.2.0/plugins/jquery/jquery.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="/static/AdminLTE-3.2.0/plugins/jquery-ui/jquery-ui.min.js"></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+    $.widget.bridge('uibutton', $.ui.button)
+</script>
+<!-- Bootstrap 4 -->
+<script src="/static/AdminLTE-3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- ChartJS -->
+<script src="/static/AdminLTE-3.2.0/plugins/chart.js/Chart.min.js"></script>
+<!-- Sparkline -->
+<script src="/static/AdminLTE-3.2.0/plugins/sparklines/sparkline.js"></script>
+<!-- JQVMap -->
+<script src="/static/AdminLTE-3.2.0/plugins/jqvmap/jquery.vmap.min.js"></script>
+<script src="/static/AdminLTE-3.2.0/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+<!-- jQuery Knob Chart -->
+<script src="/static/AdminLTE-3.2.0/plugins/jquery-knob/jquery.knob.min.js"></script>
+<!-- daterangepicker -->
+<script src="/static/AdminLTE-3.2.0/plugins/moment/moment.min.js"></script>
+<script src="/static/AdminLTE-3.2.0/plugins/daterangepicker/daterangepicker.js"></script>
+<!-- Tempusdominus Bootstrap 4 -->
+<script src="/static/AdminLTE-3.2.0/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<!-- Summernote -->
+<script src="/static/AdminLTE-3.2.0/plugins/summernote/summernote-bs4.min.js"></script>
+<!-- overlayScrollbars -->
+<script src="/static/AdminLTE-3.2.0/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/AdminLTE-3.2.0/dist/js/adminlte.js"></script>
+
+<script>
+    $(document).ready(function() {
+        const webadminVersion = '{{ webadmin_version.current_version }}';
+
+        $('#btn_update_changelog').on('click', function() {
+            $.ajax({
+                url: `https://updates.eth0.com.br/api/application_changelog/?app=wireguard_webadmin&version=${webadminVersion}`,
+                type: 'GET',
+                success: function(response) {
+                    const updates = response.updates.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
+                    let updatesHtml = '';
+                    updates.forEach(update => {
+                        updatesHtml += `<div class="update">
+                                        <h5>Version ${update.version}</h5>
+                                        <p>${update.release_notes.replace(/\r\n/g, "<br>")}</p>
+                                    </div>`;
+                    });
+
+                    // Update modal content
+                    $('#genericModalLabel').text('Wireguard Webadmin Updates');
+                    $('#genericModalBody').html(updatesHtml);
+                    $('#genericModalCloseButton').text('Close');
+                    $('#genericModalActionButton').text('Update Instructions').attr('href', 'https://github.com/eduardogsilva/wireguard_webadmin').attr('target', '_blank');
+
+                    // Show modal
+                    $('#genericModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    // Update modal for error display
+                    $('#genericModalLabel').text('Error');
+                    $('#genericModalBody').html('<p>An error occurred while fetching the update information. Please try again later.</p>');
+                    $('#genericModalCloseButton').text('Close');
+                    $('#genericModalActionButton').hide(); // Hide the action button in case of error
+
+                    // Show modal
+                    $('#genericModal').modal('show');
+                    console.error("An error occurred while fetching updates: ", error);
+                }
+            });
+        });
+    });
+
+
+</script>
+
+{% include "template_messages.html" %}
+
+<script>
+    function setCookie(name, value, days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+</script>
+
+<script>
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        var sidebarState = getCookie('sidebarState');
+        if (sidebarState === 'collapsed') {
+            $('body').addClass('sidebar-collapse');
+        }
+
+        $('[data-widget="pushmenu"]').on('click', function(event) {
+            event.preventDefault();
+            setTimeout(function() {
+                if ($('body').hasClass('sidebar-collapse')) {
+                    setCookie('sidebarState', 'collapsed', 7);
+                } else {
+                    setCookie('sidebarState', 'opened', 7);
+                }
+            }, 500);
+        });
+    });
+</script>
+
+{% block custom_page_scripts %}
+
+{% endblock %}
+
+</body>
+</html>

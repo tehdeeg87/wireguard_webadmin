@@ -1,0 +1,76 @@
+# CoreDNS configuration for WireGuard WebAdmin
+# Provides DNS resolution for peer hostnames and external queries
+
+# Global options
+. {
+    # Enable logging
+    log
+    
+    # Enable errors plugin for better error reporting
+    errors
+    
+    # Enable health check endpoint
+    health {
+        lameduck 5s
+    }
+    
+    # Enable metrics on port 9153
+    prometheus :9153
+    
+    # Enable ready endpoint
+    ready
+    
+    # Load zone files from the zones directory
+    file /etc/coredns/zones/peers.db {
+        # This zone handles peer hostnames
+        # Format: peer-name.wg.local -> IP
+    }
+    
+    file /etc/coredns/zones/instances.db {
+        # This zone handles instance hostnames
+        # Format: wg1.wg.local -> IP
+    }
+    
+    # Forward all other queries to upstream DNS servers
+    forward . 1.1.1.1 1.0.0.1 8.8.8.8 {
+        # Use Cloudflare and Google DNS as upstream
+        policy round_robin
+        health_check 5s
+    }
+    
+    # Cache responses for better performance
+    cache {
+        success 9984 30s
+        denial 9984 5s
+    }
+}
+
+# Internal WireGuard zone for peer resolution
+wg.local {
+    # Enable logging for this zone
+    log
+    
+    # Load peer zone file
+    file /etc/coredns/zones/peers.db
+    
+    # Enable auto-reload of zone files
+    reload 1s
+    
+    # Forward unknown queries to upstream
+    forward . 1.1.1.1 1.0.0.1
+}
+
+# Instance zone for WireGuard instances
+instances.wg.local {
+    # Enable logging for this zone
+    log
+    
+    # Load instance zone file
+    file /etc/coredns/zones/instances.db
+    
+    # Enable auto-reload of zone files
+    reload 1s
+    
+    # Forward unknown queries to upstream
+    forward . 1.1.1.1 1.0.0.1
+}

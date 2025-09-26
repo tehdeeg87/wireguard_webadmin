@@ -6,4 +6,16 @@ class DnsConfig(AppConfig):
     name = 'dns'
     
     def ready(self):
-        import dns.signals
+        # Import signals to register them
+        from . import signals
+        from django.db.models.signals import post_save, post_delete
+        
+        # Register signals for Peer model
+        from wireguard.models import Peer, WireGuardInstance
+        
+        post_save.connect(signals.update_coredns_on_peer_change, sender=Peer)
+        post_delete.connect(signals.update_coredns_on_peer_delete, sender=Peer)
+        
+        # Register signals for WireGuardInstance model
+        post_save.connect(signals.update_coredns_on_instance_change, sender=WireGuardInstance)
+        post_delete.connect(signals.update_coredns_on_instance_delete, sender=WireGuardInstance)

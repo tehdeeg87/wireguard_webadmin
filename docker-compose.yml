@@ -73,12 +73,30 @@ services:
     volumes:
       - dnsmasq_conf:/etc/dnsmasq/
 
+  coredns:
+    container_name: wireguard-coredns
+    restart: unless-stopped
+    image: coredns/coredns:latest
+    command: ["-conf", "/etc/coredns/Corefile"]
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    volumes:
+      - ./containers/coredns/Corefile:/etc/coredns/Corefile:ro
+      - ./containers/coredns/zones:/etc/coredns/zones:ro
+      - coredns_data:/data
+    networks:
+      - default
+    depends_on:
+      - wireguard-webadmin
+
 volumes:
   static_volume:
   wireguard:
   dnsmasq_conf:
   app_secrets:
   rrd_data:
+  coredns_data:
 #networks:
 #  caddy_shared_net:
 #    external: true
