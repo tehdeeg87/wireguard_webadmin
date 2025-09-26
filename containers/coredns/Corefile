@@ -54,7 +54,7 @@ wg.local {
     file /etc/coredns/zones/peers.db
     
     # Enable auto-reload of zone files
-    reload 1s
+    reload 5s
     
     # Forward unknown queries to upstream
     forward . 1.1.1.1 1.0.0.1
@@ -69,7 +69,7 @@ instances.wg.local {
     file /etc/coredns/zones/instances.db
     
     # Enable auto-reload of zone files
-    reload 1s
+    reload 5s
     
     # Forward unknown queries to upstream
     forward . 1.1.1.1 1.0.0.1

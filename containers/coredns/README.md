@@ -76,7 +76,7 @@ Configure your WireGuard clients to use CoreDNS:
 [Interface]
 PrivateKey = YOUR_PRIVATE_KEY
 Address = 10.188.0.2/24
-DNS = YOUR_SERVER_IP  # CoreDNS server IP
+DNS = YOUR_SERVER_IP:5353  # CoreDNS server IP and port
 
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY
@@ -90,14 +90,14 @@ AllowedIPs = 0.0.0.0/0
 
 ```bash
 # Test peer resolution
-dig @YOUR_SERVER_IP phone.wg.local
-dig @YOUR_SERVER_IP laptop.wg.local
+dig @YOUR_SERVER_IP -p 5353 phone.wg.local
+dig @YOUR_SERVER_IP -p 5353 laptop.wg.local
 
 # Test instance resolution
-dig @YOUR_SERVER_IP wg1.instances.wg.local
+dig @YOUR_SERVER_IP -p 5353 wg1.instances.wg.local
 
 # Test external resolution
-dig @YOUR_SERVER_IP google.com
+dig @YOUR_SERVER_IP -p 5353 google.com
 ```
 
 ### Test Script
