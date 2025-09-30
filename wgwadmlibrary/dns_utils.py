@@ -2,49 +2,6 @@ import subprocess
 import os
 
 
-def get_coredns_ip():
-    """
-    Get the IP address of the CoreDNS container.
-    Returns the container IP or falls back to a default.
-    """
-    try:
-        # Try to get the CoreDNS container IP
-        result = subprocess.run(
-            ['docker', 'inspect', 'wireguard-coredns', '--format={{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        
-        if result.returncode == 0 and result.stdout.strip():
-            ip = result.stdout.strip()
-            # Validate that it's a proper IP address
-            if ip and '.' in ip and len(ip.split('.')) == 4:
-                return ip
-    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
-        pass
-    
-    # Fallback: try to get the host IP or use localhost
-    try:
-        # Try to get the host's IP in the Docker network
-        result = subprocess.run(
-            ['docker', 'inspect', 'wireguard-webadmin', '--format={{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}'],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        
-        if result.returncode == 0 and result.stdout.strip():
-            gateway = result.stdout.strip()
-            if gateway and '.' in gateway:
-                return gateway
-    except:
-        pass
-    
-    # Final fallback - use the server's external IP or localhost
-    return '127.0.0.1'
-
-
 def get_dnsmasq_ip():
     """
     Get the IP address of the dnsmasq container.

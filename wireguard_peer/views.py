@@ -153,12 +153,12 @@ def view_wireguard_peer_manage(request):
             new_peer.wireguard_instance.pending_changes = True
             new_peer.wireguard_instance.save()
             
-            # Update CoreDNS zones automatically
+            # Update dnsmasq configuration automatically
             try:
                 from django.core.management import call_command
-                call_command('update_coredns_zones', zone='peers')
+                call_command('update_peer_dns')
             except Exception as e:
-                print(f"Warning: Could not update CoreDNS zones: {e}")
+                print(f"Warning: Could not update dnsmasq configuration: {e}")
             
             return redirect('/peer/manage/?peer=' + str(new_peer.uuid))
         else:
