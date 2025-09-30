@@ -79,8 +79,8 @@ services:
     image: coredns/coredns:latest
     command: ["-conf", "/etc/coredns/Corefile"]
     ports:
-      - "5353:53/udp"
-      - "5353:53/tcp"
+      - "5354:53/udp"
+      - "5354:53/tcp"
     volumes:
       - ./containers/coredns/Corefile:/etc/coredns/Corefile:ro
       - ./containers/coredns/zones:/etc/coredns/zones:ro
@@ -89,6 +89,8 @@ services:
       - default
     depends_on:
       - wireguard-webadmin
+    environment:
+      - TZ=${TIMEZONE}
 
 volumes:
   static_volume:

@@ -76,7 +76,7 @@ Configure your WireGuard clients to use CoreDNS:
 [Interface]
 PrivateKey = YOUR_PRIVATE_KEY
 Address = 10.188.0.2/24
-DNS = YOUR_SERVER_IP:5353  # CoreDNS server IP and port
+DNS = YOUR_SERVER_IP:5354  # CoreDNS server IP and port
 
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY
@@ -90,14 +90,14 @@ AllowedIPs = 0.0.0.0/0
 
 ```bash
 # Test peer resolution
-dig @YOUR_SERVER_IP -p 5353 phone.wg.local
-dig @YOUR_SERVER_IP -p 5353 laptop.wg.local
+dig @YOUR_SERVER_IP -p 5354 phone.wg.local
+dig @YOUR_SERVER_IP -p 5354 laptop.wg.local
 
 # Test instance resolution
-dig @YOUR_SERVER_IP -p 5353 wg1.instances.wg.local
+dig @YOUR_SERVER_IP -p 5354 wg1.instances.wg.local
 
 # Test external resolution
-dig @YOUR_SERVER_IP -p 5353 google.com
+dig @YOUR_SERVER_IP -p 5354 google.com
 ```
 
 ### Test Script
@@ -177,7 +177,7 @@ docker exec wireguard-coredns cat /etc/coredns/Corefile
 
 ## Security Considerations
 
-- CoreDNS is exposed on port 53 (UDP/TCP)
+- CoreDNS is exposed on port 5354 (UDP/TCP) to avoid conflicts with system DNS
 - Consider firewall rules to restrict access
 - Monitor DNS queries for suspicious activity
 - Regular updates of CoreDNS image

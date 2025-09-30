@@ -47,14 +47,14 @@
                             <div class="card-body">
                                 <p>Configure your WireGuard clients to use this DNS server:</p>
                                 <div class="alert alert-info">
-                                    <strong>DNS Server:</strong> <code>{{ request.get_host|split:":"|first }}:5353</code>
+                                    <strong>DNS Server:</strong> <code>{{ request.get_host|split:":"|first }}:5354</code>
                                 </div>
                                 
                                 <h5>Client Configuration Example:</h5>
                                 <pre class="bg-light p-2"><code>[Interface]
 PrivateKey = YOUR_PRIVATE_KEY
 Address = 10.188.0.2/24
-DNS = {{ request.get_host|split:":"|first }}:5353
+DNS = {{ request.get_host|split:":"|first }}:5354
 
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY

@@ -161,7 +161,10 @@ def generate_peer_config(peer_uuid):
     else:
         # Use split-tunnel format to allow LAN access
         allowed_ips_line = "0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1"
-    dns_entries = [wg_instance.dns_primary, wg_instance.dns_secondary]
+    # Use CoreDNS for peer name resolution
+    from wgwadmlibrary.dns_utils import get_coredns_ip
+    coredns_ip = get_coredns_ip()
+    dns_entries = [f"{coredns_ip}:5354", wg_instance.dns_secondary]
     dns_line = ", ".join(filter(None, dns_entries))
 
     config_lines = [
