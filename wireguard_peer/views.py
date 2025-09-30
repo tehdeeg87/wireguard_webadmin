@@ -11,7 +11,7 @@ from user_manager.models import UserAcl
 from wgwadmlibrary.tools import check_sort_order_conflict, deduplicate_sort_order, default_sort_peers, \
     user_allowed_instances, user_allowed_peers, user_has_access_to_instance, user_has_access_to_peer
 from wireguard.models import Peer, PeerAllowedIP, WireGuardInstance
-from wireguard_peer.forms import PeerAllowedIPForm, PeerForm
+from wireguard_peer.forms import PeerAllowedIPForm, PeerForm, PeerNameForm
 
 
 def generate_peer_default(wireguard_instance):
@@ -188,15 +188,15 @@ def view_wireguard_peer_manage(request):
         else:
             page_title += current_peer.public_key[:16] + ("..." if len(current_peer.public_key) > 16 else "")
         if request.method == 'POST':
-            form = PeerForm(request.POST, instance=current_peer)
+            form = PeerNameForm(request.POST, instance=current_peer)
             if form.is_valid():
                 form.save()
-                messages.success(request, _('Peer updated|Peer updated successfully.'))
+                messages.success(request, _('Device name updated successfully.'))
                 current_peer.wireguard_instance.pending_changes = True
                 current_peer.wireguard_instance.save()
                 return redirect('/peer/list/?uuid=' + str(current_peer.wireguard_instance.uuid))
         else:
-            form = PeerForm(instance=current_peer)
+            form = PeerNameForm(instance=current_peer)
     else:
         return redirect('/peer/list/')
     context = {

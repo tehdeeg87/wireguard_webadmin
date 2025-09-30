@@ -17,6 +17,20 @@ class PeerForm(forms.ModelForm):
     class Meta:
         model = Peer
         fields = ['name', 'hostname', 'public_key', 'private_key', 'pre_shared_key', 'persistent_keepalive']
+
+
+class PeerNameForm(forms.ModelForm):
+    """Simplified form for updating only the peer name"""
+    name = forms.CharField(
+        label=_('Device Name'), 
+        required=False,
+        max_length=255,
+        help_text=_('Give this device a friendly name so you can easily identify it')
+    )
+    
+    class Meta:
+        model = Peer
+        fields = ['name']
         
 
 class PeerAllowedIPForm(forms.ModelForm):

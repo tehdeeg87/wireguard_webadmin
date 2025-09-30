@@ -5,171 +5,111 @@
 
 <div class="card card-primary card-outline">
     <div class="card-header">
-        <h3 class="card-title">{% trans 'Peer Configuration' %}</h3>
+        <h3 class="card-title">
+            <i class="fas fa-user"></i>
+            {% trans 'Device Settings' %}
+        </h3>
+        <div class="card-tools">
+            <a class="btn btn-outline-secondary btn-sm" href="/peer/list/?uuid={{ current_peer.wireguard_instance.uuid }}#peer-{{ current_peer.public_key }}">
+                <i class="fas fa-arrow-left"></i> {% trans 'Back to Devices' %}
+            </a>
+        </div>
     </div>
     <form method="post">
         {% csrf_token %}
-        <div class="card-body row">
-            <div class="col-lg-6">
-                <!-- Name -->
-                <div class="form-group">
-                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
-                    <input type="text" class="form-control" id="{{ form.name.id_for_label }}" name="{{ form.name.html_name }}" placeholder="{% trans 'Enter Name' %}" value="{{ form.name.value|default_if_none:'' }}">
-                </div>
-
-                <!-- Persistent Keepalive -->
-                <div class="form-group">
-                    <label for="{{ form.persistent_keepalive.id_for_label }}">{{ form.persistent_keepalive.label }}</label>
-                    <input type="number" class="form-control" id="{{ form.persistent_keepalive.id_for_label }}" name="{{ form.persistent_keepalive.html_name }}" placeholder="{% trans 'Persistent Keepalive' %}" value="{{ form.persistent_keepalive.value|default_if_none:'' }}" required>
-                </div>
-
-                <!-- Public Key -->
-                <div class="form-group">
-                    <label for="{{ form.public_key.id_for_label }}">{{ form.public_key.label }}</label>
-                    <input type="text" class="form-control" id="{{ form.public_key.id_for_label }}" name="{{ form.public_key.html_name }}" placeholder="{% trans 'Public Key' %}" value="{{ form.public_key.value|default_if_none:'' }}" required>
-                </div>
-
-                <!-- Private Key -->
-                <div class="form-group">
-                    <label for="{{ form.private_key.id_for_label }}">{{ form.private_key.label }}</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="{{ form.private_key.id_for_label }}" name="{{ form.private_key.html_name }}" placeholder="{% trans 'Private Key' %}" value="{{ form.private_key.value|default_if_none:'' }}" required>
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary toggle-password" type="button"><i class="fas fa-eye"></i></button>
-                        </div>
+        <div class="card-body">
+            <!-- Simple Name Input -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="h5">
+                            <i class="fas fa-tag text-primary"></i>
+                            {% trans 'Device Name' %}
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="{{ form.name.id_for_label }}" name="{{ form.name.html_name }}" placeholder="{% trans 'e.g., John\'s iPhone, Office Laptop, Home Server' %}" value="{{ form.name.value|default_if_none:'' }}">
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            {% trans 'Give this device a friendly name so you can easily identify it' %}
+                        </small>
                     </div>
                 </div>
-
-                <!-- Pre-Shared Key -->
-                <div class="form-group">
-                    <label for="{{ form.pre_shared_key.id_for_label }}">{{ form.pre_shared_key.label }}</label>
-                    <input type="text" class="form-control" id="{{ form.pre_shared_key.id_for_label }}" name="{{ form.pre_shared_key.html_name }}" placeholder="{% trans 'Pre-Shared Key' %}" value="{{ form.pre_shared_key.value|default_if_none:'' }}" required>
-                </div>
-
             </div>
-            <div class="col-lg-6">
 
-            <div class="row mt-3">
+            <!-- Device Status Card -->
+            <div class="row mt-4">
                 <div class="col-lg-12">
-                    <div class="d-flex justify-content-between align-items-center ">
-                            <label>
-                                <i class="fas fa-chart-area"></i>
-                                {% trans 'Peer Traffic' %}
-                            </label>
-                            <div class="btn-group" role="group" aria-label="Graph interval">
-                                <a href="#" data-period="1h" class="btn btn-outline-primary btn-xs">1h</a>
-                                <a href="#" data-period="3h" class="btn btn-outline-primary btn-xs">3h</a>
-                                <a href="#" data-period="6h" class="btn btn-outline-primary btn-xs">6h</a>
-                                <a href="#" data-period="1d" class="btn btn-outline-primary btn-xs">1d</a>
-                                <a href="#" data-period="7d" class="btn btn-outline-primary btn-xs">7d</a>
-                                <a href="#" data-period="30d" class="btn btn-outline-primary btn-xs">1m</a>
-                                <a href="#" data-period="90d" class="btn btn-outline-primary btn-xs">3m</a>
-                                <a href="#" data-period="180d" class="btn btn-outline-primary btn-xs">6m</a>
-                                <a href="#" data-period="365d" class="btn btn-outline-primary btn-xs">1y</a>
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle"></i>
+                                {% trans 'Device Information' %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>{% trans 'Status:' %}</strong> 
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check-circle"></i> {% trans 'Ready to Connect' %}
+                                        </span>
+                                    </p>
+                                    <p><strong>{% trans 'IP Address:' %}</strong> 
+                                        <code>{% for ip in current_peer.peerallowedip_set.all %}{% if ip.config_file == 'server' and ip.priority == 0 %}{{ ip.allowed_ip }}{% endif %}{% empty %}Not assigned{% endfor %}</code>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>{% trans 'Connection Type:' %}</strong> 
+                                        <span class="badge badge-primary">{% trans 'VPN Tunnel' %}</span>
+                                    </p>
+                                    <p><strong>{% trans 'Network:' %}</strong> 
+                                        <code>{{ current_peer.wireguard_instance.name|default:"Default" }}</code>
+                                    </p>
+                                </div>
                             </div>
+                        </div>
                     </div>
-
-                    <center>
-                        <img id="graphImg" src="/rrd/graph/?peer={{ current_peer.uuid }}{% if request.GET.period %}&period={{ request.GET.period }}{% endif %}" class="img-fluid" alt="{% trans 'No traffic history, please wait a few minutes' %}" onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend', this.alt);">
-                    </center>
-
-                    <div class="d-flex justify-content-between align-items-center border-bottom mb-3" style="padding-top: 16px;"></div>
+                </div>
+            </div>
+            <!-- Simple Traffic Graph -->
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="card card-light">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-chart-line text-success"></i>
+                                {% trans 'Data Usage' %}
+                            </h5>
+                            <div class="card-tools">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary active" data-period="1d">{% trans 'Today' %}</button>
+                                    <button type="button" class="btn btn-outline-primary" data-period="7d">{% trans 'Week' %}</button>
+                                    <button type="button" class="btn btn-outline-primary" data-period="30d">{% trans 'Month' %}</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <img id="graphImg" src="/rrd/graph/?peer={{ current_peer.uuid }}&period=1d" class="img-fluid" alt="{% trans 'No data usage yet - connect your device to see usage statistics' %}" onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=\'alert alert-info\'><i class=\'fas fa-info-circle\'></i> ' + this.alt + '</div>');">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label>
-                                <i class="fas fa-info-circle" title="{% trans 'AllowedIPs at Peer section of wg' %}{{ current_peer.wireguard_instance.instance_id }}.conf"></i>
-                                {% trans 'Peer IP Addresses and networks' %}
-                            </label>
-                            <a class="btn btn-outline-primary btn-xs disabled" href="#" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add IP Address' %}</a>
-                        </div>
-                    
-                        {% for ip_address in peer_ip_list %}
-                            <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
-                                <p>
-                                    <a href="/peer/manage_ip_address/?ip={{ ip_address.uuid }}">
-                                        <i class="fas fa-network-wired"></i>
-                                        {{ ip_address}}
-                                    </a>
-                                </p>
-                                <p class="d-flex flex-column text-right small">
-                                    {% if ip_address.priority == 0 %}
-                                        {% trans 'Main ip address' %}
-                                    {% else %}
-                                        {% trans 'Priority' %}: {{ ip_address.priority }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        {% endfor %}
-
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label>
-                                <i class="fas fa-info-circle" title="AllowedIPs at client configuration file"></i> 
-                                {% trans 'Client Routing Configuration' %}
-                            </label>
-                            <a class="btn btn-outline-primary btn-xs disabled" href="#" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add Client route' %}</a>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
-                                <p>
-                                    <a href="#"
-                                       {% if peer_client_ip_list %}
-                                            onclick="alert('{% trans 'The client is not configured to use the VPN as the default gateway.\n\nOnly the specific networks listed below are routed through the VPN.\n\nNote: These routes are not automatically pushed to the client. You will need to manually update the client configuration file to reflect these settings.' %}');"
-                                       style="text-decoration: line-through;"
-                                       {% else %}
-                                            onclick="alert('{% trans 'The client is configured with split-tunnel routing. \n\nThis setting routes internet traffic through the VPN while allowing local network access, providing a balance between privacy and local connectivity.' %}');"
-                                        {% endif %}
-                                        
-                                    >
-                                        <i class="fas fa-network-wired"></i>
-                                        0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1
-                                    </a>
-                                </p>
-                                <p class="d-flex flex-column text-right small">
-                                    {% trans 'default route' %}
-                                </p>
-                        </div>
-
-
-                        {% for ip_address in peer_client_ip_list %}
-                            <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
-                                <p>
-                                    <a href="/peer/manage_ip_address/?ip={{ ip_address.uuid }}">
-                                        <i class="fas fa-network-wired"></i>
-                                        {{ ip_address}}
-                                    </a>
-                                </p>
-                                <p class="d-flex flex-column text-right small">
-                                    {% if ip_address.priority == 0 %}
-                                        {% trans 'Main ip address' %}
-                                    {% else %}
-                                        {% trans 'Priority' %}: {{ ip_address.priority }}
-                                    {% endif %}
-                                </p>
-                            </div>
-                        {% endfor %}
-
-                    </div>
-                </div>
-
-
-
-
-            </div>
         </div>
-        <div class="card-footer">
-            <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
-            <a href="#" class="btn btn-outline-primary disabled" onclick="return false;" title="{% trans 'This feature is disabled to ensure LAN access compatibility' %}">{% trans 'Add IP Address' %}</a>
-            <a class="btn btn-outline-secondary" href="/peer/list/?uuid={{ current_peer.wireguard_instance.uuid }}#peer-{{ current_peer.public_key }}">{% trans 'Back' %}</a>
-            <a href='javascript:void(0)' class='btn btn-outline-danger' data-command='delete' onclick='openCommandDialog(this)'>{% trans 'Delete Peer' %}</a>
-
+        <div class="card-footer bg-light">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary btn-lg" id="saveButton" disabled>
+                        <i class="fas fa-save"></i> {% trans 'Save Device Name' %}
+                    </button>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href='javascript:void(0)' class='btn btn-outline-danger' data-command='delete' onclick='openCommandDialog(this)' id="removeButton" style="pointer-events: none; opacity: 0.5;">
+                        <i class="fas fa-trash"></i> {% trans 'Remove Device' %}
+                    </a>
+                </div>
+            </div>
         </div>
     </form>
 </div>
@@ -178,74 +118,79 @@
 {% block custom_page_scripts %}
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var alertShown = false; 
-        var fieldsToWatch = ['id_public_key', 'id_pre_shared_key', 'id_private_key'];
-        function showAlert() {
-            if (!alertShown) { 
-                $(document).Toasts('create', {
-                    class: 'bg-warning', 
-                    title: '{% trans 'Action Required!' %}',
-                    body: '{% trans 'When manually updating the "Public Key", "Pre-Shared Key", or "Private Key", please ensure the configuration is correct.' %}',
-                });
-                alertShown = true; 
+    // Enable/disable buttons based on device name input
+    document.addEventListener('DOMContentLoaded', function() {
+        var nameInput = document.getElementById('{{ form.name.id_for_label }}');
+        var saveButton = document.getElementById('saveButton');
+        var removeButton = document.getElementById('removeButton');
+        
+        function updateButtons() {
+            var hasName = nameInput.value.trim().length > 0;
+            
+            // Enable/disable save button
+            saveButton.disabled = !hasName;
+            
+            // Enable/disable remove button
+            if (hasName) {
+                removeButton.style.pointerEvents = 'auto';
+                removeButton.style.opacity = '1';
+            } else {
+                removeButton.style.pointerEvents = 'none';
+                removeButton.style.opacity = '0.5';
             }
         }
-
         
-        fieldsToWatch.forEach(function(fieldId) {
-            var field = document.getElementById(fieldId);
-            if (field) {
-                field.addEventListener('change', showAlert);
-            }
+        // Check initial state
+        updateButtons();
+        
+        // Update on input change
+        nameInput.addEventListener('input', updateButtons);
+        nameInput.addEventListener('paste', function() {
+            // Handle paste events with a slight delay
+            setTimeout(updateButtons, 10);
         });
     });
 </script>
 
-
 <script>
+    // Simple confirmation dialog for removing device
     function openCommandDialog(element) {
         var command = element.getAttribute('data-command');
-        var confirmation = prompt("{% trans 'Please type \"delete\" to remove peer configuration.' %}");
-        if (confirmation) {
-            var url = "?peer={{ current_peer.uuid }}&action=delete&confirmation=" + encodeURIComponent(confirmation);
-            window.location.href = url;
+        if (command === 'delete') {
+            if (confirm("{% trans 'Are you sure you want to remove this device? This action cannot be undone.' %}")) {
+                var url = "?peer={{ current_peer.uuid }}&action=delete&confirmation=delete";
+                window.location.href = url;
+            }
         }
     }
 </script>
-    
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelector('.toggle-password').addEventListener('click', function () {
-            let passwordInput = document.getElementById('{{ form.private_key.id_for_label }}');
-            let passStatus = passwordInput.getAttribute('type') === 'password';
-            passwordInput.setAttribute('type', passStatus ? 'text' : 'password');
-            this.innerHTML = passStatus ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
-        });
-    
-        document.getElementById('{{ form.private_key.id_for_label }}').addEventListener('keypress', function () {
-            this.setAttribute('type', 'text');
+    // Simple traffic graph period switching
+    document.addEventListener('DOMContentLoaded', function(){
+        var buttons = document.querySelectorAll('.btn-group button[data-period]');
+        buttons.forEach(function(button){
+            button.addEventListener('click', function(e){
+                e.preventDefault();
+                
+                // Remove active class from all buttons
+                buttons.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update graph
+                var period = this.getAttribute('data-period');
+                var newSrc = '/rrd/graph/?peer={{ current_peer.uuid }}&period=' + period;
+                var imgElement = document.getElementById('graphImg');
+                if(imgElement){
+                    imgElement.setAttribute('src', newSrc);
+                }
+            });
         });
     });
 </script>
 
-
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-    var buttons = document.querySelectorAll('.btn-group a');
-    buttons.forEach(function(button){
-        button.addEventListener('click', function(e){
-            e.preventDefault();
-            var period = this.getAttribute('data-period');
-            var newSrc = '/rrd/graph/?peer={{ current_peer.uuid }}&period=' + period;
-            var imgElement = document.getElementById('graphImg');
-            if(imgElement){
-                imgElement.setAttribute('src', newSrc);
-            }
-        });
-    });
-});
-</script>
-
-    
 {% endblock %}
