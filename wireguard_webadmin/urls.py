@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 from accounts.views import view_create_first_user, view_login, view_logout
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
@@ -99,3 +101,7 @@ urlpatterns = [
     # Auth integration URLs
     path('auth/', include('auth_integration.urls')),
 ]
+
+# Serve static files in production
+if not settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
