@@ -68,29 +68,14 @@ services:
     container_name: wireguard-webadmin-dns
     restart: unless-stopped
     image: eduardosilva/wireguard_webadmin_dns:latest
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
     environment:
       - TZ=${TIMEZONE}
     volumes:
       - dnsmasq_conf:/etc/dnsmasq/
 
-  coredns:
-    container_name: wireguard-coredns
-    restart: unless-stopped
-    image: coredns/coredns:latest
-    command: ["-conf", "/etc/coredns/Corefile"]
-    ports:
-      - "5354:53/udp"
-      - "5354:53/tcp"
-    volumes:
-      - ./containers/coredns/Corefile:/etc/coredns/Corefile:ro
-      - ./containers/coredns/zones:/etc/coredns/zones:ro
-      - coredns_data:/data
-    networks:
-      - default
-    depends_on:
-      - wireguard-webadmin
-    environment:
-      - TZ=${TIMEZONE}
 
 volumes:
   static_volume:
@@ -98,7 +83,6 @@ volumes:
   dnsmasq_conf:
   app_secrets:
   rrd_data:
-  coredns_data:
 #networks:
 #  caddy_shared_net:
 #    external: true

@@ -58,22 +58,15 @@ def generate_dnsdist_config():
 
 def generate_dnsmasq_config():
     from wireguard.models import Peer, PeerAllowedIP
-    from wgwadmlibrary.dns_utils import get_coredns_ip
     
     dns_settings = DNSSettings.objects.get(name='dns_settings')
     static_hosts = StaticHost.objects.all()
     dns_lists = DNSFilterList.objects.filter(enabled=True)
     
-    # Get CoreDNS IP for forwarding
-    coredns_ip = get_coredns_ip()
-    
     dnsmasq_config = f'''
 no-dhcp-interface=
 listen-address=0.0.0.0
 bind-interfaces
-
-# Forward .wg.local queries to CoreDNS
-server=/{coredns_ip}#5354
 
 '''
     if dns_settings.dns_primary:

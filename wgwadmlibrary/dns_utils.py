@@ -73,10 +73,23 @@ def get_optimal_dns_config():
     Get the optimal DNS configuration for new instances.
     Returns a tuple of (primary_dns, secondary_dns)
     """
-    # Use dnsmasq service (which forwards to CoreDNS) - it runs on port 53
-    dnsmasq_ip = get_dnsmasq_ip()
-    if dnsmasq_ip and dnsmasq_ip != '127.0.0.1':
-        return dnsmasq_ip, '8.8.8.8'
+    # Use the WireGuard server's IP - it will redirect DNS queries to dnsmasq
+    # The server IP is the gateway IP for the WireGuard network
+    try:
+        # Get the WireGuard server's IP in the Docker network
+        result = subprocess.run(
+            ['docker', 'inspect', 'wireguard-webadmin', '--format={{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0 and result.stdout.strip():
+            server_ip = result.stdout.strip()
+            if server_ip and '.' in server_ip:
+                return server_ip, '8.8.8.8'
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
+        pass
     
     # Fallback: use the server's external IP
     try:

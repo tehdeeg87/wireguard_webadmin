@@ -13,9 +13,9 @@ class DnsConfig(AppConfig):
         # Register signals for Peer model
         from wireguard.models import Peer, WireGuardInstance
         
-        post_save.connect(signals.update_coredns_on_peer_change, sender=Peer)
-        post_delete.connect(signals.update_coredns_on_peer_delete, sender=Peer)
+        post_save.connect(signals.update_dnsmasq_on_peer_change, sender=Peer)
+        post_delete.connect(signals.update_dnsmasq_on_peer_delete, sender=Peer)
         
         # Register signals for WireGuardInstance model
-        post_save.connect(signals.update_coredns_on_instance_change, sender=WireGuardInstance)
-        post_delete.connect(signals.update_coredns_on_instance_delete, sender=WireGuardInstance)
+        post_save.connect(signals.update_dnsmasq_on_instance_change, sender=WireGuardInstance)
+        post_delete.connect(signals.update_dnsmasq_on_instance_delete, sender=WireGuardInstance)
