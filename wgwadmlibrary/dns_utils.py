@@ -73,12 +73,10 @@ def get_optimal_dns_config():
     Get the optimal DNS configuration for new instances.
     Returns a tuple of (primary_dns, secondary_dns)
     """
-    # Try to get CoreDNS container IP first
-    coredns_ip = get_coredns_ip()
-    
-    # If we got a valid IP, use it with port 5354
-    if coredns_ip and coredns_ip != '127.0.0.1':
-        return f"{coredns_ip}:5354", '8.8.8.8'
+    # Use dnsmasq service (which forwards to CoreDNS) - it runs on port 53
+    dnsmasq_ip = get_dnsmasq_ip()
+    if dnsmasq_ip and dnsmasq_ip != '127.0.0.1':
+        return dnsmasq_ip, '8.8.8.8'
     
     # Fallback: use the server's external IP
     try:
@@ -88,7 +86,7 @@ def get_optimal_dns_config():
         s.connect(("8.8.8.8", 80))
         external_ip = s.getsockname()[0]
         s.close()
-        return f"{external_ip}:5354", '8.8.8.8'
+        return external_ip, '8.8.8.8'
     except:
         # Final fallback: use localhost (for testing)
-        return "127.0.0.1:5354", '8.8.8.8'
+        return "127.0.0.1", '8.8.8.8'
