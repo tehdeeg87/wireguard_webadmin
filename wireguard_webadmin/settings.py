@@ -191,6 +191,8 @@ N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
 CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
        'http://vpn.portbro.com',  # Include HTTP if you're using it
+       'https://can1-vpn.portbro.com',
+       'http://can1-vpn.portbro.com',  # Include HTTP if you're using it
    ]
 
 AUTHENTICATION_BACKENDS = [
@@ -203,3 +205,8 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 #ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+# Additional CSRF settings for better compatibility
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
