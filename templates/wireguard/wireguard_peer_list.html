@@ -203,11 +203,45 @@
         }
         
         .status-indicator {
-            width: 8px;
-            height: 8px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             display: inline-block;
             margin-right: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .table-scroll-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .table-scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .table-scroll-container .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa;
         }
         
         .status-online { background-color: #28a745; }
@@ -357,22 +391,23 @@
                 <!-- Peers Table -->
                 <div class="peers-table" id="tableView">
                     {% if peer_list %}
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th width="5%">
-                                        <i class="fas fa-circle"></i>
-                                    </th>
-                                    <th width="20%">{% trans 'Peer' %}</th>
-                                    <th width="15%">{% trans 'IP Address' %}</th>
-                                    <th width="15%">{% trans 'Throughput' %}</th>
-                                    <th width="15%">{% trans 'Transfer' %}</th>
-                                    <th width="15%">{% trans 'Last Handshake' %}</th>
-                                    <th width="10%">{% trans 'Traffic' %}</th>
-                                    <th width="5%">{% trans 'Actions' %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <div class="table-scroll-container">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light sticky-top">
+                                    <tr>
+                                        <th width="5%">
+                                            <i class="fas fa-circle"></i>
+                                        </th>
+                                        <th width="20%">{% trans 'Peer' %}</th>
+                                        <th width="15%">{% trans 'IP Address' %}</th>
+                                        <th width="15%">{% trans 'Throughput' %}</th>
+                                        <th width="15%">{% trans 'Transfer' %}</th>
+                                        <th width="15%">{% trans 'Last Handshake' %}</th>
+                                        <th width="10%">{% trans 'Traffic' %}</th>
+                                        <th width="5%">{% trans 'Actions' %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                 {% for peer in peer_list %}
                                     <tr id="peer-{{ peer.public_key }}" data-uuid="{{ peer.uuid }}">
                                         <td>
@@ -433,8 +468,9 @@
                                         </td>
                                     </tr>
                                                     {% endfor %}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     {% else %}
                         <div class="empty-state">
                             <i class="fas fa-users"></i>

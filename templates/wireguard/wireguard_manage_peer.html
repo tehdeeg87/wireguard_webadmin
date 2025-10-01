@@ -3,15 +3,15 @@
 
 {% block content %}
 
-<div class="card card-primary card-outline">
-    <div class="card-header">
-        <h3 class="card-title">
-            <i class="fas fa-user"></i>
+<div class="card card-primary" style="border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: none;">
+    <div class="card-header" style="border-radius: 16px 16px 0 0; border-bottom: 1px solid #e9ecef; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <h3 class="card-title" style="color: white; font-weight: 600; margin: 0;">
+            <i class="fas fa-user" style="margin-right: 8px;"></i>
             {% trans 'Device Settings' %}
         </h3>
         <div class="card-tools">
-            <a class="btn btn-outline-secondary btn-sm" href="/peer/list/?uuid={{ current_peer.wireguard_instance.uuid }}#peer-{{ current_peer.public_key }}">
-                <i class="fas fa-arrow-left"></i> {% trans 'Back to Devices' %}
+            <a class="btn btn-sm" href="/peer/list/?uuid={{ current_peer.wireguard_instance.uuid }}#peer-{{ current_peer.public_key }}" style="background: rgba(255,255,255,0.9); color: #495057; border-radius: 20px; padding: 8px 16px; font-weight: 500; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,1)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">
+                <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> {% trans 'Back to Devices' %}
             </a>
         </div>
     </div>
@@ -22,13 +22,13 @@
             <div class="row">
                 <div class="col-lg-8">
                     <div class="form-group">
-                        <label for="{{ form.name.id_for_label }}" class="h5">
-                            <i class="fas fa-tag text-primary"></i>
+                        <label for="{{ form.name.id_for_label }}" class="h5" style="font-weight: 600; color: #495057; margin-bottom: 12px;">
+                            <i class="fas fa-tag text-primary" style="margin-right: 8px;"></i>
                             {% trans 'Device Name' %}
                         </label>
-                        <input type="text" class="form-control form-control-lg" id="{{ form.name.id_for_label }}" name="{{ form.name.html_name }}" placeholder="{% trans 'e.g., John\'s iPhone, Office Laptop, Home Server' %}" value="{{ form.name.value|default_if_none:'' }}">
-                        <small class="form-text text-muted">
-                            <i class="fas fa-info-circle"></i>
+                        <input type="text" class="form-control form-control-lg" id="{{ form.name.id_for_label }}" name="{{ form.name.html_name }}" placeholder="{% trans 'e.g., John\'s iPhone, Office Laptop, Home Server' %}" value="{{ form.name.value|default_if_none:'' }}" style="border-radius: 12px; border: 2px solid #e9ecef; padding: 12px 16px; font-size: 16px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onfocus="this.style.borderColor='#007bff'; this.style.boxShadow='0 4px 12px rgba(0,123,255,0.2)'" onblur="this.style.borderColor='#e9ecef'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'">
+                        <small class="form-text text-muted" style="margin-top: 8px; font-size: 14px;">
+                            <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
                             {% trans 'Give this device a friendly name so you can easily identify it' %}
                         </small>
                     </div>
@@ -38,31 +38,66 @@
             <!-- Device Status Card -->
             <div class="row mt-4">
                 <div class="col-lg-12">
-                    <div class="card card-info">
-                        <div class="card-header">
-                            <h5 class="card-title">
-                                <i class="fas fa-info-circle"></i>
+                    <div class="card" style="border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e9ecef; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                        <div class="card-header" style="border-radius: 16px 16px 0 0; border-bottom: 1px solid #e9ecef; background: transparent; padding: 20px 24px 16px;">
+                            <h5 class="card-title" style="margin: 0; font-weight: 600; color: #495057;">
+                                <i class="fas fa-info-circle text-info" style="margin-right: 8px;"></i>
                                 {% trans 'Device Information' %}
                             </h5>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body" style="padding: 20px 24px;">
                             <div class="row">
                                 <div class="col-md-6">
                                     <p><strong>{% trans 'Status:' %}</strong> 
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check-circle"></i> {% trans 'Ready to Connect' %}
-                                        </span>
+                                        {% with peer_ip=current_peer.peerallowedip_set.all|first %}
+                                        {% if peer_ip and peer_ip.config_file == 'server' and peer_ip.priority == 0 %}
+                                            {% if current_peer.peerstatus.last_handshake %}
+                                                <span class="badge" style="background: linear-gradient(135deg, #28a745, #20c997); border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 13px; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">
+                                                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> {% trans 'Connected' %}
+                                                </span>
+                                                <small class="text-muted d-block mt-2" style="font-size: 13px; color: #6c757d;">
+                                                    <i class="fas fa-clock" style="margin-right: 6px;"></i> {% trans 'Last seen:' %} {{ current_peer.peerstatus.last_handshake|date:"M d, Y H:i" }}
+                                                </small>
+                                            {% elif current_instance.pending_changes %}
+                                                <span class="badge" style="background: linear-gradient(135deg, #ffc107, #fd7e14); border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 13px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);">
+                                                    <i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i> {% trans 'Pending Reload' %}
+                                                </span>
+                                                <small class="text-muted d-block mt-2" style="font-size: 13px; color: #6c757d;">
+                                                    <i class="fas fa-info-circle" style="margin-right: 6px;"></i> {% trans 'Configuration saved. Service needs to be reloaded.' %}
+                                                </small>
+                                            {% else %}
+                                                <span class="badge" style="background: linear-gradient(135deg, #17a2b8, #6f42c1); border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 13px; box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);">
+                                                    <i class="fas fa-wifi" style="margin-right: 6px;"></i> {% trans 'Ready to Connect' %}
+                                                </span>
+                                                <small class="text-muted d-block mt-2" style="font-size: 13px; color: #6c757d;">
+                                                    <i class="fas fa-info-circle" style="margin-right: 6px;"></i> {% trans 'Device is configured and ready for connection.' %}
+                                                </small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge" style="background: linear-gradient(135deg, #6c757d, #495057); border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 13px; box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);">
+                                                <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i> {% trans 'Not Configured' %}
+                                            </span>
+                                            <small class="text-muted d-block mt-2" style="font-size: 13px; color: #6c757d;">
+                                                <i class="fas fa-info-circle" style="margin-right: 6px;"></i> {% trans 'No IP address assigned to this device.' %}
+                                            </small>
+                                        {% endif %}
+                                        {% endwith %}
                                     </p>
                                     <p><strong>{% trans 'IP Address:' %}</strong> 
-                                        <code>{% for ip in current_peer.peerallowedip_set.all %}{% if ip.config_file == 'server' and ip.priority == 0 %}{{ ip.allowed_ip }}{% endif %}{% empty %}Not assigned{% endfor %}</code>
+                                        <code id="peer-ip-address" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 6px 12px; font-size: 14px; color: #495057; font-weight: 500;">{% for ip in current_peer.peerallowedip_set.all %}{% if ip.config_file == 'server' and ip.priority == 0 %}{{ ip.allowed_ip }}{% endif %}{% empty %}Not assigned{% endfor %}</code>
+                                        <button type="button" class="btn btn-sm ml-2" onclick="copyIpAddress()" title="{% trans 'Copy IP Address' %}" style="background: linear-gradient(135deg, #6c757d, #495057); border: none; border-radius: 20px; padding: 6px 12px; color: white; font-weight: 500; box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3); transition: all 0.3s ease;">
+                                            <i class="fas fa-copy" style="margin-right: 4px;"></i>
+                                        </button>
                                     </p>
                                 </div>
                                 <div class="col-md-6">
                                     <p><strong>{% trans 'Connection Type:' %}</strong> 
-                                        <span class="badge badge-primary">{% trans 'VPN Tunnel' %}</span>
+                                        <span class="badge" style="background: linear-gradient(135deg, #007bff, #6610f2); border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 13px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);">
+                                            {% trans 'VPN Tunnel' %}
+                                        </span>
                                     </p>
                                     <p><strong>{% trans 'Network:' %}</strong> 
-                                        <code>{{ current_peer.wireguard_instance.name|default:"Default" }}</code>
+                                        <code style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 6px 12px; font-size: 14px; color: #495057; font-weight: 500;">{{ current_peer.wireguard_instance.name|default:"Default" }}</code>
                                     </p>
                                 </div>
                             </div>
@@ -73,21 +108,21 @@
             <!-- Simple Traffic Graph -->
             <div class="row mt-4">
                 <div class="col-lg-12">
-                    <div class="card card-light">
-                        <div class="card-header">
-                            <h5 class="card-title">
-                                <i class="fas fa-chart-line text-success"></i>
+                    <div class="card" style="border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e9ecef; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                        <div class="card-header" style="border-radius: 16px 16px 0 0; border-bottom: 1px solid #e9ecef; background: transparent; padding: 20px 24px 16px;">
+                            <h5 class="card-title" style="margin: 0; font-weight: 600; color: #495057;">
+                                <i class="fas fa-chart-line text-success" style="margin-right: 8px;"></i>
                                 {% trans 'Data Usage' %}
                             </h5>
                             <div class="card-tools">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" class="btn btn-outline-primary active" data-period="1d">{% trans 'Today' %}</button>
-                                    <button type="button" class="btn btn-outline-primary" data-period="7d">{% trans 'Week' %}</button>
-                                    <button type="button" class="btn btn-outline-primary" data-period="30d">{% trans 'Month' %}</button>
+                                <div class="btn-group btn-group-sm" role="group" style="border-radius: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <button type="button" class="btn active" data-period="1d" style="background: linear-gradient(135deg, #007bff, #6610f2); border: none; border-radius: 20px 0 0 20px; padding: 8px 16px; font-weight: 500; color: white;">{% trans 'Today' %}</button>
+                                    <button type="button" class="btn" data-period="7d" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 0; padding: 8px 16px; font-weight: 500; color: #495057; transition: all 0.3s ease;">{% trans 'Week' %}</button>
+                                    <button type="button" class="btn" data-period="30d" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 0 20px 20px 0; padding: 8px 16px; font-weight: 500; color: #495057; transition: all 0.3s ease;">{% trans 'Month' %}</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body" style="padding: 20px 24px;">
                             <div class="text-center">
                                 <img id="graphImg" src="/rrd/graph/?peer={{ current_peer.uuid }}&period=1d" class="img-fluid" alt="{% trans 'No data usage yet - connect your device to see usage statistics' %}" onerror="this.onerror=null; this.style.display='none'; this.insertAdjacentHTML('afterend', '<div class=\'alert alert-info\'><i class=\'fas fa-info-circle\'></i> ' + this.alt + '</div>');">
                             </div>
@@ -97,16 +132,16 @@
             </div>
 
         </div>
-        <div class="card-footer bg-light">
+        <div class="card-footer" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 0 0 16px 16px; border-top: 1px solid #e9ecef; padding: 24px;">
             <div class="row">
                 <div class="col-md-6">
-                    <button type="submit" class="btn btn-primary btn-lg" id="saveButton" disabled>
-                        <i class="fas fa-save"></i> {% trans 'Save Device Name' %}
+                    <button type="submit" class="btn btn-lg" id="saveButton" disabled style="background: linear-gradient(135deg, #28a745, #20c997); border: none; border-radius: 25px; padding: 12px 32px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); transition: all 0.3s ease; color: white;">
+                        <i class="fas fa-save" style="margin-right: 8px;"></i> {% trans 'Save Configuration' %}
                     </button>
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href='javascript:void(0)' class='btn btn-outline-danger' data-command='delete' onclick='openCommandDialog(this)' id="removeButton" style="pointer-events: none; opacity: 0.5;">
-                        <i class="fas fa-trash"></i> {% trans 'Remove Device' %}
+                    <a href='javascript:void(0)' class='btn btn-lg' data-command='delete' onclick='openCommandDialog(this)' id="removeButton" style="pointer-events: none; opacity: 0.5; background: linear-gradient(135deg, #dc3545, #c82333); border: none; border-radius: 25px; padding: 12px 32px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); transition: all 0.3s ease; color: white;">
+                        <i class="fas fa-trash" style="margin-right: 8px;"></i> {% trans 'Remove Device' %}
                     </a>
                 </div>
             </div>
@@ -118,6 +153,70 @@
 {% block custom_page_scripts %}
 
 <script>
+    // Copy IP address to clipboard
+    function copyIpAddress() {
+        var ipElement = document.getElementById('peer-ip-address');
+        var ipAddress = ipElement.textContent.trim();
+        
+        if (ipAddress === 'Not assigned') {
+            alert('{% trans "No IP address assigned to this device" %}');
+            return;
+        }
+        
+        // Use the modern clipboard API if available
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(ipAddress).then(function() {
+                showCopySuccess();
+            }).catch(function(err) {
+                fallbackCopyTextToClipboard(ipAddress);
+            });
+        } else {
+            // Fallback for older browsers
+            fallbackCopyTextToClipboard(ipAddress);
+        }
+    }
+    
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            var successful = document.execCommand('copy');
+            if (successful) {
+                showCopySuccess();
+            } else {
+                alert('{% trans "Failed to copy IP address" %}');
+            }
+        } catch (err) {
+            alert('{% trans "Failed to copy IP address" %}');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+    
+    function showCopySuccess() {
+        // Create a temporary success message
+        var successMsg = document.createElement('div');
+        successMsg.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        successMsg.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+        successMsg.innerHTML = '<i class="fas fa-check-circle"></i> {% trans "IP address copied to clipboard!" %} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        
+        document.body.appendChild(successMsg);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(function() {
+            if (successMsg.parentNode) {
+                successMsg.parentNode.removeChild(successMsg);
+            }
+        }, 3000);
+    }
+
     // Enable/disable buttons based on device name input
     document.addEventListener('DOMContentLoaded', function() {
         var nameInput = document.getElementById('{{ form.name.id_for_label }}');
@@ -129,14 +228,27 @@
             
             // Enable/disable save button
             saveButton.disabled = !hasName;
+            if (hasName) {
+                saveButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                saveButton.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+                saveButton.style.opacity = '1';
+            } else {
+                saveButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                saveButton.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.3)';
+                saveButton.style.opacity = '0.6';
+            }
             
             // Enable/disable remove button
             if (hasName) {
                 removeButton.style.pointerEvents = 'auto';
                 removeButton.style.opacity = '1';
+                removeButton.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+                removeButton.style.boxShadow = '0 4px 15px rgba(220, 53, 69, 0.3)';
             } else {
                 removeButton.style.pointerEvents = 'none';
                 removeButton.style.opacity = '0.5';
+                removeButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                removeButton.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.3)';
             }
         }
         
