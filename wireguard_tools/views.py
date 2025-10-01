@@ -144,7 +144,7 @@ def reload_wireguard_interfaces():
         return False, f"Error during reload: {str(e)}"
 
 
-def generate_peer_config(peer_uuid):
+def generate_peer_config(peer_uuid, request=None):
     peer = get_object_or_404(Peer, uuid=peer_uuid)
     wg_instance = peer.wireguard_instance
 
@@ -167,6 +167,14 @@ def generate_peer_config(peer_uuid):
     dns_entries = [primary_dns, secondary_dns]
     dns_line = ", ".join(filter(None, dns_entries))
 
+    # Determine the endpoint hostname dynamically
+    if request and hasattr(request, 'get_host'):
+        # Use the request's hostname (e.g., can1-vpn.portbro.com)
+        endpoint_hostname = request.get_host().split(':')[0]  # Remove port if present
+    else:
+        # Fallback to the instance hostname if no request available
+        endpoint_hostname = wg_instance.hostname
+
     config_lines = [
         "[Interface]",
         f"PrivateKey = {peer.private_key}" if peer.private_key else "",
@@ -174,7 +182,7 @@ def generate_peer_config(peer_uuid):
         f"DNS = {dns_line}" if dns_line else "",
         "\n[Peer]",
         f"PublicKey = {wg_instance.public_key}",
-        f"Endpoint = {wg_instance.hostname}:{wg_instance.listen_port}",
+        f"Endpoint = {endpoint_hostname}:{wg_instance.listen_port}",
         f"AllowedIPs = {allowed_ips_line}",
         f"PresharedKey = {peer.pre_shared_key}" if peer.pre_shared_key else "",
         f"PersistentKeepalive = {peer.persistent_keepalive}",
@@ -468,7 +476,7 @@ def download_config_or_qrcode(request):
     format_type = request.GET.get('format', 'conf')
 
     if format_type == 'qrcode':
-        config_content = generate_peer_config(peer.uuid)
+        config_content = generate_peer_config(peer.uuid, request)
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -485,7 +493,7 @@ def download_config_or_qrcode(request):
         img_io.seek(0)
         response.write(img_io.getvalue())
     else:
-        config_content = generate_peer_config(peer.uuid)
+        config_content = generate_peer_config(peer.uuid, request)
         response = HttpResponse(config_content, content_type="text/plain")
         peer_filename = re.sub(r'[^a-zA-Z0-9]', '_', str(peer))
         response['Content-Disposition'] = f'attachment; filename="peer_{peer_filename}.conf"'
