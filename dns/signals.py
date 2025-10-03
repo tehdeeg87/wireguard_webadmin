@@ -8,9 +8,9 @@ def update_dnsmasq_on_peer_change(sender, instance, created, **kwargs):
     """Update dnsmasq configuration when a peer is created or modified"""
     try:
         from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration
+        # Update dnsmasq configuration with reload
         command = UpdatePeerDNSCommand()
-        command.handle()
+        command.handle(reload=True)
         
     except Exception as e:
         # Log error but don't fail the peer creation
@@ -21,9 +21,9 @@ def update_dnsmasq_on_peer_delete(sender, instance, **kwargs):
     """Update dnsmasq configuration when a peer is deleted"""
     try:
         from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration
+        # Update dnsmasq configuration with reload
         command = UpdatePeerDNSCommand()
-        command.handle()
+        command.handle(reload=True)
         
     except Exception as e:
         # Log error but don't fail the peer deletion
@@ -34,9 +34,9 @@ def update_dnsmasq_on_instance_change(sender, instance, created, **kwargs):
     """Update dnsmasq configuration when a WireGuard instance is created or modified"""
     try:
         from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration
+        # Update dnsmasq configuration with reload
         command = UpdatePeerDNSCommand()
-        command.handle()
+        command.handle(reload=True)
         
     except Exception as e:
         # Log error but don't fail the instance creation
@@ -47,9 +47,9 @@ def update_dnsmasq_on_instance_delete(sender, instance, **kwargs):
     """Update dnsmasq configuration when a WireGuard instance is deleted"""
     try:
         from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration
+        # Update dnsmasq configuration with reload
         command = UpdatePeerDNSCommand()
-        command.handle()
+        command.handle(reload=True)
         
     except Exception as e:
         # Log error but don't fail the instance deletion

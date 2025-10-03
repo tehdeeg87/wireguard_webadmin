@@ -68,7 +68,9 @@ services:
   wireguard-webadmin-dns:
     container_name: wireguard-webadmin-dns
     restart: unless-stopped
-    image: eduardosilva/wireguard_webadmin_dns:latest
+    build:
+      context: .
+      dockerfile: containers/dnsmasq/Dockerfile-dnsmasq
     ports:
       - "53:53/udp"
       - "53:53/tcp"
@@ -76,6 +78,9 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - dnsmasq_conf:/etc/dnsmasq/
+      - ./dnsmasq_hosts:/etc/dnsmasq/hosts
+    networks:
+      - default
 
 
 volumes:

@@ -136,6 +136,7 @@ def view_wireguard_peer_manage(request):
         if new_peer_data['allowed_ip']:
             new_peer = Peer.objects.create(
                 name=new_peer_data['name'],
+                hostname=new_peer_data['hostname'],
                 public_key=new_peer_data['public_key'],
                 pre_shared_key=new_peer_data['pre_shared_key'],
                 persistent_keepalive=new_peer_data['persistent_keepalive'],
@@ -156,7 +157,7 @@ def view_wireguard_peer_manage(request):
             # Update dnsmasq configuration automatically
             try:
                 from django.core.management import call_command
-                call_command('update_peer_dns')
+                call_command('update_peer_dns', '--reload')
             except Exception as e:
                 print(f"Warning: Could not update dnsmasq configuration: {e}")
             
