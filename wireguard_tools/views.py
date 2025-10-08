@@ -158,9 +158,11 @@ def generate_peer_config(peer_uuid, request=None):
     allowed_ips = PeerAllowedIP.objects.filter(peer=peer, config_file='client').order_by('priority')
     if allowed_ips:
         allowed_ips_line = ", ".join([f"{ip.allowed_ip}/{ip.netmask}" for ip in allowed_ips])
+        # Add multicast subnet for mDNS support
+        allowed_ips_line += ", 224.0.0.0/24"
     else:
-        # Use split-tunnel format to allow LAN access
-        allowed_ips_line = "0.0.0.0/1, 128.0.0.0/1, ::/1, 8000::/1"
+        # Use split-tunnel format to allow LAN access + multicast for mDNS
+        allowed_ips_line = "0.0.0.0/1, 128.0.0.0/1, 224.0.0.0/24, ::/1, 8000::/1"
     # Use dnsmasq for peer name resolution
     from wgwadmlibrary.dns_utils import get_optimal_dns_config
     primary_dns, secondary_dns = get_optimal_dns_config()

@@ -7,8 +7,8 @@ def get_mdns_dns_config():
     Get the optimal DNS configuration for mDNS-enabled peers.
     Returns a tuple of (primary_dns, secondary_dns)
 
-    For mDNS with Avahi + Reflector, we use:
-    1. WireGuard server IP - handles .local domains via mDNS reflector
+    For centralized mDNS broker approach, we use:
+    1. WireGuard server IP - handles .local domains via mDNS broker
     2. Public DNS as fallback
     """
     # Get the WireGuard server IP (this will be the Ubuntu server IP in production)

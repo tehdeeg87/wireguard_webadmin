@@ -44,14 +44,18 @@ def generate_mdns_hosts_file(instance_id):
             hosts_content.append(f"{ip} peer-{peer.uuid.hex[:8]}.{domain}")
             hosts_content.append("")
         
-        # Write hosts file
-        hosts_file = f"/etc/avahi/hosts/wg{instance_id}.hosts"
-        os.makedirs(os.path.dirname(hosts_file), exist_ok=True)
+        # Write hosts file to both container and host locations
+        hosts_files = [
+            f"/etc/avahi/hosts/wg{instance_id}.hosts",
+            f"./mdns_hosts/wg{instance_id}.hosts"
+        ]
         
-        with open(hosts_file, 'w') as f:
-            f.write('\n'.join(hosts_content))
+        for hosts_file in hosts_files:
+            os.makedirs(os.path.dirname(hosts_file), exist_ok=True)
+            with open(hosts_file, 'w') as f:
+                f.write('\n'.join(hosts_content))
         
-        print(f"Generated mDNS hosts file: {hosts_file}")
+        print(f"Generated mDNS hosts file: {hosts_files[0]}")
         return True
         
     except Exception as e:
