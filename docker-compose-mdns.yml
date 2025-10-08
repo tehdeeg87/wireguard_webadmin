@@ -1,0 +1,36 @@
+# mDNS-based WireGuard Peer Discovery
+# This replaces the dnsmasq approach with a more elegant mDNS solution
+
+version: '3.8'
+
+services:
+  # Avahi mDNS daemon for peer discovery
+  wireguard-mdns:
+    container_name: wireguard-mdns
+    image: avahi/avahi:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - AVAHI_DAEMON_DETECT_LOCAL=0
+      - AVAHI_DAEMON_DISABLE_USER_SERVICE_PACKETS=0
+    volumes:
+      - ./mdns_config:/etc/avahi
+      - ./mdns_hosts:/etc/avahi/hosts
+    command: ["avahi-daemon", "--no-drop-root", "--debug"]
+    depends_on:
+      - wireguard-webadmin
+
+  # Optional: mDNS reflector for cross-subnet discovery
+  wireguard-mdns-reflector:
+    container_name: wireguard-mdns-reflector
+    image: avahi/avahi:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - AVAHI_DAEMON_DETECT_LOCAL=0
+      - AVAHI_DAEMON_DISABLE_USER_SERVICE_PACKETS=0
+    volumes:
+      - ./mdns_config:/etc/avahi
+    command: ["avahi-daemon", "--no-drop-root", "--reflector", "--debug"]
+    depends_on:
+      - wireguard-mdns

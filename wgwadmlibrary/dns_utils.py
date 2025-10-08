@@ -2,36 +2,23 @@ import subprocess
 import os
 
 
-def get_dnsmasq_ip():
+def get_mdns_dns_config():
     """
-    Get the IP address of the dnsmasq container.
-    Returns the container IP or falls back to a default.
-    """
-    try:
-        # Try to get the dnsmasq container IP
-        result = subprocess.run(
-            ['docker', 'inspect', 'wireguard-webadmin-dns', '--format={{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
-        pass
+    Get the optimal DNS configuration for mDNS-enabled peers.
+    Returns a tuple of (primary_dns, secondary_dns)
     
-    # Fallback to default IP if container not found or error
-    return '172.19.0.2'
+    For mDNS, we use:
+    1. Local resolver (127.0.0.1) - handles .local domains via mDNS
+    2. Public DNS as fallback
+    """
+    return '127.0.0.1', '8.8.8.8'
 
 
 def get_optimal_dns_config():
     """
     Get the optimal DNS configuration for new instances.
     Returns a tuple of (primary_dns, secondary_dns)
-    """
-    # Use the dnsmasq container IP directly for per-instance DNS resolution
-    dnsmasq_ip = get_dnsmasq_ip()
     
-    # Use dnsmasq as primary DNS and a public DNS as secondary
-    return dnsmasq_ip, '8.8.8.8'
+    Uses mDNS for automatic peer discovery without centralized DNS server
+    """
+    return get_mdns_dns_config()

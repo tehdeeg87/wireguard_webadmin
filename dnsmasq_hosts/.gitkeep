@@ -1,3 +1,0 @@
-# This directory contains per-instance DNS host files
-# Each WireGuard instance will have its own hosts file
-# Format: peers_wg{instance_id}.hosts

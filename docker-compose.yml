@@ -20,7 +20,6 @@ services:
       - ./static:/app/static 
       - wireguard:/etc/wireguard
       - static_volume:/app_static_files/
-      - dnsmasq_conf:/etc/dnsmasq
       - app_secrets:/app_secrets/
       - rrd_data:/rrd_data/
       - database_data:/app/database/
@@ -65,28 +64,32 @@ services:
     depends_on:
       - wireguard-webadmin
 
-  wireguard-webadmin-dns:
-    container_name: wireguard-webadmin-dns
+  # mDNS daemon for peer discovery
+  wireguard-mdns:
+    container_name: wireguard-mdns
+    image: ubuntu:22.04
     restart: unless-stopped
-    build:
-      context: .
-      dockerfile: containers/dnsmasq/Dockerfile-dnsmasq
-    ports:
-      - "53:53/udp"
-      - "53:53/tcp"
+    network_mode: host
     environment:
       - TZ=${TIMEZONE}
     volumes:
-      - dnsmasq_conf:/etc/dnsmasq/
-      - ./dnsmasq_hosts:/etc/dnsmasq/hosts
-    networks:
-      - default
+      - ./mdns_config:/etc/avahi
+      - ./mdns_hosts:/etc/avahi/hosts
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq avahi-daemon avahi-utils dbus &&
+        mkdir -p /etc/avahi/hosts &&
+        dbus-daemon --system &&
+        avahi-daemon --no-drop-root --debug
+      "
+    depends_on:
+      - wireguard-webadmin
 
 
 volumes:
   static_volume:
   wireguard:
-  dnsmasq_conf:
   app_secrets:
   rrd_data:
   database_data:

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'wireguard_peer',
     'orders',
     'dns',
+    'mdns',
     'vpn_invite',
     "allauth",
     "allauth.account",
