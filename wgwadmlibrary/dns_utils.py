@@ -6,19 +6,22 @@ def get_mdns_dns_config():
     """
     Get the optimal DNS configuration for mDNS-enabled peers.
     Returns a tuple of (primary_dns, secondary_dns)
-    
-    For mDNS, we use:
-    1. Local resolver (127.0.0.1) - handles .local domains via mDNS
+
+    For mDNS with Avahi + Reflector, we use:
+    1. WireGuard server IP - handles .local domains via mDNS reflector
     2. Public DNS as fallback
     """
-    return '127.0.0.1', '8.8.8.8'
+    # Get the WireGuard server IP (this will be the Ubuntu server IP in production)
+    # For now, use a placeholder that should be replaced with actual server IP
+    server_ip = '10.188.0.1'  # This should be the WireGuard server's IP
+    return server_ip, '8.8.8.8'
 
 
 def get_optimal_dns_config():
     """
     Get the optimal DNS configuration for new instances.
     Returns a tuple of (primary_dns, secondary_dns)
-    
-    Uses mDNS for automatic peer discovery without centralized DNS server
+
+    Uses mDNS with Avahi + Reflector for automatic peer discovery
     """
     return get_mdns_dns_config()
