@@ -1,9 +1,17 @@
 #!/bin/bash
 set -e
 
-# Lets wait for the DNS container to start
-sleep 5
+echo "[init] Starting D-Bus..."
+/etc/init.d/dbus start
 
+echo "[init] Starting Avahi Daemon..."
+# Ensure Avahi knows about your WireGuard interface (wg0)
+sed -i '/^\[server\]/a allow-interfaces=wg0' /etc/avahi/avahi-daemon.conf || true
+
+# Launch Avahi in the background
+avahi-daemon -D
+
+echo "[init] Starting WireGuard service..."
 # Starts each WireGuard configuration file found in /etc/wireguard
 shopt -s nullglob
 config_files=(/etc/wireguard/*.conf)
@@ -13,37 +21,18 @@ if [ ${#config_files[@]} -gt 0 ]; then
     done
 fi
 
-# Start Avahi daemon for mDNS peer discovery
-echo "Starting Avahi daemon for mDNS peer discovery..."
-mkdir -p /etc/avahi/hosts
-
-# Create Avahi configuration for WireGuard
-cat > /etc/avahi/avahi-daemon.conf << 'EOF'
-[server]
-allow-interfaces=wg0
-use-ipv4=yes
-use-ipv6=no
-enable-reflector=yes
-
-[wide-area]
-enable-wide-area=yes
-
-[legacy]
-enable-dbus=yes
-EOF
-
-# Start D-Bus and Avahi
-dbus-daemon --system &
-sleep 2
-avahi-daemon --no-drop-root --debug &
-
-# Open UDP 5353 for mDNS traffic
+# Open UDP 5353 for mDNS traffic on WireGuard interface
 iptables -A INPUT -i wg0 -p udp --dport 5353 -j ACCEPT
 iptables -A OUTPUT -o wg0 -p udp --dport 5353 -j ACCEPT
 
-echo "Avahi daemon started for mDNS peer discovery"
+echo "[init] Generating Avahi hosts file from database..."
+python manage.py shell -c "
+from mdns.avahi_integration import generate_avahi_hosts_file
+generate_avahi_hosts_file()
+print('Avahi hosts file generated from database')
+"
 
-# Django startup
+echo "[init] Starting Django app..."
 python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
