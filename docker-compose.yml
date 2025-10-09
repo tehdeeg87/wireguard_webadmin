@@ -64,32 +64,6 @@ services:
     depends_on:
       - wireguard-webadmin
 
-  # Centralized mDNS broker for peer discovery
-  wireguard-mdns:
-    container_name: wireguard-mdns
-    image: ubuntu:22.04
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      - TZ=${TIMEZONE}
-      - DEBIAN_FRONTEND=noninteractive
-    volumes:
-      - ./mdns_hosts:/etc/avahi/hosts
-    command: >
-      bash -c "
-        apt-get update -qq &&
-        apt-get install -y -qq dbus iptables &&
-        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq avahi-daemon avahi-utils &&
-        mkdir -p /etc/avahi/hosts &&
-        iptables -A INPUT -i wg0 -p udp --dport 5353 -j ACCEPT &&
-        iptables -A OUTPUT -o wg0 -p udp --dport 5353 -j ACCEPT &&
-        dbus-daemon --system &&
-        avahi-daemon --no-drop-root --debug
-      "
-    depends_on:
-      - wireguard-webadmin
-
-
 volumes:
   static_volume:
   wireguard:

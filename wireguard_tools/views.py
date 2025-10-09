@@ -163,9 +163,9 @@ def generate_peer_config(peer_uuid, request=None):
     else:
         # Use split-tunnel format to allow LAN access + multicast for mDNS
         allowed_ips_line = "0.0.0.0/1, 128.0.0.0/1, 224.0.0.0/24, ::/1, 8000::/1"
-    # Use mDNS for peer name resolution
-    from mdns.functions import get_mdns_dns_config
-    primary_dns, secondary_dns = get_mdns_dns_config()
+    # Use dnsmasq for peer name resolution
+    from wgwadmlibrary.dns_utils import get_optimal_dns_config
+    primary_dns, secondary_dns = get_optimal_dns_config()
     dns_entries = [primary_dns, secondary_dns]
     dns_line = ", ".join(filter(None, dns_entries))
 
@@ -177,20 +177,11 @@ def generate_peer_config(peer_uuid, request=None):
         # Fallback to the instance hostname if no request available
         endpoint_hostname = wg_instance.hostname
 
-    # Add mDNS hostname information as comments
-    peer_hostname = peer.hostname or peer.name or f"peer-{peer.uuid.hex[:8]}"
-    instance_domain = f"wg{wg_instance.instance_id}.local"
-    global_domain = "wg.local"
-    
     config_lines = [
         "[Interface]",
         f"PrivateKey = {peer.private_key}" if peer.private_key else "",
         f"Address = {client_address}",
         f"DNS = {dns_line}" if dns_line else "",
-        f"# mDNS hostname: {peer_hostname}",
-        f"# Instance domain: {instance_domain}",
-        f"# Global domain: {global_domain}",
-        f"# Full hostname: {peer_hostname}.{instance_domain}",
         "\n[Peer]",
         f"PublicKey = {wg_instance.public_key}",
         f"Endpoint = {endpoint_hostname}:{wg_instance.listen_port}",
