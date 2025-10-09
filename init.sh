@@ -18,5 +18,11 @@ python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
+# Set up hosts file update cron job
+echo "*/2 * * * * /app/update_hosts_from_shared.sh" | crontab -
+service cron start
+
+# Initial hosts file update
+/app/update_hosts_from_shared.sh
 
 exec python manage.py runserver 0.0.0.0:8000

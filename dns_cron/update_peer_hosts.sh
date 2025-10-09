@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Simple DNS Update Script for WireGuard Peer Hostnames
-# Fetches peer hostname mappings from Django API and updates /etc/hosts
+# Fetches peer hostname mappings from Django API and updates shared hosts file
 
 set -e
 
 # Configuration
 WEBADMIN_URL="${WEBADMIN_URL:-http://wireguard-webadmin:8000}"
 API_ENDPOINT="${API_ENDPOINT:-/api/peers/hosts/}"
-HOSTS_FILE="${HOSTS_FILE:-/etc/hosts}"
+HOSTS_FILE="${HOSTS_FILE:-/shared_hosts/hosts}"
 
 # Logging function
 log() {

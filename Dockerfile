@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     rrdtool \
     procps \
+    cron \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed Python packages from the builder stage
@@ -39,7 +40,7 @@ COPY --from=builder /install /usr/local
 COPY . /app/
 
 # Set execution permissions on scripts
-RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh
+RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh && chmod +x /app/update_hosts_from_shared.sh
 
 ARG SERVER_ADDRESS
 ARG DEBUG_MODE
