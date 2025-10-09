@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .models import PeerRegistration, PeerResponse, ErrorResponse, StatusResponse, PeerRecord
 from .utils import peer_store
+from .dns_server import start_dns_server
 
 # Create FastAPI app
 app = FastAPI(
@@ -43,6 +44,9 @@ def cleanup_worker():
 # Start background cleanup thread
 cleanup_thread = threading.Thread(target=cleanup_worker, daemon=True)
 cleanup_thread.start()
+
+# Start DNS server
+start_dns_server()
 
 
 @app.get("/")

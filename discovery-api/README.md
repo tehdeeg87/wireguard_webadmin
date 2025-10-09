@@ -6,10 +6,12 @@ A lightweight FastAPI microservice for internal peer discovery in WireGuard mesh
 
 - **Peer Registration**: Peers can register themselves with hostname and IP
 - **Hostname Resolution**: Resolve peer hostnames to IP addresses
+- **Real DNS Server**: Built-in DNS server that answers actual DNS queries (port 53)
 - **Automatic Cleanup**: Expired peer records are automatically removed
 - **Persistence**: Optional JSON file persistence for peer records
 - **RESTful API**: Simple HTTP API for all operations
 - **Docker Ready**: Containerized for easy deployment
+- **DNS Caching**: Built-in DNS response caching for better performance
 
 ## API Endpoints
 
@@ -87,6 +89,9 @@ docker cp discovery-api/peer-register.sh your-peer-container:/usr/local/bin/
 # Make it executable
 docker exec your-peer-container chmod +x /usr/local/bin/peer-register.sh
 
+# Setup DNS resolution (configures /etc/resolv.conf)
+docker exec your-peer-container /usr/local/bin/peer-register.sh setup-dns
+
 # Start registration (runs continuously)
 docker exec -d your-peer-container /usr/local/bin/peer-register.sh
 
@@ -99,6 +104,23 @@ docker exec your-peer-container /usr/local/bin/peer-register.sh resolve other-pe
 # List all peers
 docker exec your-peer-container /usr/local/bin/peer-register.sh list
 ```
+
+### DNS Resolution
+
+The discovery API includes a built-in DNS server that answers actual DNS queries. Once peers are registered and DNS is configured:
+
+```bash
+# These will now work with real DNS resolution:
+ping mypeer.local
+nslookup otherpeer.local
+dig @discovery-api otherpeer.local
+```
+
+The DNS server automatically:
+- Resolves registered peer hostnames to their IP addresses
+- Handles `.local` domain suffixes
+- Caches responses for better performance
+- Returns proper DNS error codes for unknown hostnames
 
 ## Configuration
 

@@ -17,8 +17,8 @@ COPY app/ /app/
 # Create data directory for persistence
 RUN mkdir -p /app/data
 
-# Expose port
-EXPOSE 5000
+# Expose ports (5000 for API, 53 for DNS)
+EXPOSE 5000 53/udp
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
