@@ -33,7 +33,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cron \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /var/spool/cron/crontabs \
-    && chmod 755 /var/spool/cron/crontabs
+    && chmod 755 /var/spool/cron/crontabs \
+    && touch /var/log/cron.log \
+    && chmod 644 /var/log/cron.log
 
 # Copy installed Python packages from the builder stage
 COPY --from=builder /install /usr/local
@@ -42,7 +44,7 @@ COPY --from=builder /install /usr/local
 COPY . /app/
 
 # Set execution permissions on scripts
-RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh && chmod +x /app/update_hosts_from_shared.sh
+RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh && chmod +x /app/update_hosts_from_shared.sh && chmod +x /app/test_dns_manual.sh && chmod +x /app/start_hosts_updater.sh
 
 ARG SERVER_ADDRESS
 ARG DEBUG_MODE
