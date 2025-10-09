@@ -19,6 +19,13 @@ log() {
 update_hosts_file() {
     local hosts_content="$1"
     
+    # Create shared hosts directory if it doesn't exist
+    local hosts_dir=$(dirname "$HOSTS_FILE")
+    if [ ! -d "$hosts_dir" ]; then
+        mkdir -p "$hosts_dir"
+        log "Created shared hosts directory: $hosts_dir"
+    fi
+    
     # Create backup of current hosts file
     if [ -f "$HOSTS_FILE" ]; then
         cp "$HOSTS_FILE" "${HOSTS_FILE}.backup.$(date +%s)"
