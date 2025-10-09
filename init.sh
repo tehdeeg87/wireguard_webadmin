@@ -41,6 +41,9 @@ fi
 # Setup dnsmasq DNS server
 echo "[init] Setting up dnsmasq DNS server..."
 
+# Create dnsmasq configuration directory
+mkdir -p /etc/dnsmasq.d
+
 # Create dnsmasq configuration
 cat > /etc/dnsmasq.d/wireguard-hosts.conf << 'EOF'
 # WireGuard Peer Hostnames
