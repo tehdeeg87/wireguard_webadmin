@@ -38,4 +38,40 @@ else
     echo "[init] WARNING: Shared hosts file not found, will retry when available"
 fi
 
+# Setup dnsmasq DNS server
+echo "[init] Setting up dnsmasq DNS server..."
+
+# Create dnsmasq configuration
+cat > /etc/dnsmasq.d/wireguard-hosts.conf << 'EOF'
+# WireGuard Peer Hostnames
+# This file is automatically updated by the DNS cron container
+# Do not edit manually
+
+# Listen on WireGuard interfaces
+interface=wg0
+interface=wg1
+interface=wg2
+interface=wg3
+interface=wg4
+interface=wg5
+interface=wg6
+interface=wg7
+
+# Use hosts file for local resolution
+addn-hosts=/shared_hosts/hosts
+
+# Don't read /etc/hosts
+no-hosts
+
+# Log DNS queries for debugging
+log-queries
+
+# Cache size
+cache-size=1000
+EOF
+
+# Start dnsmasq
+service dnsmasq start
+echo "[init] dnsmasq DNS server started"
+
 exec python manage.py runserver 0.0.0.0:8000

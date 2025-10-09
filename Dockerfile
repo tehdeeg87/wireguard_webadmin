@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rrdtool \
     procps \
     cron \
+    dnsmasq \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /var/spool/cron/crontabs \
     && chmod 755 /var/spool/cron/crontabs \
