@@ -64,6 +64,18 @@ services:
     depends_on:
       - wireguard-webadmin
 
+  # Simple DNS Cron container for peer hostname updates
+  wireguard-dns-cron:
+    container_name: wireguard-dns-cron
+    restart: unless-stopped
+    build: ./dns_cron
+    environment:
+      - TZ=${TIMEZONE}
+      - WEBADMIN_URL=http://wireguard-webadmin:8000
+      - API_ENDPOINT=/api/peers/hosts/
+    depends_on:
+      - wireguard-webadmin
+
 volumes:
   static_volume:
   wireguard:

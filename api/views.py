@@ -22,7 +22,7 @@ from user_manager.models import AuthenticationToken, UserAcl
 from vpn_invite.models import InviteSettings, PeerInvite
 from wgwadmlibrary.tools import create_peer_invite, get_peer_invite_data, send_email, user_allowed_peers, \
     user_has_access_to_peer
-from wireguard.models import Peer, PeerStatus, WebadminSettings, WireGuardInstance, PeerGroup
+from wireguard.models import Peer, PeerStatus, WebadminSettings, WireGuardInstance, PeerGroup, PeerAllowedIP
 from django.db import models
 
 
@@ -631,3 +631,41 @@ def remove_instance(request):
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
         }, status=500)
+
+
+# DNS Solution - Simple peer hostname mappings
+@csrf_exempt
+def peers_hosts(request):
+    """
+    Return JSON mapping of peer IPs to hostnames
+    Example: {"10.44.0.2": "laptop", "10.44.0.3": "server"}
+    """
+    data = {}
+    for peer in Peer.objects.all():
+        allowed_ip = PeerAllowedIP.objects.filter(peer=peer).first()
+        if allowed_ip and peer.hostname:
+            data[allowed_ip.allowed_ip] = peer.hostname
+    return JsonResponse(data)
+
+
+@csrf_exempt
+def peers_hosts_legacy(request):
+    """
+    Return hosts file format for legacy systems
+    """
+    data = {}
+    hosts_entries = []
+    
+    for peer in Peer.objects.all():
+        allowed_ip = PeerAllowedIP.objects.filter(peer=peer).first()
+        if allowed_ip and peer.hostname:
+            data[allowed_ip.allowed_ip] = peer.hostname
+            hosts_entries.append(f"{allowed_ip.allowed_ip} {peer.hostname}")
+    
+    hosts_content = "\n".join(hosts_entries)
+    
+    return JsonResponse({
+        'peer_count': len(data),
+        'hosts_content': hosts_content,
+        'json_data': data
+    })
