@@ -32,11 +32,11 @@ def test_mdns_setup():
     print("=" * 60)
     
     tests = [
-        ("docker ps | grep wireguard-webadmin", "Check if WireGuard container is running"),
-        ("docker exec wireguard-webadmin ip link show wg0", "Check if WireGuard interface wg0 exists in container"),
-        ("docker exec wireguard-webadmin ps aux | grep avahi", "Check if Avahi daemon is running in container"),
-        ("docker exec wireguard-webadmin avahi-resolve-host-name localhost.local", "Test mDNS resolution in container"),
-        ("docker exec wireguard-webadmin avahi-browse -a -t", "Browse available mDNS services in container"),
+        ("docker ps | grep wireguard-mdns", "Check if mDNS container is running"),
+        ("ip link show wg0", "Check if WireGuard interface wg0 exists"),
+        ("docker logs wireguard-mdns --tail 10", "Check mDNS container logs"),
+        ("avahi-resolve-host-name localhost.local", "Test mDNS resolution"),
+        ("avahi-browse -a -t", "Browse available mDNS services"),
     ]
     
     passed = 0

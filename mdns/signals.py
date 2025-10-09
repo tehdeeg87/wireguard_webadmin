@@ -13,8 +13,7 @@ from wireguard.models import Peer, WireGuardInstance
 def update_mdns_on_peer_change(sender, instance, created, **kwargs):
     """Update mDNS configuration when a peer is created or modified"""
     try:
-        from .avahi_integration import update_avahi_hosts
-        update_avahi_hosts()
+        call_command('update_peer_mdns', '--reload')
         print(f"mDNS updated for peer change: {instance}")
     except Exception as e:
         print(f"Error updating mDNS for peer change: {e}")
@@ -24,8 +23,7 @@ def update_mdns_on_peer_change(sender, instance, created, **kwargs):
 def update_mdns_on_peer_delete(sender, instance, **kwargs):
     """Update mDNS configuration when a peer is deleted"""
     try:
-        from .avahi_integration import update_avahi_hosts
-        update_avahi_hosts()
+        call_command('update_peer_mdns', '--reload')
         print(f"mDNS updated for peer deletion: {instance}")
     except Exception as e:
         print(f"Error updating mDNS for peer deletion: {e}")
@@ -35,8 +33,7 @@ def update_mdns_on_peer_delete(sender, instance, **kwargs):
 def update_mdns_on_instance_change(sender, instance, created, **kwargs):
     """Update mDNS configuration when a WireGuard instance is created or modified"""
     try:
-        from .avahi_integration import update_avahi_hosts
-        update_avahi_hosts()
+        call_command('update_peer_mdns', '--reload')
         print(f"mDNS updated for instance change: {instance}")
     except Exception as e:
         print(f"Error updating mDNS for instance change: {e}")
@@ -46,8 +43,7 @@ def update_mdns_on_instance_change(sender, instance, created, **kwargs):
 def update_mdns_on_instance_delete(sender, instance, **kwargs):
     """Update mDNS configuration when a WireGuard instance is deleted"""
     try:
-        from .avahi_integration import update_avahi_hosts
-        update_avahi_hosts()
+        call_command('update_peer_mdns', '--reload')
         print(f"mDNS updated for instance deletion: {instance}")
     except Exception as e:
         print(f"Error updating mDNS for instance deletion: {e}")
