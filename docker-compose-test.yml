@@ -1,0 +1,120 @@
+version: '3'
+services:
+  # Main WireGuard WebAdmin container with Avahi
+  wireguard-webadmin:
+    container_name: wg-webadmin-test
+    restart: unless-stopped
+    build: . 
+    environment:
+      - SERVER_ADDRESS=localhost
+      - DEBUG_MODE=True
+      - COMPOSE_VERSION=02r
+      - TZ=UTC
+      - EXTRA_ALLOWED_HOSTS=localhost,127.0.0.1
+    volumes:
+      - .:/app
+      - ./test_data:/app/test_data
+      - wireguard_test:/etc/wireguard
+      - static_volume_test:/app_static_files/
+      - app_secrets_test:/app_secrets/
+      - rrd_data_test:/rrd_data/
+      - database_data_test:/app/database/
+      - /var/run/dbus:/var/run/dbus  # Share D-Bus socket
+    ports:
+      - "8000:8000"
+      - "51820:51820/udp"  # Single WireGuard port for testing
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+      - SYS_ADMIN  # Required for D-Bus
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv4.ip_forward=1
+    command: /bin/bash /app/init.sh
+    networks:
+      - wg_test_net
+    depends_on:
+      - avahi-test
+
+  # Dedicated Avahi container for mDNS testing
+  avahi-test:
+    container_name: avahi-test
+    image: ubuntu:22.04
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./mdns_config:/etc/avahi
+      - ./mdns_hosts:/etc/avahi/hosts
+      - /var/run/dbus:/var/run/dbus
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq dbus avahi-daemon avahi-utils dnsutils &&
+        mkdir -p /etc/avahi/hosts &&
+        dbus-daemon --system --fork &&
+        sleep 2 &&
+        avahi-daemon --no-drop-root --debug --verbose
+      "
+    networks:
+      - wg_test_net
+    cap_add:
+      - NET_ADMIN
+
+  # Test peer container to simulate a WireGuard client
+  test-peer:
+    container_name: test-peer
+    image: ubuntu:22.04
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./test_scripts:/test_scripts
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq avahi-utils dnsutils iputils-ping curl &&
+        sleep 30 &&
+        /test_scripts/test_peer_resolution.sh
+      "
+    networks:
+      - wg_test_net
+    depends_on:
+      - wireguard-webadmin
+      - avahi-test
+
+  # DNS testing container
+  dns-test:
+    container_name: dns-test
+    image: ubuntu:22.04
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./test_scripts:/test_scripts
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq avahi-utils dnsutils dig nslookup &&
+        sleep 30 &&
+        /test_scripts/test_dns_resolution.sh
+      "
+    networks:
+      - wg_test_net
+    depends_on:
+      - wireguard-webadmin
+      - avahi-test
+
+volumes:
+  static_volume_test:
+  wireguard_test:
+  app_secrets_test:
+  rrd_data_test:
+  database_data_test:
+
+networks:
+  wg_test_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

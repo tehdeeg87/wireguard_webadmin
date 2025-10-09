@@ -1,178 +1,142 @@
-# WireGuard mDNS Deployment Checklist
+# 🚀 Avahi Integration - Ubuntu Deployment Checklist
 
-## Pre-Deployment (Ubuntu Server)
+## ✅ Pre-Deployment Verification
 
-### 1. Fix System Issues
+### Code Changes Made:
+- [x] Updated `init.sh` - D-Bus and Avahi startup
+- [x] Created `mdns/management/commands/register_peers_avahi.py`
+- [x] Updated `mdns/signals.py` - Automatic peer registration
+- [x] Created `mdns_config/avahi-daemon.conf` - Avahi configuration
+- [x] Updated `wireguard_tools/views.py` - mDNS DNS config
+- [x] Updated `Dockerfile` - Added Avahi packages
+
+### Files to Deploy:
+- [x] `init.sh` - Updated startup script
+- [x] `mdns/` - Complete mDNS app with Avahi integration
+- [x] `mdns_config/` - Avahi configuration files
+- [x] `Dockerfile` - Updated with Avahi packages
+- [x] `docker-compose.yml` - Updated mDNS container
+- [x] Test scripts in `test_scripts/`
+
+## 🐧 Ubuntu Server Requirements
+
+### System Requirements:
+- [ ] Ubuntu 20.04+ (recommended)
+- [ ] Docker and Docker Compose installed
+- [ ] WireGuard installed on host (for testing)
+- [ ] Ports 8000 (web), 51820-51839 (WireGuard) available
+
+### Network Requirements:
+- [ ] Host can access WireGuard interfaces
+- [ ] mDNS traffic allowed (UDP 5353)
+- [ ] D-Bus access for Avahi
+
+## 🚀 Deployment Steps
+
+### 1. Upload Code
 ```bash
-# Fix broken packages
-sudo apt --fix-broken install
+# Upload all files to Ubuntu server
+scp -r . user@ubuntu-server:/path/to/wireguard_webadmin/
+```
+
+### 2. Install Dependencies
+```bash
+# On Ubuntu server
 sudo apt update
-sudo apt upgrade -y
-
-# Fix hostname resolution
-echo "127.0.0.1 tor1-wireguard" | sudo tee -a /etc/hosts
-sudo hostnamectl set-hostname tor1-wireguard
+sudo apt install -y docker.io docker-compose avahi-daemon avahi-utils
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
 ```
 
-### 2. Install and Configure Avahi + Reflector
+### 3. Build and Start
 ```bash
-# Run the setup script
-sudo ./setup_avahi_reflector.sh
-
-# Or manually:
-sudo apt install -y avahi-daemon avahi-utils
-sudo cp /etc/avahi/avahi-daemon.conf /etc/avahi/avahi-daemon.conf.backup
-
-# Configure for WireGuard
-sudo tee /etc/avahi/avahi-daemon.conf > /dev/null <<EOF
-[server]
-allow-interfaces=wg0
-use-ipv4=yes
-use-ipv6=no
-
-[reflector]
-enable-reflector=yes
-EOF
-
-sudo systemctl enable avahi-daemon
-sudo systemctl restart avahi-daemon
+cd /path/to/wireguard_webadmin
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
-### 3. Test Avahi Setup
+### 4. Verify Installation
 ```bash
-# Run the test script
-python3 test_avahi_setup.py
-
-# Or manually test:
-sudo systemctl status avahi-daemon
-avahi-resolve-host-name localhost.local
-avahi-browse -a
-```
-
-## Deployment
-
-### 4. Deploy WireGuard WebAdmin Code
-```bash
-# Pull latest code
-git pull origin main
-
-# Rebuild and restart containers
-docker-compose down
-docker-compose up -d --build
-
-# Check all services are running
+# Check containers
 docker-compose ps
+
+# Check Avahi daemon
+docker exec wireguard-webadmin ps aux | grep avahi
+
+# Test management commands
+docker exec wireguard-webadmin python manage.py register_peers_avahi
 ```
 
-### 5. Verify mDNS Integration
+## 🧪 Testing Commands
+
+### Basic Functionality:
 ```bash
-# Check if mDNS hosts files are generated
-sudo ls -la /etc/avahi/hosts/
+# Test hostname resolution
+avahi-resolve-host-name myphone.local
+avahi-resolve-host-name myphone.wg0.local
 
-# Test from server
-avahi-resolve-host-name phone1.wg0.local
-ping phone1.wg0.local
-```
-
-## Post-Deployment Testing
-
-### 6. Test Peer-to-Peer Resolution
-
-**From Windows PC (with Bonjour installed):**
-```cmd
-nslookup phone1.wg0.local
-ping phone1.wg0.local
-```
-
-**From Android/iOS:**
-```bash
-ping phone1.wg0.local
-```
-
-**From Linux:**
-```bash
-avahi-resolve-host-name phone1.wg0.local
-ping phone1.wg0.local
-```
-
-### 7. Verify Client Configurations
-
-Check that peer configs include correct DNS:
-```ini
-[Interface]
-PrivateKey = <peer-private-key>
-Address = 10.188.0.X/24
-DNS = 10.188.0.1, 8.8.8.8  # Server IP for mDNS, Google DNS fallback
-```
-
-## Troubleshooting
-
-### If mDNS Not Working
-```bash
-# Check Avahi status
-sudo systemctl status avahi-daemon
-
-# Check logs
-sudo journalctl -u avahi-daemon -f
-
-# Restart Avahi
-sudo systemctl restart avahi-daemon
-
-# Check WireGuard interface
-ip link show wg0
-```
-
-### If Peers Can't Resolve Each Other
-1. Ensure both peers are connected to the same WireGuard instance
-2. Check that DNS is set to server IP in peer configs
-3. Verify Avahi is running and configured correctly
-4. Test from the server first: `ping phone1.wg0.local`
-
-### If Windows Peers Can't Resolve
-- Install Bonjour Print Services: https://support.apple.com/downloads/bonjour_for_windows
-- Or use IP addresses directly: `ping 10.188.0.X`
-
-## Expected Results
-
-✅ **Success Indicators:**
-- Avahi daemon is running and enabled
-- mDNS is listening on port 5353
-- Peers can resolve each other by hostname
-- No manual configuration needed on peer devices
-- Automatic peer discovery works across WireGuard tunnel
-
-❌ **Failure Indicators:**
-- Avahi daemon not running
-- mDNS not listening on port 5353
-- Peers can't resolve hostnames
-- Manual configuration required on peer devices
-
-## Quick Commands Reference
-
-```bash
-# Check Avahi status
-sudo systemctl status avahi-daemon
-
-# Restart Avahi
-sudo systemctl restart avahi-daemon
-
-# Test mDNS resolution
-avahi-resolve-host-name phone1.wg0.local
-
-# Browse mDNS services
+# Browse services
 avahi-browse -a
+avahi-browse -t _wireguard._tcp
 
-# Check WireGuard interface
-ip link show wg0
-
-# Check mDNS port
-sudo netstat -tulpn | grep :5353
+# Test from peer perspective
+ping myphone
+ping myphone.wg0.local
 ```
 
-## Support
+### Management Commands:
+```bash
+# Register peers with Avahi
+docker exec wireguard-webadmin python manage.py register_peers_avahi --reload
 
-If you encounter issues:
-1. Check the troubleshooting section above
-2. Review logs: `sudo journalctl -u avahi-daemon -f`
-3. Verify WireGuard interface is up: `ip link show wg0`
-4. Test mDNS from server first before testing from peers
+# Update mDNS hosts files
+docker exec wireguard-webadmin python manage.py update_peer_mdns --reload
+
+# Test specific instance
+docker exec wireguard-webadmin python manage.py register_peers_avahi --instance-id 0 --reload
+```
+
+### Web Interface:
+- Main app: http://ubuntu-server:8000
+- Admin panel: http://ubuntu-server:8000/admin_panel/
+
+## 🔍 Troubleshooting
+
+### Common Issues:
+1. **Avahi not starting**: Check D-Bus is running
+2. **Hostname resolution fails**: Verify hosts files generated
+3. **Container restart loops**: Check init.sh syntax
+4. **Permission issues**: Ensure Docker user in docker group
+
+### Debug Commands:
+```bash
+# Check Avahi daemon status
+docker exec wireguard-webadmin pgrep avahi-daemon
+
+# Check hosts files
+docker exec wireguard-webadmin cat /etc/avahi/hosts/wg0.hosts
+
+# Check Avahi logs
+docker exec wireguard-webadmin journalctl -u avahi-daemon
+
+# Test D-Bus connection
+docker exec wireguard-webadmin dbus-send --system --print-reply --dest=org.freedesktop.Avahi / org.freedesktop.Avahi.Server.GetVersion
+```
+
+## ✅ Success Criteria
+
+- [ ] Web interface accessible
+- [ ] Avahi daemon running in container
+- [ ] Peer hostnames resolvable
+- [ ] Management commands working
+- [ ] Automatic peer registration working
+- [ ] Cross-peer hostname resolution working
+
+## 🎯 Expected Results
+
+Once deployed, you should be able to:
+1. **Resolve peer hostnames**: `myphone.local` → `10.188.0.3`
+2. **Use instance domains**: `myphone.wg0.local` → `10.188.0.3`
+3. **Global resolution**: `myphone.wg.local` → `10.188.0.3`
+4. **Service discovery**: See WireGuard services via `avahi-browse`
+5. **Automatic updates**: Peers auto-register when created/modified

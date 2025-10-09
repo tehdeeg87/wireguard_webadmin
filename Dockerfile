@@ -30,6 +30,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     rrdtool \
     procps \
+    dbus \
+    avahi-daemon \
+    avahi-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed Python packages from the builder stage
