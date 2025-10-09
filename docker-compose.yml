@@ -1,20 +1,5 @@
 version: '3'
 services:
-  # Peer Discovery API
-  discovery-api:
-    container_name: discovery-api
-    restart: unless-stopped
-    build: ./discovery-api
-    ports:
-      - "5000:5000"
-      - "53:53/udp"
-    volumes:
-      - discovery_data:/app/data
-    networks:
-      - default
-    cap_add:
-      - NET_BIND_SERVICE
-
   wireguard-webadmin:
     container_name: wireguard-webadmin
     restart: unless-stopped
@@ -38,6 +23,7 @@ services:
       - app_secrets:/app_secrets/
       - rrd_data:/rrd_data/
       - database_data:/app/database/
+      - ./shared_hosts:/shared_hosts
     ports:
       # Do not directly expose the Django port to the internet, use some kind of reverse proxy with SSL.
       - "127.0.0.1:8000:8000"
@@ -79,6 +65,20 @@ services:
     depends_on:
       - wireguard-webadmin
 
+  # Simple DNS Cron container for peer hostname updates
+  wireguard-dns-cron:
+    container_name: wireguard-dns-cron
+    restart: unless-stopped
+    build: ./dns_cron
+    environment:
+      - TZ=${TIMEZONE}
+      - WEBADMIN_URL=http://wireguard-webadmin:8000
+      - API_ENDPOINT=/api/peers/hosts/
+      - HOSTS_FILE=/shared_hosts/hosts
+    volumes:
+      - ./shared_hosts:/shared_hosts
+    depends_on:
+      - wireguard-webadmin
 
 volumes:
   static_volume:
@@ -86,7 +86,6 @@ volumes:
   app_secrets:
   rrd_data:
   database_data:
-  discovery_data:
 #networks:
 #  caddy_shared_net:
 #    external: true
