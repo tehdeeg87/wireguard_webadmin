@@ -56,9 +56,9 @@ main() {
         exit 1
     fi
     
-    # Convert JSON to hosts file format
+    # Convert JSON to hosts file format (IP_ADDRESS HOSTNAME)
     local hosts_content
-    hosts_content=$(echo "$json_data" | jq -r 'to_entries[] | "\(.value) \(.key)"' 2>/dev/null)
+    hosts_content=$(echo "$json_data" | jq -r 'to_entries[] | "\(.key) \(.value)"' 2>/dev/null)
     
     if [ -z "$hosts_content" ]; then
         log "WARNING: No peer hostnames found in API response"
