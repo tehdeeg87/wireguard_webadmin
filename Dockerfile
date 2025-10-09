@@ -31,7 +31,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rrdtool \
     procps \
     cron \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/spool/cron/crontabs \
+    && chmod 755 /var/spool/cron/crontabs
 
 # Copy installed Python packages from the builder stage
 COPY --from=builder /install /usr/local
