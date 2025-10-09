@@ -1,5 +1,17 @@
 version: '3'
 services:
+  # Peer Discovery API
+  discovery-api:
+    container_name: discovery-api
+    restart: unless-stopped
+    build: ./discovery-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - discovery_data:/app/data
+    networks:
+      - default
+
   wireguard-webadmin:
     container_name: wireguard-webadmin
     restart: unless-stopped
@@ -71,6 +83,7 @@ volumes:
   app_secrets:
   rrd_data:
   database_data:
+  discovery_data:
 #networks:
 #  caddy_shared_net:
 #    external: true
