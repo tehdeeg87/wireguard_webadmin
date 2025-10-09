@@ -30,13 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dnsutils \
     rrdtool \
     procps \
-    cron \
-    dnsmasq \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /var/spool/cron/crontabs \
-    && chmod 755 /var/spool/cron/crontabs \
-    && touch /var/log/cron.log \
-    && chmod 644 /var/log/cron.log
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy installed Python packages from the builder stage
 COPY --from=builder /install /usr/local
