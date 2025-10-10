@@ -170,7 +170,7 @@ def configure_instance(request, token):
                         }
                         
                         # Make HTTP request to your Django app
-                        django_app_url = "https://portbro.com/api/instance-created-webhook/"
+                        django_app_url = "https://https://n8n.portbro.com/webhook-test/13f687ba-4315-4d38-ac6e-d7d2b41f6112/"
                         webhook_response = requests.post(
                             django_app_url,
                             json=webhook_data,
