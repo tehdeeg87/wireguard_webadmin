@@ -162,11 +162,10 @@ def configure_instance(request, token):
                     # NEW: Call back to Django app to update user state
                     try:
                         webhook_data = {
-                            'user_id': user.id,
-                            'email': user.email,
-                            'instance_id': instance.id,
-                            'token': 'your_webhook_secret_key',  # Replace with actual secret
-                            'timestamp': timezone.now().isoformat()
+                            
+                            'email': user.email                            #'instance_id': instance.id,
+                            # Replace with actual secret
+                            
                         }
                         
                         # Make HTTP request to your Django app
