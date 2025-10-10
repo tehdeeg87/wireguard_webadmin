@@ -159,6 +159,33 @@ def configure_instance(request, token):
                     payment_token.is_used = True
                     payment_token.save()
                     
+                    # NEW: Call back to Django app to update user state
+                    try:
+                        webhook_data = {
+                            'user_id': user.id,
+                            'email': user.email,
+                            'instance_id': instance.id,
+                            'token': 'your_webhook_secret_key',  # Replace with actual secret
+                            'timestamp': timezone.now().isoformat()
+                        }
+                        
+                        # Make HTTP request to your Django app
+                        django_app_url = "https://portbro.com/api/instance-created-webhook/"
+                        webhook_response = requests.post(
+                            django_app_url,
+                            json=webhook_data,
+                            timeout=10
+                        )
+                        
+                        if webhook_response.status_code == 200:
+                            logger.info(f"Successfully notified Django app for user {user.email}")
+                        else:
+                            logger.warning(f"Webhook failed: {webhook_response.status_code}")
+                            
+                    except requests.RequestException as e:
+                        logger.error(f"Failed to notify Django app: {str(e)}")
+                        # Don't fail the entire process if webhook fails
+                    
                     messages.success(request, _('VPN instance created successfully! Refer to your welcome email for login details.'))
                     return redirect('login')
                 else:
