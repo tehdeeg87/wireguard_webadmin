@@ -12,6 +12,7 @@ from .models import PaymentToken
 import json
 import logging
 import traceback
+import requests
 from django.contrib.auth import authenticate
 import uuid
 from django.conf import settings
@@ -162,10 +163,9 @@ def configure_instance(request, token):
                     # NEW: Call back to Django app to update user state
                     try:
                         webhook_data = {
-                            
-                            'email': user.email                            #'instance_id': instance.id,
+                            'email': user.email,
+                            #'instance_id': instance.id,
                             # Replace with actual secret
-                            
                         }
                         
                         # Make HTTP request to your Django app
