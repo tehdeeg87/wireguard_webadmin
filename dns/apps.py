@@ -19,3 +19,5 @@ class DnsConfig(AppConfig):
         # Register signals for WireGuardInstance model
         post_save.connect(signals.update_dnsmasq_on_instance_change, sender=WireGuardInstance)
         post_delete.connect(signals.update_dnsmasq_on_instance_delete, sender=WireGuardInstance)
+        
+        # HADDNS signals are automatically registered via @receiver decorators

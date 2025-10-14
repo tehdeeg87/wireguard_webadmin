@@ -1,2 +1,4 @@
 * * * * * root /usr/bin/curl -s http://wireguard-webadmin:8000/api/cron_check_updates/ >> /var/log/cron.log 2>&1
 */10 * * * * root /usr/bin/curl -s http://wireguard-webadmin:8000/api/cron_update_peer_latest_handshake/ >> /var/log/cron.log 2>&1
+# HADDNS (Handshake-Aware Dynamic DNS) - Update DNS records based on peer handshakes
+*/1 * * * * root cd /app && python manage.py haddns_update >> /var/log/haddns.log 2>&1

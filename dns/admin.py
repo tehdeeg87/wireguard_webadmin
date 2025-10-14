@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
-from .models import DNSFilterList, DNSSettings, StaticHost
+from .models import DNSFilterList, DNSSettings, StaticHost, HADDNSConfig, PeerHostnameMapping
 
 
 class DNSFilterListAdmin(admin.ModelAdmin):
@@ -24,3 +25,44 @@ class StaticHostAdmin(admin.ModelAdmin):
     search_fields = ('hostname', 'ip_address')
     ordering = ('hostname', 'created')
 admin.site.register(StaticHost, StaticHostAdmin)
+
+
+@admin.register(HADDNSConfig)
+class HADDNSConfigAdmin(admin.ModelAdmin):
+    list_display = ('name', 'enabled', 'handshake_threshold_seconds', 'domain_suffix', 'update_interval_seconds')
+    list_filter = ('enabled', 'created', 'updated')
+    search_fields = ('name', 'domain_suffix')
+    ordering = ('name',)
+    
+    fieldsets = (
+        ('Basic Settings', {
+            'fields': ('enabled', 'domain_suffix', 'dynamic_hosts_file')
+        }),
+        ('Timing Settings', {
+            'fields': ('handshake_threshold_seconds', 'update_interval_seconds')
+        }),
+        ('Offline Peer Settings', {
+            'fields': ('include_offline_peers', 'offline_suffix'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(PeerHostnameMapping)
+class PeerHostnameMappingAdmin(admin.ModelAdmin):
+    list_display = ('hostname', 'peer_name', 'peer_key_short', 'is_online', 'enabled', 'last_handshake_check')
+    list_filter = ('enabled', 'is_online', 'created', 'updated')
+    search_fields = ('hostname', 'peer__name', 'peer__public_key')
+    ordering = ('hostname',)
+    readonly_fields = ('is_online', 'last_handshake_check', 'created', 'updated')
+    
+    def peer_name(self, obj):
+        return obj.peer.name or 'Unnamed'
+    peer_name.short_description = 'Peer Name'
+    
+    def peer_key_short(self, obj):
+        return f"{obj.peer.public_key[:16]}..."
+    peer_key_short.short_description = 'Public Key'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('peer')

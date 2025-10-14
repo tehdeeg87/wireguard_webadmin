@@ -1,56 +1,44 @@
-import os
+import logging
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from django.conf import settings
+
+from .models import PeerHostnameMapping
+from wireguard.models import Peer
+
+logger = logging.getLogger(__name__)
 
 
-def update_dnsmasq_on_peer_change(sender, instance, created, **kwargs):
-    """Update dnsmasq configuration when a peer is created or modified"""
+@receiver(post_save, sender=Peer)
+def create_peer_hostname_mapping(sender, instance, created, **kwargs):
+    """Automatically create HADDNS hostname mapping when a peer is created"""
+    if created and instance.hostname:
+        try:
+            mapping, created = PeerHostnameMapping.objects.get_or_create(
+                peer=instance,
+                defaults={
+                    'hostname': instance.hostname,
+                    'enabled': True
+                }
+            )
+            if created:
+                logger.info(f"Created HADDNS mapping for peer {instance.hostname}")
+            else:
+                # Update existing mapping if hostname changed
+                if mapping.hostname != instance.hostname:
+                    mapping.hostname = instance.hostname
+                    mapping.save()
+                    logger.info(f"Updated HADDNS mapping for peer {instance.hostname}")
+        except Exception as e:
+            logger.error(f"Failed to create HADDNS mapping for peer {instance.hostname}: {e}")
+
+
+@receiver(post_delete, sender=Peer)
+def delete_peer_hostname_mapping(sender, instance, **kwargs):
+    """Clean up HADDNS hostname mapping when a peer is deleted"""
     try:
-        from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration with reload
-        command = UpdatePeerDNSCommand()
-        command.handle(reload=True)
-        
+        mapping = PeerHostnameMapping.objects.filter(peer=instance).first()
+        if mapping:
+            mapping.delete()
+            logger.info(f"Deleted HADDNS mapping for peer {instance.hostname}")
     except Exception as e:
-        # Log error but don't fail the peer creation
-        print(f"Error updating dnsmasq configuration: {e}")
-
-
-def update_dnsmasq_on_peer_delete(sender, instance, **kwargs):
-    """Update dnsmasq configuration when a peer is deleted"""
-    try:
-        from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration with reload
-        command = UpdatePeerDNSCommand()
-        command.handle(reload=True)
-        
-    except Exception as e:
-        # Log error but don't fail the peer deletion
-        print(f"Error updating dnsmasq configuration: {e}")
-
-
-def update_dnsmasq_on_instance_change(sender, instance, created, **kwargs):
-    """Update dnsmasq configuration when a WireGuard instance is created or modified"""
-    try:
-        from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration with reload
-        command = UpdatePeerDNSCommand()
-        command.handle(reload=True)
-        
-    except Exception as e:
-        # Log error but don't fail the instance creation
-        print(f"Error updating dnsmasq configuration: {e}")
-
-
-def update_dnsmasq_on_instance_delete(sender, instance, **kwargs):
-    """Update dnsmasq configuration when a WireGuard instance is deleted"""
-    try:
-        from .management.commands.update_peer_dns import Command as UpdatePeerDNSCommand
-        # Update dnsmasq configuration with reload
-        command = UpdatePeerDNSCommand()
-        command.handle(reload=True)
-        
-    except Exception as e:
-        # Log error but don't fail the instance deletion
-        print(f"Error updating dnsmasq configuration: {e}")
+        logger.error(f"Failed to delete HADDNS mapping for peer {instance.hostname}: {e}")

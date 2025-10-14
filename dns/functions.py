@@ -118,6 +118,17 @@ bind-interfaces
         hosts_file = f'/etc/dnsmasq/peers_wg{instance.instance_id}.hosts'
         dnsmasq_config += f'addn-hosts={hosts_file}\n'
     
+    # Add HADDNS dynamic hosts file
+    try:
+        from .models import HADDNSConfig
+        haddns_config = HADDNSConfig.get_config()
+        if haddns_config.enabled:
+            dnsmasq_config += f'\n# HADDNS Dynamic Hosts File\n'
+            dnsmasq_config += f'addn-hosts={haddns_config.dynamic_hosts_file}\n'
+    except Exception:
+        # HADDNS not configured yet, skip
+        pass
+    
     return dnsmasq_config
 
 
