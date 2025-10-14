@@ -255,9 +255,37 @@ def generate_user_token_view(request):
             'client_name': 'VPN Testing Client'
         }
         
-        # For testing, we'll create a simple JWT token
-        # In production, this would be signed by portbro.com
-        jwt_token = jwt.encode(claims, 'test-secret', algorithm='HS256')
+        # Generate JWT token using RSA private key
+        rsa_private_key = """-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCJoYi2rQkrYnEx
+/rqtOoV5+fqNVZykU6f3Ltzl4Ukzj4UWuvTIUa1wf0N69Jg/ydEQVgSlOclyQgsr
+UAcOJmX0pSHedBNRbVkqeVPpYtKBSNNzYCJPmSl7kdT0WryEvhUviERwKdZx2FBk
+D7+ASeFH/3w5TAadaBZ5qLSegtojndu2Gby/IHPYbpXFDnZlWF+46bFMd5e8dNZy
+INQ7zX80icD6LKK444/9TjJA/V4VvDINkDpO+f0/ZPHlv4UXhrNhiOX8EcISgk14
+cZHBEPAStjex6tlil3i/MeVaOetIVXXJNDwrwO0Uxt5+kTgDhWkcUW8qXHyvnvis
+1XEHP6nnAgMBAAECggEAAZJnOdLjGmw+57fFkQnskVaSDoAuUFAmSHPwEO4QRHb8
+qaRL/Ge2Z+UEM8jMXlojOaEJ34s36kan0wBQfFBi9LbYGq7Ps6vgi1QkabN3vQNE
+avprmeYha6hgOsQ4h/mVy1uukGth6B302Re287OkT4qy9AKSxsR0EUKkgXT0Idj8
+6jwwSFIjKH6AxdfTvciha1JENYOhELF00gM4cypicKWldJLiAqV1wjx5h+PYN4AM
+7WKH6eTFf6yVYoR+gYKiMPNDyCOFXhbKNdu0xedQL893Rz/NiGhhONxEAkLYkfKG
+Axw4/wcIlbXo/fi9PH8Fv6c/pxJh8N5Wmfe0NeF6nQKBgQC9NmgH3LXg7mWt0678
+JKbB1LmuIwA0Rt9Qdmiun0ovqRxyIQES22ZbdrDMz1x8MTITFV16zX/X/AyJRM9T
+zmWSHvll8g+D4tL4w1pSTjtzckFb9/nZVUGKTR7I8ak3VMEa0aVMYB+xKXWuvtaa
+lI1oYpEvDhfvnGMBuPgOn57sUwKBgQC6NiAAS8j6VFjYxpYr5JBfJcqYA7qRWbPJ
+itbw+sucfNyZgPwp7xz1stODwjdVYG3t6YF7IMs9kJz2iAMqnWOVWKK+qUkJ0esU
+3thxWHgVzusqfN0RFLgLxuYuLyfurZreFb8f7zCAPTtmK45sccmTZBOZGKogOky7
+2ZiT9+T5nQKBgQCi9z82tlQ4fVw6ET5/kRnHjG64mxDL9dbVOIcFD9EXp7IGYoLI
+OQu570prvJXNqZmVcitnX6Oi5UXu3MMtTXGSHvdzZL8UOsK225rplNQDpP7CNZyO
+Ia4nbjD7pZi3PVpsvPCADbJ+JlVjwp6X2SbKJ0sgmiTnjWyAyU1tWvHIXQKBgDkt
+vY3Zt5EGrXGDKUG5IYvV8uvS2UsgnFBazb2ZhUQ8IxEPxl6qCd54VvKyhIM25QqV
+FSlV3JK/ATPCeBZx1c5aNT8OhFr7lpAGDbhgTh+ENjoJtWg1UH5tSOkNmdl0fYWM
+b+/CZsY6By9MWKN8HUWhCVONe1ACFuXn3y4whKMRAoGAU6aMU9sq4yPXCtZ8Ezig
+Y8JIfB+Mtpr0BsGYoeBIlXx1qq5K+pfglNh2m5949VnpGKNqNUPg0+FTyq8OxVlR
+F7mJnu9iyFu+YVBhfOWKutNkUmYwh6t/K/7Ex14ESZxCuXEfXl9p7Dqt/3qsVQuk
+Ft41RWPeCWTS5UxQDruLC+o=
+-----END PRIVATE KEY-----"""
+        
+        jwt_token = jwt.encode(claims, rsa_private_key, algorithm='RS256')
         
         return JsonResponse({
             'success': True,
@@ -332,8 +360,37 @@ def jwt_token_async_view(request):
             'client_name': 'VPN User Portal'
         }
         
-        # Generate JWT token (using test secret for now)
-        jwt_token = jwt.encode(claims, 'test-secret', algorithm='HS256')
+        # Generate JWT token using RSA private key
+        rsa_private_key = """-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCJoYi2rQkrYnEx
+/rqtOoV5+fqNVZykU6f3Ltzl4Ukzj4UWuvTIUa1wf0N69Jg/ydEQVgSlOclyQgsr
+UAcOJmX0pSHedBNRbVkqeVPpYtKBSNNzYCJPmSl7kdT0WryEvhUviERwKdZx2FBk
+D7+ASeFH/3w5TAadaBZ5qLSegtojndu2Gby/IHPYbpXFDnZlWF+46bFMd5e8dNZy
+INQ7zX80icD6LKK444/9TjJA/V4VvDINkDpO+f0/ZPHlv4UXhrNhiOX8EcISgk14
+cZHBEPAStjex6tlil3i/MeVaOetIVXXJNDwrwO0Uxt5+kTgDhWkcUW8qXHyvnvis
+1XEHP6nnAgMBAAECggEAAZJnOdLjGmw+57fFkQnskVaSDoAuUFAmSHPwEO4QRHb8
+qaRL/Ge2Z+UEM8jMXlojOaEJ34s36kan0wBQfFBi9LbYGq7Ps6vgi1QkabN3vQNE
+avprmeYha6hgOsQ4h/mVy1uukGth6B302Re287OkT4qy9AKSxsR0EUKkgXT0Idj8
+6jwwSFIjKH6AxdfTvciha1JENYOhELF00gM4cypicKWldJLiAqV1wjx5h+PYN4AM
+7WKH6eTFf6yVYoR+gYKiMPNDyCOFXhbKNdu0xedQL893Rz/NiGhhONxEAkLYkfKG
+Axw4/wcIlbXo/fi9PH8Fv6c/pxJh8N5Wmfe0NeF6nQKBgQC9NmgH3LXg7mWt0678
+JKbB1LmuIwA0Rt9Qdmiun0ovqRxyIQES22ZbdrDMz1x8MTITFV16zX/X/AyJRM9T
+zmWSHvll8g+D4tL4w1pSTjtzckFb9/nZVUGKTR7I8ak3VMEa0aVMYB+xKXWuvtaa
+lI1oYpEvDhfvnGMBuPgOn57sUwKBgQC6NiAAS8j6VFjYxpYr5JBfJcqYA7qRWbPJ
+itbw+sucfNyZgPwp7xz1stODwjdVYG3t6YF7IMs9kJz2iAMqnWOVWKK+qUkJ0esU
+3thxWHgVzusqfN0RFLgLxuYuLyfurZreFb8f7zCAPTtmK45sccmTZBOZGKogOky7
+2ZiT9+T5nQKBgQCi9z82tlQ4fVw6ET5/kRnHjG64mxDL9dbVOIcFD9EXp7IGYoLI
+OQu570prvJXNqZmVcitnX6Oi5UXu3MMtTXGSHvdzZL8UOsK225rplNQDpP7CNZyO
+Ia4nbjD7pZi3PVpsvPCADbJ+JlVjwp6X2SbKJ0sgmiTnjWyAyU1tWvHIXQKBgDkt
+vY3Zt5EGrXGDKUG5IYvV8uvS2UsgnFBazb2ZhUQ8IxEPxl6qCd54VvKyhIM25QqV
+FSlV3JK/ATPCeBZx1c5aNT8OhFr7lpAGDbhgTh+ENjoJtWg1UH5tSOkNmdl0fYWM
+b+/CZsY6By9MWKN8HUWhCVONe1ACFuXn3y4whKMRAoGAU6aMU9sq4yPXCtZ8Ezig
+Y8JIfB+Mtpr0BsGYoeBIlXx1qq5K+pfglNh2m5949VnpGKNqNUPg0+FTyq8OxVlR
+F7mJnu9iyFu+YVBhfOWKutNkUmYwh6t/K/7Ex14ESZxCuXEfXl9p7Dqt/3qsVQuk
+Ft41RWPeCWTS5UxQDruLC+o=
+-----END PRIVATE KEY-----"""
+        
+        jwt_token = jwt.encode(claims, rsa_private_key, algorithm='RS256')
         
         return JsonResponse({
             'success': True,
