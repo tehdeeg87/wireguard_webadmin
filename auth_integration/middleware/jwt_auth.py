@@ -79,7 +79,7 @@ ErY3serZYpd4vzHlWjnrSFV1yTQ8K8DtFMbefpE4A4VpHFFvKlx8r574rNVxBz+p
                     resp = requests.get(settings.PARENT_JWKS_URL, timeout=5)
                     self.jwks = JsonWebKey.import_key_set(resp.json())
 
-                claims = jwt.decode(token, self.jwks)
+                claims = jwt.decode(token, self.jwks, algorithms=['RS256'])
                 claims.validate()  # checks exp, iat, nbf
 
                 if claims.get("iss") != settings.PARENT_ISSUER:
