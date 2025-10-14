@@ -4,7 +4,7 @@ services:
     container_name: wireguard-webadmin
     restart: unless-stopped
     #image: deeg87/wireguard_webadmin:latest
-    build: .
+    build: . 
     environment:
       - SERVER_ADDRESS=${SERVER_ADDRESS}
       - DEBUG_MODE=True
@@ -15,15 +15,14 @@ services:
     volumes:
       - .:/app
       - ./src:/app/src
-      - ./accounts:/app/accounts
+      - ./accounts:/app/accounts 
       - ./templates:/app/templates
-      - ./static:/app/static
+      - ./static:/app/static 
       - wireguard:/etc/wireguard
       - static_volume:/app_static_files/
       - app_secrets:/app_secrets/
       - rrd_data:/rrd_data/
       - database_data:/app/database/
-      - ./shared_hosts:/shared_hosts
     ports:
       # Do not directly expose the Django port to the internet, use some kind of reverse proxy with SSL.
       - "127.0.0.1:8000:8000"
@@ -65,20 +64,28 @@ services:
     depends_on:
       - wireguard-webadmin
 
-  # Simple DNS Cron container for peer hostname updates
-  wireguard-dns-cron:
-    container_name: wireguard-dns-cron
+  # Centralized mDNS broker for peer discovery
+  wireguard-mdns:
+    container_name: wireguard-mdns
+    image: ubuntu:22.04
     restart: unless-stopped
-    build: ./dns_cron
+    network_mode: host
     environment:
       - TZ=${TIMEZONE}
-      - WEBADMIN_URL=http://wireguard-webadmin:8000
-      - API_ENDPOINT=/api/peers/hosts/
-      - HOSTS_FILE=/shared_hosts/hosts
     volumes:
-      - ./shared_hosts:/shared_hosts
+      - ./mdns_config:/etc/avahi
+      - ./mdns_hosts:/etc/avahi/hosts
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        apt-get install -y -qq avahi-daemon avahi-utils dbus &&
+        mkdir -p /etc/avahi/hosts &&
+        dbus-daemon --system &&
+        avahi-daemon --no-drop-root --debug --file=/etc/avahi/avahi-daemon.conf
+      "
     depends_on:
       - wireguard-webadmin
+
 
 volumes:
   static_volume:

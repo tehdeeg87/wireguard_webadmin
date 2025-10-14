@@ -1,7 +1,7 @@
 #!/bin/bash
-# Deploy mDNS broker for WireGuard peer discovery (Case 1)
+# Deploy centralized mDNS broker for WireGuard peer discovery
 
-echo "🚀 Deploying mDNS broker for WireGuard peer discovery..."
+echo "🚀 Deploying centralized mDNS broker for WireGuard..."
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
@@ -37,20 +37,29 @@ else
     echo "⚠️  WireGuard interface wg0 not found"
 fi
 
-# Step 4: Deploy Docker containers
+# Step 4: Setup firewall rules
+echo "🔥 Setting up firewall rules..."
+if [ -f "./setup_mdns_firewall.sh" ]; then
+    chmod +x ./setup_mdns_firewall.sh
+    ./setup_mdns_firewall.sh
+else
+    echo "⚠️  Firewall setup script not found"
+fi
+
+# Step 5: Deploy Docker containers
 echo "🐳 Deploying Docker containers..."
 docker-compose down
 docker-compose up -d --build
 
-# Step 5: Wait for containers to start
+# Step 6: Wait for containers to start
 echo "⏳ Waiting for containers to start..."
-sleep 15
+sleep 10
 
-# Step 6: Check container status
+# Step 7: Check container status
 echo "📊 Checking container status..."
 docker-compose ps
 
-# Step 7: Test mDNS resolution
+# Step 8: Test mDNS resolution
 echo "🧪 Testing mDNS resolution..."
 if command -v avahi-resolve-host-name &> /dev/null; then
     avahi-resolve-host-name localhost.local
@@ -63,9 +72,9 @@ echo "🎉 Deployment complete!"
 echo ""
 echo "📋 What's been set up:"
 echo "   • WireGuard daemon running on host system"
-echo "   • mDNS broker in Docker container (network_mode: host)"
-echo "   • Firewall rules for mDNS traffic (UDP 5353)"
-echo "   • Peer configs include multicast subnet (224.0.0.0/24)"
+echo "   • Centralized mDNS broker in Docker container"
+echo "   • Firewall rules for mDNS traffic"
+echo "   • Host files generated for peer resolution"
 echo ""
 echo "🔧 Next steps:"
 echo "   1. Connect peers to WireGuard instance"
