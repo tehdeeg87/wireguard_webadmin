@@ -65,18 +65,36 @@ services:
     depends_on:
       - wireguard-webadmin
 
-  # Simple DNS Cron container for peer hostname updates
+  # HADDNS Cron container for handshake-aware DNS updates
   wireguard-dns-cron:
     container_name: wireguard-dns-cron
     restart: unless-stopped
     build: ./dns_cron
-    environment:
-      - TZ=${TIMEZONE}
-      - WEBADMIN_URL=http://wireguard-webadmin:8000
-      - API_ENDPOINT=/api/peers/hosts/
-      - HOSTS_FILE=/shared_hosts/hosts
     volumes:
       - ./shared_hosts:/shared_hosts
+      - wireguard:/etc/wireguard  # access wg0 + peer map
+    network_mode: "service:wireguard-webadmin"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - TZ=${TIMEZONE}
+    depends_on:
+      - wireguard-webadmin
+  wireguard-dnsmasq:
+    image: andyshinn/dnsmasq
+    container_name: wireguard-dnsmasq
+    network_mode: "service:wireguard-webadmin"  # shares WireGuard network
+    volumes:
+      - ./shared_hosts:/etc/dnsmasq.d
+    command: >
+      --interface=wg0
+      --bind-interfaces
+      --domain=vpn.local
+      --expand-hosts
+      --no-resolv
+      --addn-hosts=/etc/dnsmasq.d/hosts
+    restart: unless-stopped
     depends_on:
       - wireguard-webadmin
 

@@ -1,14 +1,14 @@
-FROM alpine:latest
+FROM python:3.12-slim
 
-# Install required packages
-RUN apk add --no-cache curl jq bash
+RUN apt-get update && apt-get install -y wireguard-tools dnsmasq cron \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create the update script
-COPY update_peer_hosts.sh /usr/local/bin/update_peer_hosts.sh
-RUN chmod +x /usr/local/bin/update_peer_hosts.sh
+WORKDIR /app
+COPY haddns_multi.py /app/haddns_multi.py
 
-# Create cron job to run every 5 minutes
-RUN echo "*/5 * * * * /usr/local/bin/update_peer_hosts.sh" | crontab -
+# Set up cron job to run every minute
+RUN echo "* * * * * /usr/bin/python3 /app/haddns_multi.py >> /var/log/haddns.log 2>&1" > /etc/cron.d/haddns \
+    && chmod 0644 /etc/cron.d/haddns \
+    && crontab /etc/cron.d/haddns
 
-# Start cron in foreground
-CMD ["crond", "-f"]
+CMD ["cron", "-f"]
