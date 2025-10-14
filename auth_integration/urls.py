@@ -23,5 +23,6 @@ urlpatterns = [
     path('status/', views.auth_status_view, name='auth_status'),
     path('instructions/', views.auth_instructions_view, name='auth_instructions'),
     path('generate-token/', views.generate_user_token_view, name='generate_token'),
+    path('jwt-token-async/', views.jwt_token_async_view, name='jwt_token_async'),
 ]
 

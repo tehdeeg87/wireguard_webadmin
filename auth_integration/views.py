@@ -66,7 +66,7 @@ def jwt_login_view(request):
 
 def redirect_to_portbro_auth(request):
     """
-    Show authentication page with instructions for getting JWT token from portbro.com.
+    Redirect to portbro.com for authentication.
     """
     return render(request, 'auth_integration/portbro_auth.html', {
         'portbro_auth_url': 'https://portbro.com/',
@@ -120,6 +120,7 @@ def jwt_callback_view(request):
             return redirect('wireguard_status')
             
         except Exception as e:
+            logger.error(f"JWT callback error: {e}")
             messages.error(request, f'Authentication error: {str(e)}')
             return render(request, 'auth_integration/portbro_auth.html', {
                 'portbro_auth_url': 'https://portbro.com/',
@@ -127,36 +128,9 @@ def jwt_callback_view(request):
             })
     
     elif request.method == 'POST':
-        # Handle API callback from portbro.com
+        # Handle API requests
         try:
             data = json.loads(request.body)
-            
-            # Check if this is the new portbro.com response format
-            if data.get('success') and 'user' in data:
-                # This is the new portbro.com response format
-                user_data = data['user']
-                claims = {
-                    'sub': user_data.get('username'),
-                    'email': user_data.get('email'),
-                    'userlevel': user_data.get('userlevel', 30),
-                    'role': 'basic' if user_data.get('userlevel', 30) < 40 else 'admin'
-                }
-                
-                # Create or get user from claims
-                from .utils.jwt_user import ensure_user_from_jwt
-                user = ensure_user_from_jwt(claims)
-                
-                # Log the user in
-                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                
-                # Store success message
-                messages.success(request, f'Successfully authenticated as {user.username}!')
-                
-                # Redirect to dashboard
-                redirect_url = data.get('redirect_url', '/')
-                return redirect(redirect_url)
-            
-            # Fallback to old JWT token format
             jwt_token = data.get('jwt_token')
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
@@ -208,13 +182,8 @@ def jwt_logout_view(request):
     """
     JWT-based logout view.
     """
-    # Clear JWT token from session
     if 'jwt_token' in request.session:
         del request.session['jwt_token']
-    
-    # Logout user
-    from django.contrib.auth import logout
-    logout(request)
     
     messages.success(request, 'Successfully logged out.')
     return redirect('/')
@@ -222,32 +191,26 @@ def jwt_logout_view(request):
 
 def auth_status_view(request):
     """
-    View to check authentication status.
+    View to check authentication status and show user info.
     """
     if request.user.is_authenticated:
         jwt_token = request.session.get('jwt_token')
         token_valid = jwt_service.is_token_valid(jwt_token) if jwt_token else False
         
-        return JsonResponse({
-            'authenticated': True,
-            'user': {
-                'username': request.user.username,
-                'email': request.user.email,
-                'userlevel': request.user.useracl.user_level if hasattr(request.user, 'useracl') else 30
-            },
+        return render(request, 'auth_integration/auth_status.html', {
+            'user': request.user,
             'jwt_token_valid': token_valid,
             'jwt_token': jwt_token[:20] + '...' if jwt_token else None
         })
     else:
-        return JsonResponse({
-            'authenticated': False,
+        return render(request, 'auth_integration/auth_status.html', {
             'jwt_token_valid': False
         })
 
 
 def auth_instructions_view(request):
     """
-    View showing authentication instructions for users.
+    View showing authentication instructions.
     """
     return render(request, 'auth_integration/auth_instructions.html', {
         'portbro_auth_url': 'https://portbro.com/',
@@ -312,6 +275,81 @@ def generate_user_token_view(request):
         logger.error(f"Token generation error: {e}")
         return JsonResponse({
             'success': False,
-            'error': 'Internal server error',
-            'message': 'Please contact administrator'
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+def jwt_token_async_view(request):
+    """
+    Async JWT token generation endpoint for user portal.
+    This generates a JWT token for the authenticated user.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'error': 'Authentication required',
+            'message': 'Please log in to generate a JWT token'
+        }, status=401)
+    
+    try:
+        # Get user info
+        username = request.user.username
+        email = request.user.email or f'{username}@portbro.com'
+        
+        # Get user level from ACL
+        user_level = 30  # Default
+        if hasattr(request.user, 'useracl'):
+            user_level = request.user.useracl.user_level
+        
+        # Map user level to role
+        if user_level >= 50:
+            role = 'admin'
+        elif user_level >= 40:
+            role = 'manager'
+        else:
+            role = 'basic'
+        
+        # Create JWT token with user-specific claims
+        import jwt
+        import time
+        
+        claims = {
+            'iss': 'portbro.com',
+            'sub': username,
+            'aud': 'vpn-nodes',
+            'iat': int(time.time()),
+            'exp': int(time.time()) + 3600,  # 1 hour expiry
+            'scope': 'read',
+            'user_id': username,
+            'username': username,
+            'email': email,
+            'is_active': True,
+            'is_staff': request.user.is_staff,
+            'is_superuser': request.user.is_superuser,
+            'role': role,
+            'userlevel': user_level,
+            'client_id': 'yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm',
+            'client_name': 'VPN User Portal'
+        }
+        
+        # Generate JWT token (using test secret for now)
+        jwt_token = jwt.encode(claims, 'test-secret', algorithm='HS256')
+        
+        return JsonResponse({
+            'success': True,
+            'token': jwt_token,
+            'expires': int(time.time()) + 3600,
+            'user': {
+                'username': username,
+                'email': email,
+                'role': role,
+                'userlevel': user_level
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"JWT token async generation error: {e}")
+        return JsonResponse({
+            'error': 'Token generation failed',
+            'message': str(e)
         }, status=500)
