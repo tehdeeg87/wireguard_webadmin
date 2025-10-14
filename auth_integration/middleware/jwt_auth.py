@@ -31,7 +31,49 @@ class JWTAuthenticationMiddleware:
 
     def validate_jwt(self, token):
         try:
-            # First try to validate as a real portbro.com token
+            # First try to validate with the provided RSA public key
+            try:
+                import jwt as pyjwt
+                
+                # RSA public key for JWT validation
+                rsa_public_key = """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiaGItq0JK2JxMf66rTqF
+efn6jVWcpFOn9y7c5eFJM4+FFrr0yFGtcH9DevSYP8nREFYEpTnJckILK1AHDiZl
+9KUh3nQTUW1ZKnlT6WLSgUjTc2AiT5kpe5HU9Fq8hL4VL4hEcCnWcdhQZA+/gEnh
+R/98OUwGnWgWeai0noLaI53bthm8vyBz2G6VxQ52ZVhfuOmxTHeXvHTWciDUO81/
+NInA+iyiuOOP/U4yQP1eFbwyDZA6Tvn9P2Tx5b+FF4azYYjl/BHCEoJNeHGRwRDw
+ErY3serZYpd4vzHlWjnrSFV1yTQ8K8DtFMbefpE4A4VpHFFvKlx8r574rNVxBz+p
+5wIDAQAB
+-----END PUBLIC KEY-----"""
+                
+                claims = pyjwt.decode(
+                    token, 
+                    rsa_public_key, 
+                    algorithms=['RS256'],
+                    audience='vpn-nodes',
+                    issuer='portbro.com'
+                )
+                
+                print(f"✅ JWT validation successful with RSA key for user: {claims.get('username', 'unknown')}")
+                return claims
+                
+            except pyjwt.ExpiredSignatureError:
+                print("❌ JWT token has expired")
+                return None
+            except pyjwt.InvalidAudienceError:
+                print("❌ Invalid JWT audience - expected 'vpn-nodes'")
+                return None
+            except pyjwt.InvalidIssuerError:
+                print("❌ Invalid JWT issuer - expected 'portbro.com'")
+                return None
+            except pyjwt.InvalidSignatureError:
+                print("❌ Invalid JWT signature - trying fallback validation")
+                # Fall through to fallback validation
+            except Exception as e:
+                print(f"❌ RSA JWT validation failed: {e}")
+                # Fall through to fallback validation
+            
+            # Fallback: Try to validate as a real portbro.com token
             try:
                 if not self.jwks:
                     resp = requests.get(settings.PARENT_JWKS_URL, timeout=5)
@@ -46,6 +88,7 @@ class JWTAuthenticationMiddleware:
                 if claims.get("aud") != settings.PARENT_AUDIENCE:
                     return None
 
+                print(f"✅ JWT validation successful with JWKS for user: {claims.get('username', 'unknown')}")
                 return claims
             except:
                 # If real token validation fails, try test token validation
@@ -63,8 +106,9 @@ class JWTAuthenticationMiddleware:
                 if claims.get("exp", 0) < time.time():
                     return None
                 
+                print(f"✅ JWT validation successful with test secret for user: {claims.get('username', 'unknown')}")
                 return claims
                 
         except Exception as e:
-            print(f"JWT validation failed: {e}")
+            print(f"❌ JWT validation failed: {e}")
             return None

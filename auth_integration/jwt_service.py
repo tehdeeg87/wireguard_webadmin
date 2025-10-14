@@ -117,16 +117,45 @@ class JWTService:
         """
         try:
             import jwt as pyjwt
-            # Decode without verification to get claims
-            decoded = pyjwt.decode(token, options={"verify_signature": False})
             
-            # Check if token is expired
-            exp = decoded.get('exp', 0)
-            if exp and exp < time.time():
-                logger.warning("JWT token is expired")
+            # RSA public key for JWT validation
+            rsa_public_key = """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiaGItq0JK2JxMf66rTqF
+efn6jVWcpFOn9y7c5eFJM4+FFrr0yFGtcH9DevSYP8nREFYEpTnJckILK1AHDiZl
+9KUh3nQTUW1ZKnlT6WLSgUjTc2AiT5kpe5HU9Fq8hL4VL4hEcCnWcdhQZA+/gEnh
+R/98OUwGnWgWeai0noLaI53bthm8vyBz2G6VxQ52ZVhfuOmxTHeXvHTWciDUO81/
+NInA+iyiuOOP/U4yQP1eFbwyDZA6Tvn9P2Tx5b+FF4azYYjl/BHCEoJNeHGRwRDw
+ErY3serZYpd4vzHlWjnrSFV1yTQ8K8DtFMbefpE4A4VpHFFvKlx8r574rNVxBz+p
+5wIDAQAB
+-----END PUBLIC KEY-----"""
+            
+            # Try to validate with RSA key first
+            try:
+                decoded = pyjwt.decode(
+                    token, 
+                    rsa_public_key, 
+                    algorithms=['RS256'],
+                    audience='vpn-nodes',
+                    issuer='portbro.com'
+                )
+                logger.info(f"JWT token validated successfully with RSA key for user: {decoded.get('username', 'unknown')}")
+                return decoded
+            except pyjwt.ExpiredSignatureError:
+                logger.warning("JWT token has expired")
                 return None
-            
-            return decoded
+            except pyjwt.InvalidTokenError as e:
+                logger.warning(f"JWT token validation failed with RSA key: {e}")
+                # Fall back to unverified decode for testing
+                decoded = pyjwt.decode(token, options={"verify_signature": False})
+                
+                # Check if token is expired
+                exp = decoded.get('exp', 0)
+                if exp and exp < time.time():
+                    logger.warning("JWT token is expired")
+                    return None
+                
+                logger.info(f"JWT token validated without signature verification for user: {decoded.get('username', 'unknown')}")
+                return decoded
         except Exception as e:
             logger.error(f"JWT token validation error: {e}")
             return None
