@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from accounts.views import view_create_first_user, view_login, view_logout
+from auth_integration.views import jwt_token_async_view
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
     cron_update_peer_latest_handshake, peer_info, peers_hosts, peers_hosts_legacy, remove_instance, routerfleet_authenticate_session, routerfleet_get_user_token, \
     wireguard_status, webhook_create_instance
@@ -102,6 +103,9 @@ urlpatterns = [
     
     # Auth integration URLs
     path('auth/', include('auth_integration.urls')),
+    
+    # Direct JWT endpoint for user portal compatibility
+    path('jwt-token-async/', jwt_token_async_view, name='jwt_token_async_direct'),
 ]
 
 # Serve static files in production
