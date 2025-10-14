@@ -5,9 +5,9 @@ from .models import DNSFilterList, DNSSettings, StaticHost, HADDNSConfig, PeerHo
 
 
 class DNSFilterListAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'enabled', 'list_url', 'host_count', 'created', 'updated')
+    list_display = ('name', 'description', 'enabled', 'created', 'updated')
     list_filter = ('enabled', 'created', 'updated')
-    search_fields = ('name', 'description', 'list_url')
+    search_fields = ('name', 'description')
     ordering = ('name', 'created')
 admin.site.register(DNSFilterList, DNSFilterListAdmin)
 
