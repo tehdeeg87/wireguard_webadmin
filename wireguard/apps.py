@@ -8,3 +8,4 @@ class WireguardConfig(AppConfig):
     def ready(self):
         # Import signals to register them
         import wireguard.signals
+        import wireguard.dns_signals

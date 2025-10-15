@@ -93,7 +93,7 @@ services:
       --domain=vpn.local
       --expand-hosts
       --no-resolv
-      --addn-hosts=/etc/dnsmasq.d/hosts
+      --addn-hosts=/etc/dnsmasq.d/hosts_static
     restart: unless-stopped
     depends_on:
       - wireguard-webadmin
