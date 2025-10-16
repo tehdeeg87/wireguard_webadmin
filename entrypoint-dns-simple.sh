@@ -26,31 +26,9 @@ configure_dnsmasq() {
     fi
 }
 
-# Function to restart dnsmasq service
-restart_dnsmasq_service() {
-    echo "🌐 Restarting dnsmasq service..."
-    
-    # Stop the existing dnsmasq service
-    service dnsmasq stop || true
-    
-    # Kill any existing dnsmasq processes
-    pkill -f dnsmasq || true
-    
-    # Remove stale PID files
-    rm -f /run/dnsmasq/dnsmasq.pid
-    
-    # Start the dnsmasq service (it will use our configuration)
-    service dnsmasq start
-    
-    echo "✅ dnsmasq service restarted successfully"
-}
-
 # Function to initialize DNS
 initialize_dns() {
     echo "📡 Initializing DNS..."
-    
-    # Wait a moment for dnsmasq to start
-    sleep 2
     
     # Update DNS hosts file
     python3 manage.py update_dns --reload
@@ -82,9 +60,6 @@ main() {
     # Configure dnsmasq
     configure_dnsmasq
     
-    # Restart dnsmasq service
-    restart_dnsmasq_service
-    
     # Initialize DNS
     initialize_dns
     
@@ -96,6 +71,9 @@ main() {
     echo "   - Peers will automatically get DNS resolution"
     echo "   - Create peers with names like 'server1', 'laptop2'"
     echo "   - They'll be resolvable as 'server1.vpn.local', 'laptop2.vpn.local'"
+    echo ""
+    echo "⚠️  Note: You may need to restart dnsmasq manually:"
+    echo "   docker exec wireguard-webadmin service dnsmasq restart"
     echo ""
     
     # Start the main application

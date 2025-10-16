@@ -13,9 +13,9 @@ wait_for_db() {
     echo "✅ Database is ready"
 }
 
-# Function to configure dnsmasq
-configure_dnsmasq() {
-    echo "🔧 Configuring dnsmasq..."
+# Function to configure existing dnsmasq
+configure_existing_dnsmasq() {
+    echo "🔧 Configuring existing dnsmasq service..."
     
     # Add hosts file configuration to dnsmasq if not already present
     if ! grep -q "addn-hosts=/shared_hosts/hosts_static" /etc/dnsmasq.conf; then
@@ -24,33 +24,20 @@ configure_dnsmasq() {
     else
         echo "✅ dnsmasq already configured"
     fi
-}
-
-# Function to restart dnsmasq service
-restart_dnsmasq_service() {
-    echo "🌐 Restarting dnsmasq service..."
     
-    # Stop the existing dnsmasq service
-    service dnsmasq stop || true
-    
-    # Kill any existing dnsmasq processes
-    pkill -f dnsmasq || true
-    
-    # Remove stale PID files
-    rm -f /run/dnsmasq/dnsmasq.pid
-    
-    # Start the dnsmasq service (it will use our configuration)
-    service dnsmasq start
-    
-    echo "✅ dnsmasq service restarted successfully"
+    # Create a dnsmasq config file for our hosts
+    cat > /etc/dnsmasq.d/wireguard-hosts.conf << EOF
+# WireGuard WebAdmin DNS configuration
+addn-hosts=/shared_hosts/hosts_static
+domain=vpn.local
+expand-hosts
+EOF
+    echo "✅ Created dnsmasq configuration file"
 }
 
 # Function to initialize DNS
 initialize_dns() {
     echo "📡 Initializing DNS..."
-    
-    # Wait a moment for dnsmasq to start
-    sleep 2
     
     # Update DNS hosts file
     python3 manage.py update_dns --reload
@@ -79,11 +66,8 @@ main() {
     echo "🔄 Running database migrations..."
     python3 manage.py migrate --noinput
     
-    # Configure dnsmasq
-    configure_dnsmasq
-    
-    # Restart dnsmasq service
-    restart_dnsmasq_service
+    # Configure existing dnsmasq
+    configure_existing_dnsmasq
     
     # Initialize DNS
     initialize_dns
@@ -96,6 +80,10 @@ main() {
     echo "   - Peers will automatically get DNS resolution"
     echo "   - Create peers with names like 'server1', 'laptop2'"
     echo "   - They'll be resolvable as 'server1.vpn.local', 'laptop2.vpn.local'"
+    echo ""
+    echo "⚠️  Note: The existing dnsmasq service will automatically pick up our configuration"
+    echo "   If DNS doesn't work immediately, restart dnsmasq:"
+    echo "   docker exec wireguard-webadmin service dnsmasq restart"
     echo ""
     
     # Start the main application

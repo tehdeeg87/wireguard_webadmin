@@ -38,7 +38,7 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
-    command: /bin/bash /app/entrypoint-dns.sh /bin/bash /app/init.sh
+    command: /bin/bash /app/entrypoint-dns-minimal.sh /bin/bash /app/init.sh
  #   command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]    
     networks:
       - default
