@@ -420,7 +420,7 @@
                                                 </a>
                                                 {% if peer.hostname %}
                                                 <div class="compact-info" style="color: #6c757d; font-size: 0.8rem; margin-top: 2px;">
-                                                    <i class="fas fa-globe"></i> {{ peer.hostname }}.{{ peer.wireguard_instance.instance_id }}.vpn.local
+                                                    <i class="fas fa-globe"></i> {{ peer.hostname }}.{{ peer.wireguard_instance.instance_id }}.portbro.vpn
                                                 </div>
                                                 {% endif %}
                                                 <div class="compact-info peer-extra-info" id="peer-endpoints-{{ peer.public_key }}"></div>
@@ -1148,7 +1148,7 @@
                 dnsLabel.setAttribute('y', y - 30);
                 // Get instance ID from the peer row data
                 const instanceId = row.querySelector('[data-instance-id]')?.getAttribute('data-instance-id') || '0';
-                dnsLabel.textContent = peerName + '.' + instanceId + '.vpn.local';
+                dnsLabel.textContent = peerName + '.' + instanceId + '.portbro.vpn';
                 svg.appendChild(dnsLabel);
 
                 // Create IP label (below the node)
@@ -1168,7 +1168,7 @@
             
             // Get instance ID from the event target
             const instanceId = event.target.getAttribute('data-instance-id') || '0';
-            const dnsName = `${name}.${instanceId}.vpn.local`;
+            const dnsName = `${name}.${instanceId}.portbro.vpn`;
             
             tooltip.querySelector('.peer-info').innerHTML = 
                 `<div>DNS: ${dnsName}</div>
