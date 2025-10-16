@@ -24,6 +24,7 @@ services:
       - rrd_data:/rrd_data/
       - database_data:/app/database/
       - ./shared_hosts:/shared_hosts
+      - ./init-dns.sh:/init-dns.sh:ro
     ports:
       # Do not directly expose the Django port to the internet, use some kind of reverse proxy with SSL.
       - "127.0.0.1:8000:8000"
@@ -38,7 +39,13 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
-    command: /bin/bash /app/init.sh
+    command: >
+      sh -c "
+        /init-dns.sh &&
+        python3 manage.py migrate &&
+        python3 manage.py collectstatic --noinput &&
+        python3 manage.py runserver 0.0.0.0:8000
+      "
  #   command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]    
     networks:
       - default

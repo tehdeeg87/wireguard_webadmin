@@ -122,7 +122,7 @@ WSGI_APPLICATION = 'wireguard_webadmin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'database' / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -192,7 +192,7 @@ N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
 
 # DNS Configuration for dnsmasq integration
 DNSMASQ_HOSTS_FILE = '/shared_hosts/hosts_static'
-DNSMASQ_DOMAIN = 'vpn.local'
+DNSMASQ_DOMAIN = 'portbro.vpn'
 CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
        'http://vpn.portbro.com',  # Include HTTP if you're using it
