@@ -10,15 +10,6 @@ from .dns_utils import write_dnsmasq_hosts_file, reload_dnsmasq
 
 
 @receiver(post_save, sender=Peer)
-def sync_name_to_hostname(sender, instance, created, **kwargs):
-    """Automatically sync the name field to hostname field for DNS"""
-    if instance.name and instance.hostname != instance.name:
-        instance.hostname = instance.name
-        instance.save(update_fields=['hostname'])
-        print(f"DNS: Synced hostname to name for peer: {instance.name}")
-
-
-@receiver(post_save, sender=Peer)
 def update_dns_on_peer_change(sender, instance, created, **kwargs):
     """Update DNS configuration when a peer is created or modified"""
     try:
