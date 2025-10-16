@@ -418,6 +418,11 @@
                                                 <a href="#" onclick="openPeerModal('{{ peer.uuid }}');" class="peer-name" id="peer-name-{{ peer.public_key }}">
                                                     {{ peer }}
                                                 </a>
+                                                {% if peer.hostname %}
+                                                <div class="compact-info" style="color: #6c757d; font-size: 0.8rem; margin-top: 2px;">
+                                                    <i class="fas fa-globe"></i> {{ peer.hostname }}.vpn.local
+                                                </div>
+                                                {% endif %}
                                                 <div class="compact-info peer-extra-info" id="peer-endpoints-{{ peer.public_key }}"></div>
                                             </div>
                                         </td>
@@ -1135,11 +1140,19 @@
                 nameLabel.textContent = peerName.length > 12 ? peerName.substring(0, 12) + '...' : peerName;
                 svg.appendChild(nameLabel);
 
+                // Create DNS hostname label (below the name)
+                const dnsLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                dnsLabel.setAttribute('class', 'peer-ip-label');
+                dnsLabel.setAttribute('x', x);
+                dnsLabel.setAttribute('y', y - 30);
+                dnsLabel.textContent = peerName + '.vpn.local';
+                svg.appendChild(dnsLabel);
+
                 // Create IP label (below the node)
                 const ipLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 ipLabel.setAttribute('class', 'peer-ip-label');
                 ipLabel.setAttribute('x', x);
-                ipLabel.setAttribute('y', y + 45);
+                ipLabel.setAttribute('y', y + 60);
                 ipLabel.textContent = peerIP;
                 svg.appendChild(ipLabel);
             });
@@ -1150,7 +1163,8 @@
             const tooltip = document.getElementById('peerTooltip');
             tooltip.querySelector('.peer-name').textContent = name;
             tooltip.querySelector('.peer-info').innerHTML = 
-                `<div>IP: ${ip}</div>
+                `<div>DNS: ${name}.vpn.local</div>
+                 <div>IP: ${ip}</div>
                  <div>Status: ${isOnline ? 'Online' : 'Offline'}</div>
                  <div>Throughput: ${throughput}</div>
                  <div>Last Handshake: ${handshake}</div>`;
