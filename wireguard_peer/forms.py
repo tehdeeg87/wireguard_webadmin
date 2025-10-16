@@ -28,6 +28,15 @@ class PeerNameForm(forms.ModelForm):
         help_text=_('Give this device a friendly name so you can easily identify it')
     )
     
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Automatically set hostname to match name
+        if instance.name:
+            instance.hostname = instance.name
+        if commit:
+            instance.save()
+        return instance
+    
     class Meta:
         model = Peer
         fields = ['name']

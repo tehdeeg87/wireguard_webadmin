@@ -35,8 +35,20 @@ admin.site.register(WireGuardInstance, WireGuardInstanceAdmin)
 
 
 class PeerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'public_key', 'pre_shared_key', 'persistent_keepalive', 'wireguard_instance', 'created', 'updated', 'uuid')
-    search_fields = ('name', 'public_key', 'pre_shared_key', 'persistent_keepalive', 'wireguard_instance', 'created', 'updated', 'uuid')
+    list_display = ('name', 'hostname', 'public_key', 'pre_shared_key', 'persistent_keepalive', 'wireguard_instance', 'created', 'updated', 'uuid')
+    search_fields = ('name', 'hostname', 'public_key', 'pre_shared_key', 'persistent_keepalive', 'wireguard_instance', 'created', 'updated', 'uuid')
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'hostname', 'wireguard_instance')
+        }),
+        ('Keys', {
+            'fields': ('public_key', 'private_key', 'pre_shared_key'),
+            'classes': ('collapse',)
+        }),
+        ('Configuration', {
+            'fields': ('persistent_keepalive', 'sort_order')
+        })
+    )
 
 admin.site.register(Peer, PeerAdmin)
 

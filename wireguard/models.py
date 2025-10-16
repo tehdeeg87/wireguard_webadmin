@@ -93,6 +93,12 @@ class Peer(models.Model):
     updated = models.DateTimeField(auto_now=True)
     uuid = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
 
+    def save(self, *args, **kwargs):
+        # Automatically set hostname to name if not set or if name changed
+        if self.name and (not self.hostname or self.hostname != self.name):
+            self.hostname = self.name
+        super().save(*args, **kwargs)
+
     def __str__(self):
         if self.name:
             return self.name
