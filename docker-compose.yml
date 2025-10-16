@@ -88,12 +88,12 @@ services:
     volumes:
       - ./shared_hosts:/etc/dnsmasq.d
     command: >
-      --interface=wg0
-      --bind-interfaces
       --domain=vpn.local
       --expand-hosts
       --no-resolv
       --addn-hosts=/etc/dnsmasq.d/hosts_static
+      --listen-address=127.0.0.1
+      --port=5353
     restart: unless-stopped
     depends_on:
       - wireguard-webadmin

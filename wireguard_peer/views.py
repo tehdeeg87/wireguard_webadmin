@@ -136,7 +136,7 @@ def view_wireguard_peer_manage(request):
         if new_peer_data['allowed_ip']:
             new_peer = Peer.objects.create(
                 name=new_peer_data['name'],
-                hostname=new_peer_data['hostname'],
+                hostname=new_peer_data['name'],  # Set hostname to match name for DNS
                 public_key=new_peer_data['public_key'],
                 pre_shared_key=new_peer_data['pre_shared_key'],
                 persistent_keepalive=new_peer_data['persistent_keepalive'],

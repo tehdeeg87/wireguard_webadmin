@@ -1,0 +1,5 @@
+# WireGuard WebAdmin DNS hosts file
+# Auto-generated - do not edit manually
+
+10.188.0.2	number1	number1.vpn.local
+10.188.0.3	number2	number2.vpn.local
