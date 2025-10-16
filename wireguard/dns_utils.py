@@ -21,6 +21,20 @@ def get_peer_ip_address(peer):
     return None
 
 
+def get_peer_dns_name(peer):
+    """
+    Get the full DNS name for a peer using instance-based subdomains
+    Format: hostname.instance_id.vpn.local
+    """
+    if not peer.hostname:
+        return None
+    
+    instance_id = peer.wireguard_instance.instance_id
+    domain = settings.DNSMASQ_DOMAIN
+    
+    return f"{peer.hostname}.{instance_id}.{domain}"
+
+
 def write_dnsmasq_hosts_file():
     """
     Write all peers to the dnsmasq hosts file
@@ -44,13 +58,18 @@ def write_dnsmasq_hosts_file():
             for peer in peers:
                 ip_address = get_peer_ip_address(peer)
                 if ip_address and peer.hostname:
-                    # Write: IP_address hostname hostname.domain
-                    f.write(f"{ip_address}\t{peer.hostname}\t{peer.hostname}.{domain}\n")
-                    print(f"DNS: Added {peer.hostname} -> {ip_address}")
+                    # Get the full DNS name with instance ID
+                    dns_name = get_peer_dns_name(peer)
+                    if dns_name:
+                        # Write: IP_address hostname hostname.instance_id.domain
+                        f.write(f"{ip_address}\t{peer.hostname}\t{dns_name}\n")
+                        print(f"DNS: Added {dns_name} -> {ip_address}")
                 elif ip_address and peer.name:
                     # Fallback to peer name if no hostname
-                    f.write(f"{ip_address}\t{peer.name}\t{peer.name}.{domain}\n")
-                    print(f"DNS: Added {peer.name} -> {ip_address}")
+                    instance_id = peer.wireguard_instance.instance_id
+                    fallback_dns = f"{peer.name}.{instance_id}.{domain}"
+                    f.write(f"{ip_address}\t{peer.name}\t{fallback_dns}\n")
+                    print(f"DNS: Added {fallback_dns} -> {ip_address}")
         
         print(f"DNS: Successfully wrote hosts file to {hosts_file_path}")
         return True
