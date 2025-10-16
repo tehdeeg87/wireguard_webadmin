@@ -38,19 +38,7 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
       - net.ipv4.ip_forward=1
-    command: >
-      sh -c "
-        mkdir -p /shared_hosts &&
-        echo 'addn-hosts=/shared_hosts/hosts_static' >> /etc/dnsmasq.conf &&
-        echo 'domain=portbro.vpn' >> /etc/dnsmasq.conf &&
-        echo 'expand-hosts' >> /etc/dnsmasq.conf &&
-        pkill -f dnsmasq || true &&
-        rm -f /run/dnsmasq/dnsmasq.pid &&
-        dnsmasq --no-daemon --log-queries --addn-hosts=/shared_hosts/hosts_static --domain=portbro.vpn --expand-hosts &
-        python3 manage.py migrate &&
-        python3 manage.py collectstatic --noinput &&
-        python3 manage.py runserver 0.0.0.0:8000
-      "
+    command: /bin/bash /app/init.sh
  #   command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]    
     networks:
       - default
