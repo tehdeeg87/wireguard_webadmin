@@ -16,12 +16,28 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file if it exists
+# Try to load python-dotenv, but don't fail if it's not installed
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    # python-dotenv not installed, continue without it
+    pass
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rj$$(1+#ca#xkpf8ieclzfa-igi9bhnw!vc46dm0&eov3#m91o'
+# SECRET_KEY must be set via environment variable in production
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-rj$$(1+#ca#xkpf8ieclzfa-igi9bhnw!vc46dm0&eov3#m91o')
+if SECRET_KEY.startswith('django-insecure-'):
+    import warnings
+    warnings.warn(
+        "SECRET_KEY is using the default insecure value. "
+        "Set SECRET_KEY environment variable for production!",
+        UserWarning
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -59,16 +75,18 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.microsoft"
 ]
 
-PARENT_JWKS_URL = "https://portbro.com/o/jwks/"
-PARENT_ISSUER = "portbro.com"
-PARENT_AUDIENCE = "vpn-nodes"
+# JWT Configuration - can be overridden via environment variables
+PARENT_JWKS_URL = os.getenv('PARENT_JWKS_URL', "https://portbro.com/o/jwks/")
+PARENT_ISSUER = os.getenv('PARENT_ISSUER', "portbro.com")
+PARENT_AUDIENCE = os.getenv('PARENT_AUDIENCE', "vpn-nodes")
 
 # Portbro OAuth2 Configuration
-PORTBRO_CLIENT_ID = "yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm"
-PORTBRO_CLIENT_SECRET = "dur3nwcu6KYvFgS3LZngtIbFg1cjj7lgB52NMpcZiG6bd1ltp7jF9uHCqnQFfCXfgw1j8leaobnY4XrSJuBN3GEZkbYtv24uZJdLzO4gyp5A4B93neu4Y7WSyb5vLgTO"
-PORTBRO_TOKEN_URL = "https://portbro.com/o/token/"
-PORTBRO_VPN_AUTH_URL = "https://portbro.com/vpn/auth/"
-PORTBRO_SCOPE = "read"
+# These should be set via environment variables in production
+PORTBRO_CLIENT_ID = os.getenv('PORTBRO_CLIENT_ID', "yDPrlW2u1iiSbT9ABseK6fAGwN2nWhIFsO7i3CCm")
+PORTBRO_CLIENT_SECRET = os.getenv('PORTBRO_CLIENT_SECRET', "dur3nwcu6KYvFgS3LZngtIbFg1cjj7lgB52NMpcZiG6bd1ltp7jF9uHCqnQFfCXfgw1j8leaobnY4XrSJuBN3GEZkbYtv24uZJdLzO4gyp5A4B93neu4Y7WSyb5vLgTO")
+PORTBRO_TOKEN_URL = os.getenv('PORTBRO_TOKEN_URL', "https://portbro.com/o/token/")
+PORTBRO_VPN_AUTH_URL = os.getenv('PORTBRO_VPN_AUTH_URL', "https://portbro.com/vpn/auth/")
+PORTBRO_SCOPE = os.getenv('PORTBRO_SCOPE', "read")
 
 SITE_ID= 1
 LOGIN_REDIRECT_URL = "/"
@@ -185,10 +203,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DNS_CONFIG_FILE = '/etc/dnsmasq/wireguard_webadmin_dns.conf'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-WIREGUARD_WEBADMIN_VERSION = 9966
-
+#WIREGUARD_WEBADMIN_VERSION = 9966
+WIREGUARD_WEBADMIN_VERSION = 9971
 # n8n API Key for webhook authentication
-N8N_API_KEY = 'test-api-key-123'  # Change this to a secure key in production
+# Should be set via environment variable in production
+N8N_API_KEY = os.getenv('N8N_API_KEY', 'test-api-key-123')
+
+# JWT RSA Keys - can be provided as file path or direct key content
+# If JWT_RSA_PUBLIC_KEY_FILE is set, it takes precedence over JWT_RSA_PUBLIC_KEY
+JWT_RSA_PUBLIC_KEY_FILE = os.getenv('JWT_RSA_PUBLIC_KEY_FILE', None)
+JWT_RSA_PUBLIC_KEY = os.getenv('JWT_RSA_PUBLIC_KEY', None)
+# Private key only needed for token generation (testing/development)
+JWT_RSA_PRIVATE_KEY_FILE = os.getenv('JWT_RSA_PRIVATE_KEY_FILE', None)
+JWT_RSA_PRIVATE_KEY = os.getenv('JWT_RSA_PRIVATE_KEY', None)
 
 # DNS Configuration for dnsmasq integration
 DNSMASQ_HOSTS_FILE = '/shared_hosts/hosts_static'

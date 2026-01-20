@@ -21,7 +21,8 @@ def view_vpn_invite_list(request):
         return redirect('/vpn_invite/')
 
     try:
-        default_invite_url = f'{settings.CSRF_TRUSTED_ORIGINS[1]}/invite/'
+        # Use the current request domain instead of hardcoded CSRF_TRUSTED_ORIGINS
+        default_invite_url = f'{request.scheme}://{request.get_host()}/invite/'
     except:
         default_invite_url = 'https://wireguard-webadmin.example.com/invite/'
 

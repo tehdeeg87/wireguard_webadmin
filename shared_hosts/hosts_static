@@ -1,5 +1,4 @@
 # WireGuard WebAdmin DNS hosts file
 # Auto-generated - do not edit manually
 
-10.188.0.2	phone	phone.portbro.vpn
-10.188.0.3	laptop	laptop.portbro.vpn
+10.188.0.2	peer-2	peer-2.0.portbro.vpn

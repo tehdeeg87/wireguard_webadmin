@@ -150,23 +150,38 @@ def create_random_password(length, complexity):
 
 
 
-def replace_message_variables(message: str, peer_invite: PeerInvite, invite_settings: InviteSettings):
+def replace_message_variables(message: str, peer_invite: PeerInvite, invite_settings: InviteSettings, request=None):
+    # Use current request domain if available, otherwise fall back to invite_settings
+    if request:
+        base_url = f"{request.scheme}://{request.get_host()}"
+        invite_url = f"{base_url}/invite/"
+    else:
+        invite_url = invite_settings.invite_url
+    
     # The & at the end is to prevent the token from being concatenated with any other template text.
-    message = message.replace('{invite_url}', f'{invite_settings.invite_url}?token={peer_invite.uuid}&')
+    message = message.replace('{invite_url}', f'{invite_url}?token={peer_invite.uuid}&')
     message = message.replace('{expire_minutes}', f'{invite_settings.invite_expiration}')
     return message
 
 
-def get_peer_invite_data(peer_invite: PeerInvite, invite_settings: InviteSettings):
+def get_peer_invite_data(peer_invite: PeerInvite, invite_settings: InviteSettings, request=None):
+    # Use current request domain if available, otherwise fall back to invite_settings
+    if request:
+        base_url = f"{request.scheme}://{request.get_host()}"
+        invite_url = f"{base_url}/invite/"
+    else:
+        invite_url = invite_settings.invite_url
+    
     data = {
         # The & at the end is to prevent the token from being concatenated with any other template text.
-        'url': f'{invite_settings.invite_url}?token{peer_invite.uuid}&',
+        'url': f'{invite_url}?token={peer_invite.uuid}&',
+        'invite_url': f'{invite_url}?token={peer_invite.uuid}&',
         'password': peer_invite.invite_password,
         'expiration': peer_invite.invite_expiration.isoformat(),
-        'email_subject': replace_message_variables(invite_settings.invite_email_subject, peer_invite, invite_settings),
-        'email_body': replace_message_variables(invite_settings.invite_email_body, peer_invite, invite_settings),
-        'whatsapp_body': replace_message_variables(invite_settings.invite_whatsapp_body, peer_invite, invite_settings),
-        'text_body': replace_message_variables(invite_settings.invite_text_body, peer_invite, invite_settings),
+        'email_subject': replace_message_variables(invite_settings.invite_email_subject, peer_invite, invite_settings, request),
+        'email_body': replace_message_variables(invite_settings.invite_email_body, peer_invite, invite_settings, request),
+        'whatsapp_body': replace_message_variables(invite_settings.invite_whatsapp_body, peer_invite, invite_settings, request),
+        'text_body': replace_message_variables(invite_settings.invite_text_body, peer_invite, invite_settings, request),
         'uuid': str(peer_invite.uuid),
     }
     return data

@@ -417,7 +417,7 @@ def api_peer_invite(request):
     if peer_invite:
         data['status'] = 'success'
         data['message'] = ''
-        data['invite_data'] = get_peer_invite_data(peer_invite, invite_settings)
+        data['invite_data'] = get_peer_invite_data(peer_invite, invite_settings, request)
 
         if request.GET.get('action') == 'email':
             data['status'], data['message'] = send_email(request.GET.get('address'), data['invite_data']['email_subject'], data['invite_data']['email_body'])

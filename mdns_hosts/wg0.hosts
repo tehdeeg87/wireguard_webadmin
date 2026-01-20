@@ -1,15 +1,9 @@
-# mDNS hosts file for WireGuard instance ggg
+# mDNS hosts file for WireGuard instance fea
 # Domain: wg0.local
 # Generated automatically - do not edit manually
 
-10.188.0.2 number1
-10.188.0.2 number1.wg0.local
-10.188.0.2 number1.wg.local
-10.188.0.2 peer-29e7f941
-10.188.0.2 peer-29e7f941.wg0.local
-
-10.188.0.3 peer-db5698c4
-10.188.0.3 peer-db5698c4.wg0.local
-10.188.0.3 peer-db5698c4.wg.local
-10.188.0.3 peer-db5698c4
-10.188.0.3 peer-db5698c4.wg0.local
+10.188.0.2 peer-2
+10.188.0.2 peer-2.wg0.local
+10.188.0.2 peer-2.wg.local
+10.188.0.2 peer-5353a7e4
+10.188.0.2 peer-5353a7e4.wg0.local
