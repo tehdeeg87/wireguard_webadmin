@@ -95,10 +95,10 @@ class JWTAuthenticationMiddleware:
                 return claims
             except requests.RequestException as e:
                 logger.error(f"Failed to fetch JWKS from {settings.PARENT_JWKS_URL}: {e}")
-                return None
+                    return None
             except Exception as e:
                 logger.error(f"JWKS validation failed: {e}")
-                return None
+                    return None
                 
         except Exception as e:
             logger.error(f"JWT validation failed: {e}")

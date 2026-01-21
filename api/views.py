@@ -1,5 +1,6 @@
 import base64
 import datetime
+import logging
 import os
 import subprocess
 import uuid
@@ -7,6 +8,8 @@ import uuid
 import pytz
 import requests
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -517,8 +520,12 @@ def webhook_create_instance(request):
 @require_http_methods(["POST"])
 def remove_instance(request):
     """
-    Remove a WireGuard instance and all associated data.
-    Accepts JSON payload with 'instance' field containing the instance name/email.
+    Remove WireGuard instances, user, and peer group by email address.
+    Accepts JSON payload with 'instance' field containing an email address.
+    Deletes:
+    - All WireGuardInstance objects where name equals the email
+    - User object where email equals the email
+    - PeerGroup where name equals '{email}_group'
     Requires X-API-Key header for authentication.
     """
     try:
@@ -536,60 +543,89 @@ def remove_instance(request):
         import json
         try:
             body = json.loads(request.body)
-            instance_name = body.get('instance')
+            email = body.get('instance')  # Email address passed as 'instance' parameter
         except (json.JSONDecodeError, AttributeError):
             return JsonResponse({
                 'status': 'error',
                 'message': 'Invalid JSON payload'
             }, status=400)
         
-        if not instance_name:
+        if not email:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Instance name is required'
+                'message': 'Instance (email) parameter is required'
             }, status=400)
         
-        # Find the instance by name
+        # Track what was deleted for response
+        deleted_instances = []
+        deleted_instance_ids = []
+        total_peers_deleted = 0
+        user_deleted = False
+        peer_group_deleted = False
+        
+        # Find and delete ALL WireGuard instances where name equals the email
+        instances = WireGuardInstance.objects.filter(name=email)
+        
+        for instance in instances:
+            # Get related data counts for response
+            peers_count = instance.peer_set.count()
+            total_peers_deleted += peers_count
+            
+            # Delete all associated peers and their data
+            for peer in instance.peer_set.all():
+                # Delete peer status
+                try:
+                    peer.peerstatus.delete()
+                except:
+                    pass
+                
+                # Delete peer allowed IPs
+                peer.peerallowedip_set.all().delete()
+                
+                # Remove peer from all peer groups
+                for peer_group in PeerGroup.objects.filter(peer=peer):
+                    peer_group.peer.remove(peer)
+                
+                # Delete the peer
+                peer.delete()
+            
+            # Remove instance from all peer groups
+            for peer_group in PeerGroup.objects.filter(server_instance=instance):
+                peer_group.server_instance.remove(instance)
+            
+            # Store instance info before deletion
+            deleted_instances.append({
+                'uuid': str(instance.uuid),
+                'instance_id': instance.instance_id,
+                'name': instance.name
+            })
+            deleted_instance_ids.append(instance.instance_id)
+            
+            # Delete the instance
+            instance.delete()
+        
+        # Delete the User object where email equals the parameter
+        # Also delete associated UserAcl objects
         try:
-            instance = WireGuardInstance.objects.get(name=instance_name)
-        except WireGuardInstance.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': f'Instance with name "{instance_name}" not found'
-            }, status=404)
-        
-        # Get related data counts for response
-        peers_count = instance.peer_set.count()
-        peer_groups_count = PeerGroup.objects.filter(server_instance=instance).count()
-        
-        # Delete all associated peers and their data
-        for peer in instance.peer_set.all():
-            # Delete peer status
-            try:
-                peer.peerstatus.delete()
-            except:
-                pass
+            user = User.objects.get(email=email)
+            user_deleted = True
+            username = user.username
             
-            # Delete peer allowed IPs
-            peer.peerallowedip_set.all().delete()
+            # Delete associated UserAcl objects
+            UserAcl.objects.filter(user=user).delete()
             
-            # Remove peer from all peer groups
-            for peer_group in PeerGroup.objects.filter(peer=peer):
-                peer_group.peer.remove(peer)
-            
-            # Delete the peer
-            peer.delete()
+            user.delete()
+        except User.DoesNotExist:
+            username = None
         
-        # Remove instance from all peer groups
-        for peer_group in PeerGroup.objects.filter(server_instance=instance):
-            peer_group.server_instance.remove(instance)
-        
-        # Store instance info before deletion
-        instance_uuid = str(instance.uuid)
-        instance_id = instance.instance_id
-        
-        # Delete the instance
-        instance.delete()
+        # Delete the PeerGroup where name equals '{email}_group'
+        peer_group_name = f"{email}_group"
+        try:
+            peer_group = PeerGroup.objects.get(name=peer_group_name)
+            peer_group_deleted = True
+            peer_group.delete()
+        except PeerGroup.DoesNotExist:
+            pass
         
         # Reload WireGuard interfaces to apply changes
         from wireguard_tools.views import reload_wireguard_interfaces
@@ -598,12 +634,17 @@ def remove_instance(request):
         if success:
             return JsonResponse({
                 'status': 'success',
-                'message': f'Instance "{instance_name}" and all associated data deleted successfully. WireGuard interfaces reloaded.',
+                'message': f'All data for email "{email}" deleted successfully. WireGuard interfaces reloaded.',
                 'deleted_data': {
-                    'instance_uuid': instance_uuid,
-                    'instance_id': instance_id,
-                    'peers_deleted': peers_count,
-                    'peer_groups_updated': peer_groups_count
+                    'email': email,
+                    'instances_deleted': len(deleted_instances),
+                    'instance_ids': deleted_instance_ids,
+                    'instance_details': deleted_instances,
+                    'peers_deleted': total_peers_deleted,
+                    'user_deleted': user_deleted,
+                    'username': username if user_deleted else None,
+                    'peer_group_deleted': peer_group_deleted,
+                    'peer_group_name': peer_group_name if peer_group_deleted else None
                 },
                 'wireguard_reload': {
                     'success': True,
@@ -613,12 +654,17 @@ def remove_instance(request):
         else:
             return JsonResponse({
                 'status': 'partial_success',
-                'message': f'Instance "{instance_name}" deleted but WireGuard reload failed: {message}',
+                'message': f'Data for email "{email}" deleted but WireGuard reload failed: {message}',
                 'deleted_data': {
-                    'instance_uuid': instance_uuid,
-                    'instance_id': instance_id,
-                    'peers_deleted': peers_count,
-                    'peer_groups_updated': peer_groups_count
+                    'email': email,
+                    'instances_deleted': len(deleted_instances),
+                    'instance_ids': deleted_instance_ids,
+                    'instance_details': deleted_instances,
+                    'peers_deleted': total_peers_deleted,
+                    'user_deleted': user_deleted,
+                    'username': username if user_deleted else None,
+                    'peer_group_deleted': peer_group_deleted,
+                    'peer_group_name': peer_group_name if peer_group_deleted else None
                 },
                 'wireguard_reload': {
                     'success': False,
@@ -627,6 +673,9 @@ def remove_instance(request):
             })
         
     except Exception as e:
+        import traceback
+        logger.error(f"Error in remove_instance: {str(e)}")
+        logger.error(traceback.format_exc())
         return JsonResponse({
             'status': 'error',
             'message': f'An error occurred: {str(e)}'
