@@ -4,13 +4,61 @@ set -e
 # Lets wait for the DNS container to start
 sleep 5
 
+# Check for and handle corrupted WireGuard config files
+# Auto-clean corrupted configs if CLEAR_CORRUPTED_CONFIGS environment variable is set
+if [ "${CLEAR_CORRUPTED_CONFIGS,,}" == "true" ]; then
+    echo "[init] Checking for corrupted WireGuard config files..."
+    shopt -s nullglob
+    config_files=(/etc/wireguard/*.conf)
+    corrupted_files=()
+    
+    for f in "${config_files[@]}"; do
+        interface_name="$(basename "${f}" .conf)"
+        # Test if config is valid by trying to parse it
+        if ! wg setconf "$interface_name" "$f" 2>/dev/null; then
+            # Check if it's a key format error
+            if wg-quick up "$interface_name" 2>&1 | grep -q "Key is not the correct length\|Configuration parsing error"; then
+                corrupted_files+=("$f")
+            fi
+        fi
+    done
+    
+    if [ ${#corrupted_files[@]} -gt 0 ]; then
+        echo "[init] Found ${#corrupted_files[@]} corrupted config file(s), removing..."
+        for f in "${corrupted_files[@]}"; do
+            rm -f "$f"
+            echo "[init] Removed corrupted config: $f"
+        done
+    fi
+fi
+
 # Starts each WireGuard configuration file found in /etc/wireguard
+# Skip corrupted config files and log warnings
 shopt -s nullglob
 config_files=(/etc/wireguard/*.conf)
 if [ ${#config_files[@]} -gt 0 ]; then
     for f in "${config_files[@]}"; do
-        wg-quick up "$(basename "${f}" .conf)"
+        interface_name="$(basename "${f}" .conf)"
+        echo "[init] Attempting to start WireGuard interface: $interface_name"
+        
+        # Try to start the interface, but don't fail if it's corrupted
+        if wg-quick up "$interface_name" 2>&1; then
+            echo "[init] Successfully started WireGuard interface: $interface_name"
+        else
+            error_output=$(wg-quick up "$interface_name" 2>&1 || true)
+            if echo "$error_output" | grep -q "Key is not the correct length\|Configuration parsing error"; then
+                echo "[init] ERROR: Config file $f appears to be corrupted (invalid key format)."
+                echo "[init] Skipping this interface. To fix: delete $f and regenerate from web interface."
+                echo "[init] Or run: python manage.py clear_wireguard_configs"
+                echo "[init] Or set CLEAR_CORRUPTED_CONFIGS=true environment variable to auto-clean on startup"
+            else
+                echo "[init] WARNING: Failed to start WireGuard interface: $interface_name"
+                echo "[init] Error: $error_output"
+            fi
+        fi
     done
+else
+    echo "[init] No WireGuard configuration files found in /etc/wireguard/"
 fi
 
 # Django startup
