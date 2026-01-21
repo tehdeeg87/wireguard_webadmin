@@ -595,11 +595,11 @@ def remove_instance(request):
         for peer_group in PeerGroup.objects.filter(server_instance=instance):
             peer_group.server_instance.remove(instance)
         
-        # Find and delete the user account (username matches instance_name/email)
+        # Find and delete the user account (email matches instance_name)
         user_deleted = False
         user_acl_deleted = False
         try:
-            user = User.objects.get(username=instance_name)
+            user = User.objects.get(email=instance_name)
             
             # Delete UserAcl if it exists
             try:
