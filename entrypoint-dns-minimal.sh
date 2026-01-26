@@ -6,11 +6,35 @@ echo "🚀 Starting WireGuard WebAdmin with DNS Integration..."
 # Function to wait for database
 wait_for_db() {
     echo "⏳ Waiting for database to be ready..."
-    while ! python3 manage.py migrate --check >/dev/null 2>&1; do
-        echo "   Database not ready, waiting..."
-        sleep 2
+    max_attempts=30
+    attempt=0
+    
+    while [ $attempt -lt $max_attempts ]; do
+        # Use test_db_connection.py to get detailed error messages
+        if python3 /app/test_db_connection.py 2>&1 | grep -q "Connection successful"; then
+            echo "✅ Database is ready"
+            return 0
+        else
+            attempt=$((attempt + 1))
+            if [ $attempt -lt $max_attempts ]; then
+                echo "   Database not ready, waiting... (attempt $attempt/$max_attempts)"
+                # Show the actual error on first attempt
+                if [ $attempt -eq 1 ]; then
+                    echo ""
+                    echo "   Connection error details:"
+                    python3 /app/test_db_connection.py 2>&1 | grep -E "(ERROR|WARNING|Please check)" | sed 's/^/   /'
+                    echo ""
+                fi
+                sleep 2
+            else
+                echo ""
+                echo "❌ Database connection failed after $max_attempts attempts"
+                echo "   Final connection test:"
+                python3 /app/test_db_connection.py
+                exit 1
+            fi
+        fi
     done
-    echo "✅ Database is ready"
 }
 
 # Function to configure existing dnsmasq

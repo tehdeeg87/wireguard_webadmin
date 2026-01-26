@@ -45,7 +45,7 @@ COPY --from=builder /install /usr/local
 COPY . /app/
 
 # Set execution permissions on scripts
-RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh && chmod +x /app/update_hosts_from_shared.sh && chmod +x /app/test_dns_manual.sh && chmod +x /app/start_hosts_updater.sh
+RUN chmod +x /app/init.sh && chmod +x /app/entrypoint.sh && chmod +x /app/update_hosts_from_shared.sh && chmod +x /app/test_dns_manual.sh && chmod +x /app/start_hosts_updater.sh && chmod +x /app/test_db_connection.py
 
 ARG SERVER_ADDRESS
 ARG DEBUG_MODE

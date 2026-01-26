@@ -12,6 +12,12 @@ services:
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
       - TZ=${TIMEZONE}
       - EXTRA_ALLOWED_HOSTS=${EXTRA_ALLOWED_HOSTS}
+      # PostgreSQL Database Configuration
+      - DB_NAME=${DB_NAME:-defaultdb}
+      - DB_USER=${DB_USER:-doadmin}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST:-db-node-cluster-do-user-14643983-0.d.db.ondigitalocean.com}
+      - DB_PORT=${DB_PORT:-25060}
     volumes:
       - .:/app
       - ./src:/app/src
