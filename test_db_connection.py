@@ -4,9 +4,26 @@ Test database connection and show detailed error messages.
 """
 import os
 import sys
+
+# Check if psycopg2 is available first
+try:
+    import psycopg2
+    from psycopg2 import OperationalError
+except ImportError as e:
+    print("="*60)
+    print("CRITICAL ERROR: psycopg2 is not installed")
+    print("="*60)
+    print(f"Import error: {e}")
+    print()
+    print("This means psycopg2-binary is not installed in the container.")
+    print("Please check:")
+    print("  1. requirements.txt includes 'psycopg2-binary>=2.9.0'")
+    print("  2. Docker image was rebuilt: docker-compose build")
+    print("  3. libpq5 is installed in the runtime image")
+    print()
+    sys.exit(1)
+
 import django
-import psycopg2
-from psycopg2 import OperationalError
 
 # Setup Django
 sys.path.insert(0, '/app')

@@ -3,6 +3,22 @@ set -e
 
 echo "🚀 Starting WireGuard WebAdmin with DNS Integration..."
 
+# Function to check and install psycopg2 if missing
+check_psycopg2() {
+    echo "🔍 Checking for psycopg2..."
+    if ! python3 -c "import psycopg2" 2>/dev/null; then
+        echo "⚠️  psycopg2 not found, attempting to install..."
+        pip3 install --no-cache-dir psycopg2-binary>=2.9.0 || {
+            echo "❌ Failed to install psycopg2-binary"
+            echo "   This is required for PostgreSQL connections"
+            exit 1
+        }
+        echo "✅ psycopg2 installed successfully"
+    else
+        echo "✅ psycopg2 is available"
+    fi
+}
+
 # Function to wait for database
 wait_for_db() {
     echo "⏳ Waiting for database to be ready..."
@@ -22,7 +38,7 @@ wait_for_db() {
                 if [ $attempt -eq 1 ]; then
                     echo ""
                     echo "   Connection error details:"
-                    python3 /app/test_db_connection.py 2>&1 | grep -E "(ERROR|WARNING|Please check)" | sed 's/^/   /'
+                    python3 /app/test_db_connection.py 2>&1 | grep -E "(ERROR|WARNING|Please check|CRITICAL)" | sed 's/^/   /'
                     echo ""
                 fi
                 sleep 2
@@ -82,6 +98,9 @@ show_status() {
 # Main execution
 main() {
     echo "🎯 Starting WireGuard WebAdmin DNS Integration..."
+    
+    # Check for psycopg2 first
+    check_psycopg2
     
     # Wait for database
     wait_for_db

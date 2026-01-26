@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     cron \
     dnsmasq \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /var/spool/cron/crontabs \
     && chmod 755 /var/spool/cron/crontabs \
@@ -40,6 +41,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy installed Python packages from the builder stage
 COPY --from=builder /install /usr/local
+
+# Verify psycopg2 is available
+RUN python3 -c "import psycopg2; print('✓ psycopg2 available')" || \
+    (echo "✗ ERROR: psycopg2 not available after installation" && \
+     pip3 list | grep -i psycopg || echo "psycopg2 not in pip list" && \
+     exit 1)
 
 # Copy the application code
 COPY . /app/
