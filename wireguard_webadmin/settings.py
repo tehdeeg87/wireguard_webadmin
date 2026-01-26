@@ -137,10 +137,26 @@ WSGI_APPLICATION = 'wireguard_webadmin.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# SQLite database (commented out - using PostgreSQL for cluster support)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'database' / 'db.sqlite3',
+#     }
+# }
+
+# PostgreSQL database for multi-node cluster support
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'database' / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'defaultdb'),
+        'USER': os.getenv('DB_USER', 'doadmin'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'db-node-cluster-do-user-14643983-0.d.db.ondigitalocean.com'),
+        'PORT': os.getenv('DB_PORT', '25060'),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
@@ -220,6 +236,10 @@ JWT_RSA_PRIVATE_KEY = os.getenv('JWT_RSA_PRIVATE_KEY', None)
 # DNS Configuration for dnsmasq integration
 DNSMASQ_HOSTS_FILE = '/shared_hosts/hosts_static'
 DNSMASQ_DOMAIN = 'portbro.vpn'
+
+# VPN Hostname - used for WireGuard instance endpoint configuration
+# Can be set via environment variable, or will use request hostname dynamically
+VPN_HOSTNAME = os.getenv('VPN_HOSTNAME', None)  # e.g., 'can1-vpn.portbro.com'
 CSRF_TRUSTED_ORIGINS = [
        'https://vpn.portbro.com',
        'http://vpn.portbro.com',  # Include HTTP if you're using it

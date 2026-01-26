@@ -26,6 +26,33 @@ from wireguard.models import Peer, PeerStatus, WebadminSettings, WireGuardInstan
 from django.db import models
 
 
+def get_vpn_hostname(request=None):
+    """
+    Get the VPN hostname for WireGuard instance configuration.
+    Priority:
+    1. Request hostname (if request provided)
+    2. VPN_HOSTNAME environment variable / setting
+    3. Fallback to default
+    """
+    # First, try to get from request
+    if request and hasattr(request, 'get_host'):
+        try:
+            hostname = request.get_host().split(':')[0]  # Remove port if present
+            # Only use if it's not localhost/127.0.0.1
+            if hostname and hostname not in ['localhost', '127.0.0.1', '0.0.0.0']:
+                return hostname
+        except Exception:
+            pass
+    
+    # Second, try environment variable / setting
+    vpn_hostname = getattr(settings, 'VPN_HOSTNAME', None)
+    if vpn_hostname:
+        return vpn_hostname
+    
+    # Last resort: fallback to default
+    return 'vpn.portbro.com'
+
+
 def get_api_key(api_name):
     api_key = None
     if api_name == 'api':
@@ -475,13 +502,16 @@ def webhook_create_instance(request):
         # Generate default address
         new_address = f'10.188.{new_instance_id}.1'
 
+        # Get the correct hostname for this node
+        instance_hostname = get_vpn_hostname(request)
+
         # Create the instance
         instance = WireGuardInstance.objects.create(
             name=customer_email,  # Use provided email as display name
             instance_id=new_instance_id,
             private_key=new_private_key,
             public_key=new_public_key,
-            hostname='vpn.portbro.com',  # Set fixed hostname
+            hostname=instance_hostname,  # Use dynamic hostname
             listen_port=new_listen_port,
             address=new_address,
             netmask=netmask,  # Use calculated netmask

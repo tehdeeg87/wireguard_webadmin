@@ -13,8 +13,9 @@ from wireguard.forms import WireGuardInstanceForm
 from .models import WebadminSettings, WireGuardInstance
 
 
-def generate_instance_defaults():
+def generate_instance_defaults(request=None):
     from wgwadmlibrary.dns_utils import get_optimal_dns_config
+    from api.views import get_vpn_hostname
     
     max_instance_id = WireGuardInstance.objects.all().aggregate(models.Max('instance_id'))['instance_id__max']
     new_instance_id = (max_instance_id + 1) if max_instance_id is not None else 0
@@ -56,6 +57,9 @@ def generate_instance_defaults():
         post_up_script = ''
         post_down_script = ''
 
+    # Get the correct hostname for this node
+    instance_hostname = get_vpn_hostname(request)
+
     return {
         'name': '',
         'instance_id': new_instance_id,
@@ -67,7 +71,7 @@ def generate_instance_defaults():
         'dns_secondary': get_optimal_dns_config()[1],
         'netmask': 24,
         'peer_list_refresh_interval': 10,
-        'hostname': 'myserver.example.com',
+        'hostname': instance_hostname,
         'post_up': post_up_script,
         'post_down': post_down_script,
         'bandwidth_limit_enabled': True,
@@ -179,7 +183,7 @@ def view_wireguard_manage_instance(request):
             return redirect('/server/manage/?uuid=' + str(form.instance.uuid))
     else:
         if not current_instance:
-            form = WireGuardInstanceForm(initial=generate_instance_defaults())
+            form = WireGuardInstanceForm(initial=generate_instance_defaults(request))
         else:
             form = WireGuardInstanceForm(instance=current_instance)  
     context = {'page_title': page_title, 'wireguard_instances': wireguard_instances, 'current_instance': current_instance, 'form': form}
