@@ -32,6 +32,53 @@ def clean_command_field(command_field):
     return cleaned_field
 
 
+def stop_and_remove_interface(instance_id):
+    """
+    Stop a WireGuard interface and remove its configuration file.
+    This is used when an instance is deleted to ensure peers are disconnected.
+    """
+    try:
+        interface_name = f"wg{instance_id}"
+        config_dir = "/etc/wireguard"
+        config_path = os.path.join(config_dir, f"{interface_name}.conf")
+
+        logger.info(f"Stopping WireGuard interface {interface_name} before deletion...")
+        try:
+            # Bring the interface down; ignore errors if it is not running
+            result = subprocess.run(
+                ["wg-quick", "down", interface_name],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                logger.warning(
+                    f"wg-quick down {interface_name} returned non-zero exit code: "
+                    f"{result.returncode}, stderr: {result.stderr}"
+                )
+            else:
+                logger.info(f"Successfully brought down interface {interface_name}")
+        except FileNotFoundError:
+            logger.warning(
+                "wg-quick command not available. This might be a development environment."
+            )
+
+        # Remove the config file so the interface cannot be started again for this instance
+        if os.path.exists(config_path):
+            try:
+                os.remove(config_path)
+                logger.info(f"Removed WireGuard config file: {config_path}")
+            except Exception as e:
+                logger.error(f"Error removing config file {config_path}: {e}")
+        else:
+            logger.info(f"No config file found to remove for {interface_name} at {config_path}")
+
+    except Exception as e:
+        logger.error(
+            f"Unexpected error while stopping/removing WireGuard interface for instance "
+            f"{instance_id}: {e}"
+        )
+
+
 def reload_wireguard_interfaces():
     """
     Reload all WireGuard interfaces to apply configuration changes.

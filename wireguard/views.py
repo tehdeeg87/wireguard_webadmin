@@ -151,12 +151,20 @@ def view_wireguard_manage_instance(request):
                 # Store instance info before deletion
                 instance_id = current_instance.instance_id
                 instance_name = current_instance.name or f'wg{instance_id}'
+
+                # Stop the WireGuard interface and remove its config file so peers are disconnected
+                from wireguard_tools.views import stop_and_remove_interface, reload_wireguard_interfaces
+                try:
+                    stop_and_remove_interface(instance_id)
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error stopping/removing WireGuard interface wg{instance_id}: {e}")
                 
                 # Delete the instance
                 current_instance.delete()
                 
                 # Reload WireGuard interfaces to apply changes
-                from wireguard_tools.views import reload_wireguard_interfaces
                 success, message = reload_wireguard_interfaces()
                 
                 if success:
