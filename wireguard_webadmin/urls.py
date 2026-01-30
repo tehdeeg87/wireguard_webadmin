@@ -22,7 +22,7 @@ from django.conf.urls.static import static
 from accounts.views import view_create_first_user, view_login, view_logout
 from auth_integration.views import jwt_token_async_view
 from api.views import api_instance_info, api_peer_invite, api_peer_list, cron_check_updates, \
-    cron_update_peer_latest_handshake, peer_info, peers_hosts, peers_hosts_legacy, remove_instance, routerfleet_authenticate_session, routerfleet_get_user_token, \
+    cron_update_peer_latest_handshake, disconnect_instance, peer_info, peers_hosts, peers_hosts_legacy, remove_instance, routerfleet_authenticate_session, routerfleet_get_user_token, \
     wireguard_status, webhook_create_instance
 from console.views import view_console
 from dns.views import view_apply_dns_config, view_manage_dns_settings, view_manage_filter_list, view_manage_static_host, \
@@ -75,6 +75,7 @@ urlpatterns = [
     path('accounts/logout/', view_logout, name='logout'),
     path('api/webhook/create-instance/', webhook_create_instance, name='webhook_create_instance'),
     path('remove_instances/', remove_instance, name='remove_instance'),
+    path('api/disconnect_instance/', disconnect_instance, name='disconnect_instance'),
     path('accounts/routerfleet_authenticate_session/', routerfleet_authenticate_session, name='routerfleet_authenticate_session'),
     path('api/routerfleet_get_user_token/', routerfleet_get_user_token, name='routerfleet_get_user_token'),
     path('api/wireguard_status/', wireguard_status, name='api_wireguard_status'),

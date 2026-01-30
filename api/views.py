@@ -709,6 +709,76 @@ def remove_instance(request):
         }, status=500)
 
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def disconnect_instance(request):
+    """
+    Disconnect a WireGuard instance by user email (instance name).
+    This stops the interface and removes its config file, but does NOT delete the instance from the database.
+    This is used for instance transfers where the instance will be used on a different node.
+    
+    Accepts JSON payload with 'email' or 'Instance' field containing the user email (instance name).
+    Requires X-API-Key header for authentication.
+    """
+    try:
+        # Check API key authentication (same as remove_instance)
+        api_key = request.headers.get('X-API-Key')
+        expected_api_key = getattr(settings, 'N8N_API_KEY', 'test-api-key-123')
+        
+        if not api_key or api_key != expected_api_key:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid or missing API key'
+            }, status=401)
+        
+        # Parse JSON body
+        import json
+        try:
+            body = json.loads(request.body)
+            # Accept both 'email' and 'Instance' (case-insensitive) for flexibility
+            email = body.get('email') or body.get('Instance') or body.get('instance')
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON payload'
+            }, status=400)
+        
+        if not email:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Email is required (use "email" or "Instance" field)'
+            }, status=400)
+        
+        # Disconnect the instance
+        from wireguard_tools.views import disconnect_instance_by_email
+        success, message, instance_id = disconnect_instance_by_email(email)
+        
+        if success:
+            return JsonResponse({
+                'status': 'success',
+                'message': message,
+                'instance_id': instance_id,
+                'email': email
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': message,
+                'email': email
+            }, status=404)
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in disconnect_instance: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return JsonResponse({
+            'status': 'error',
+            'message': f'An error occurred: {str(e)}'
+        }, status=500)
+
+
 # DNS Solution - Simple peer hostname mappings
 @csrf_exempt
 def peers_hosts(request):

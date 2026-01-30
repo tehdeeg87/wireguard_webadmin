@@ -79,6 +79,47 @@ def stop_and_remove_interface(instance_id):
         )
 
 
+def disconnect_instance_by_email(email):
+    """
+    Disconnect a WireGuard instance by user email (instance name).
+    This stops the interface and removes its config file, but does NOT delete the instance from the database.
+    This is used for instance transfers where the instance will be used on a different node.
+    
+    Args:
+        email: User email address (which matches the WireGuardInstance.name)
+    
+    Returns:
+        tuple: (success: bool, message: str, instance_id: int or None)
+    """
+    try:
+        # Find the instance by name (which is the email)
+        try:
+            instance = WireGuardInstance.objects.get(name=email)
+        except WireGuardInstance.DoesNotExist:
+            return False, f"Instance with name '{email}' not found", None
+        
+        instance_id = instance.instance_id
+        
+        # Stop the interface and remove config file
+        stop_and_remove_interface(instance_id)
+        
+        # Reload WireGuard interfaces to apply changes
+        success, message = reload_wireguard_interfaces()
+        
+        if success:
+            logger.info(f"Successfully disconnected instance wg{instance_id} for user {email}")
+            return True, f"Instance wg{instance_id} disconnected successfully", instance_id
+        else:
+            logger.warning(f"Disconnected instance wg{instance_id} but reload failed: {message}")
+            return True, f"Instance wg{instance_id} disconnected but reload failed: {message}", instance_id
+            
+    except Exception as e:
+        logger.error(f"Error disconnecting instance for email {email}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return False, f"Error disconnecting instance: {str(e)}", None
+
+
 def reload_wireguard_interfaces():
     """
     Reload all WireGuard interfaces to apply configuration changes.
