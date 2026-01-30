@@ -559,7 +559,37 @@ def restart_wireguard_interfaces(request):
     config_dir = "/etc/wireguard"
     interface_count = 0
     error_count = 0
-    for filename in os.listdir(config_dir):
+    
+    # First, ensure all instances in the database have config files
+    # This is critical in a multi-node setup where instances may be created on other nodes
+    missing_configs = []
+    for instance in WireGuardInstance.objects.all():
+        expected_config = os.path.join(config_dir, f"wg{instance.instance_id}.conf")
+        if not os.path.exists(expected_config):
+            missing_configs.append(instance)
+    
+    if missing_configs:
+        logger.info(f"Found {len(missing_configs)} instance(s) without config files")
+        instance_names = ", ".join([f"wg{i.instance_id}" for i in missing_configs])
+        messages.warning(
+            request, 
+            _("Missing config files|The following instances are missing config files: {instances}. "
+              "This can happen in a multi-node setup when instances are created on other nodes. "
+              "Please click 'Update WireGuard Interface' first to export the configuration files.").format(instances=instance_names)
+        )
+    
+    # Check if config directory exists
+    if not os.path.exists(config_dir):
+        messages.error(request, _("Error|WireGuard config directory not found: {dir}").format(dir=config_dir))
+        return redirect("/status/")
+    
+    try:
+        config_files = os.listdir(config_dir)
+    except PermissionError:
+        messages.error(request, _("Error|Permission denied accessing WireGuard config directory."))
+        return redirect("/status/")
+    
+    for filename in config_files:
         if filename.endswith(".conf"):
             interface_name = filename[:-5]
             if mode == "reload":
@@ -567,45 +597,88 @@ def restart_wireguard_interfaces(request):
                     return render(request, 'access_denied.html', {'page_title': 'Access Denied'})
 
                 config_path = os.path.join(config_dir, filename)
-                with open(config_path, 'r') as f:
-                    lines = f.readlines()
-                filtered_lines = []
-                for line in lines:
-                    stripped_line = line.strip()
-                    if stripped_line.startswith("Address") or stripped_line.startswith("PostUp") or stripped_line.startswith("PostDown"):
-                        continue
-                    filtered_lines.append(line)
-
-                temp_config_path = f"/tmp/wgreload_{interface_name}.conf"
-                with open(temp_config_path, 'w') as f:
-                    f.writelines(filtered_lines)
-
-                reload_command = f"wg syncconf {interface_name} {temp_config_path}"
-                result = subprocess.run(reload_command, shell=True, capture_output=True, text=True)
-                os.remove(temp_config_path)
-
-                if result.returncode != 0:
-                    messages.warning(request, _('Error reloading') + f" {interface_name}|{result.stderr}")
-                    error_count += 1
+                
+                # Check if interface is running
+                check_running = subprocess.run(
+                    ['wg', 'show', interface_name],
+                    capture_output=True,
+                    text=True
+                )
+                
+                if check_running.returncode != 0:
+                    # Interface is not running, start it instead of reloading
+                    logger.info(f"Interface {interface_name} is not running, starting it instead of reloading")
+                    start_command = f"wg-quick up {interface_name}"
+                    start_result = subprocess.run(start_command, shell=True, capture_output=True, text=True)
+                    if start_result.returncode != 0:
+                        error_msg = f"Failed to start: {start_result.stderr}"
+                        messages.warning(request, _('Error starting') + f" {interface_name}|{error_msg}")
+                        logger.error(f"Error starting {interface_name}: {start_result.stderr}")
+                        error_count += 1
+                    else:
+                        interface_count += 1
+                        logger.info(f"Successfully started {interface_name}")
                 else:
-                    interface_count += 1
+                    # Interface is running, reload it
+                    with open(config_path, 'r') as f:
+                        lines = f.readlines()
+                    filtered_lines = []
+                    for line in lines:
+                        stripped_line = line.strip()
+                        if stripped_line.startswith("Address") or stripped_line.startswith("PostUp") or stripped_line.startswith("PostDown"):
+                            continue
+                        filtered_lines.append(line)
+
+                    temp_config_path = f"/tmp/wgreload_{interface_name}.conf"
+                    with open(temp_config_path, 'w') as f:
+                        f.writelines(filtered_lines)
+
+                    reload_command = f"wg syncconf {interface_name} {temp_config_path}"
+                    result = subprocess.run(reload_command, shell=True, capture_output=True, text=True)
+                    os.remove(temp_config_path)
+
+                    if result.returncode != 0:
+                        error_msg = f"Failed to reload: {result.stderr}"
+                        messages.warning(request, _('Error reloading') + f" {interface_name}|{error_msg}")
+                        logger.error(f"Error reloading {interface_name}: {result.stderr}")
+                        error_count += 1
+                    else:
+                        interface_count += 1
+                        logger.info(f"Successfully reloaded {interface_name}")
 
             else:
                 if not user_acl.enable_restart:
                     return render(request, 'access_denied.html', {'page_title': 'Access Denied'})
 
+                # Check if config file exists (should have been created above, but double-check)
+                config_path = os.path.join(config_dir, filename)
+                if not os.path.exists(config_path):
+                    error_msg = f"Config file not found: {config_path}. This may happen in a multi-node setup if the instance was created on another node."
+                    messages.error(request, _("Error") + f" {interface_name}|{error_msg}")
+                    logger.error(f"Config file missing for {interface_name}: {config_path}")
+                    error_count += 1
+                    continue
+
                 stop_command = f"wg-quick down {interface_name}"
                 stop_result = subprocess.run(stop_command, shell=True, capture_output=True, text=True)
                 if stop_result.returncode != 0:
-                    messages.warning(request, _("Error stopping") + f" {interface_name}|{stop_result.stderr}")
-                    error_count += 1
+                    # Don't count as error if interface wasn't running
+                    if "Cannot find device" not in stop_result.stderr and "does not exist" not in stop_result.stderr:
+                        error_msg = f"Failed to stop: {stop_result.stderr}"
+                        messages.warning(request, _("Error stopping") + f" {interface_name}|{error_msg}")
+                        logger.warning(f"Error stopping {interface_name}: {stop_result.stderr}")
+                        error_count += 1
+                
                 start_command = f"wg-quick up {interface_name}"
                 start_result = subprocess.run(start_command, shell=True, capture_output=True, text=True)
                 if start_result.returncode != 0:
-                    messages.warning(request, _("Error starting") + f" {interface_name}|{start_result.stderr}")
+                    error_msg = f"Failed to start: {start_result.stderr}"
+                    messages.error(request, _("Error starting") + f" {interface_name}|{error_msg}")
+                    logger.error(f"Error starting {interface_name}: {start_result.stderr}")
                     error_count += 1
                 else:
                     interface_count += 1
+                    logger.info(f"Successfully started {interface_name}")
 
     if interface_count > 0 and error_count == 0:
         if mode == 'reload':
